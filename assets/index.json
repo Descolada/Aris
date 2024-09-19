@@ -1,0 +1,54 @@
+{
+    "version":"1.0.0",
+    "Descolada/UIA": {
+        "description": "UIAutomation interface wrapper for AutoHotkey v2",
+        "website": "https://github.com/Descolada/UIA-v2",
+        "repository": "Descolada/UIA-v2/main",
+        "main": "Lib/UIA.ahk",
+        "author": "Author Name",
+        "license": "MIT",
+        "tags": ["UIA", "UI", "automation"]
+    },
+    "Descolada/UIA_Browser": {
+        "repository": "Descolada/UIA-v2/main",
+        "main": "Lib/UIA_Browser.ahk",
+        "dependencies": {
+            "Descolada/UIA": "*"
+        }
+    },
+    "G33kDude/cJson": {
+        "description": "JSON parsing library",
+        "website": "G33kDude/cJson.ahk",
+        "repository": "G33kDude/cJson.ahk/v2",
+        "main": "Dist/JSON.ahk",
+        "author": "G33kDude",
+        "license": "MIT",
+        "tags": ["JSON", "parser"]
+    },
+    "thqby/Crypt": {
+        "description": "Cryptograhic functions",
+        "repository": "thqby/ahk2_lib/master",
+        "main": "Crypt.ahk",
+        "files": ["Crypt.ahk"],
+        "author": "thqby",
+        "license": "MIT"
+    },
+    "thqby/CGdip": {
+        "description": "Gdip class",
+        "repository": "thqby/ahk2_lib/master",
+        "main": "CGdip.ahk",
+        "files": ["CGdip.ahk"],
+        "author": "thqby",
+        "license": "MIT"
+    },
+    "Descolada/wInspector": {
+        "description": "wInspector",
+        "files": ["wInspector.ahk"]
+    },
+    "Chunjee/graphicsearch": {
+        "description": "FindText-based image search library",
+        "repository": "Chunjee/graphicsearch.ahk",
+        "files": ["export.ahk"],
+        "license": "MIT"
+    }
+}

@@ -1,0 +1,27 @@
+﻿{
+	"author": {
+		"email": "",
+		"name": "Descolada",
+		"website": "https://github.com/Descolada"
+	},
+	"bugs": {
+		"url": "https://github.com/Descolada/NAP/issues"
+	},
+	"dependencies": {
+
+	},
+	"description": "A basic package manager for AutoHotkey",
+	"homepage": "github.com/Descolada/NAP",
+	"keywords": [
+		"package",
+		"manager"
+	],
+	"license": "MIT",
+	"main": "example.ahk",
+	"name": "Descolada/NAP",
+	"repository": {
+		"type": "github",
+		"url": "Descolada/NAP"
+	},
+	"version": "0.0.2"
+}
