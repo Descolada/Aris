@@ -1,2 +1,2 @@
 # NAP
-NPM-compaticle AutoHotkey package manager
+NPM-compatible AutoHotkey package manager
