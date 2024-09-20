@@ -4,14 +4,14 @@
         "description": "UIAutomation interface wrapper for AutoHotkey v2",
         "website": "https://github.com/Descolada/UIA-v2",
         "repository": "Descolada/UIA-v2/main",
-        "main": "Lib/UIA.ahk",
+        "files": ["Lib/UIA.ahk"],
         "author": "Author Name",
         "license": "MIT",
         "tags": ["UIA", "UI", "automation"]
     },
     "Descolada/UIA_Browser": {
         "repository": "Descolada/UIA-v2/main",
-        "main": "Lib/UIA_Browser.ahk",
+        "files": ["Lib/UIA_Browser.ahk"],
         "dependencies": {
             "Descolada/UIA": "*"
         }
@@ -50,5 +50,10 @@
         "repository": "Chunjee/graphicsearch.ahk",
         "files": ["export.ahk"],
         "license": "MIT"
+    },
+    "Unknown/VA": {
+        "description":"VA library",
+        "repository":"Ixiko/AHK-libs-and-classes-collection",
+        "files":["AHK_V2/_VA.ahk"]
     }
 }

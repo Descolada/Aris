@@ -135,12 +135,35 @@ ObjToQuery(oData) { ; https://gist.github.com/anonymous1184/e6062286ac7f4c35b612
         out .= HTMLFile.parentWindow.encodeURIComponent(val) "&"
     }
     return "?" RTrim(out, "&")
+}
 
-    InitHTMLFile() {
-        doc := ComObject("HTMLFile")
-        doc.write("<meta http-equiv='X-UA-Compatible' content='IE=Edge'>")
-        return doc
+InitHTMLFile() {
+    doc := ComObject("HTMLFile")
+    doc.write("<meta http-equiv='X-UA-Compatible' content='IE=Edge'>")
+    return doc
+}
+
+EncodeDecodeURI(str, encode := true) {
+    VarSetStrCapacity(&result:="", pcchEscaped:=500)
+    if encode {
+        DllCall("Shlwapi.dll\UrlEscape", "str", str, "ptr", StrPtr(result), "uint*", &pcchEscaped, "uint", 0x00080000 | 0x00002000)
+    } else {
+        DllCall("Shlwapi.dll\UrlUnescape", "str", str, "ptr", StrPtr(result), "uint*", &pcchEscaped, "uint", 0x10000000)
     }
+    VarSetStrCapacity(&result, -1)
+    return result
+}
+
+DownloadURL(url) {
+    local req := ComObject("Msxml2.XMLHTTP")
+    req.open("GET", url, true)
+    req.send()
+    while req.readyState != 4
+        Sleep 100
+    if req.status == 200 {
+        return req.responseText
+    } else
+        throw Error("Download failed", -1, url)
 }
 
 MoveFilesAndFolders(SourcePattern, DestinationFolder, DoOverwrite := false) {
@@ -151,4 +174,30 @@ MoveFilesAndFolders(SourcePattern, DestinationFolder, DoOverwrite := false) {
     ; Now move all the folders:
     Loop Files, SourcePattern, "D"  ; D means "retrieve folders only".
         DirMove A_LoopFilePath, DestinationFolder "\" A_LoopFileName, DoOverwrite
+}
+
+MD5(s) {
+    size := StrPut(s, "UTF-8") - 1 ; bin has no null
+    bin := Buffer(size)
+    StrPut(s, bin, "UTF-8")
+ 
+    MD5_CTX := Buffer(104)
+    DllCall("advapi32\MD5Init", "ptr", MD5_CTX)
+    DllCall("advapi32\MD5Update", "ptr", MD5_CTX, "ptr", bin, "uint", size)
+    DllCall("advapi32\MD5Final", "ptr", MD5_CTX)
+ 
+    VarSetStrCapacity(&md5, 32 + 1) ; str has null
+    DllCall("crypt32\CryptBinaryToString", "ptr", MD5_CTX.ptr+88, "uint", 16, "uint", 0x4000000c, "str", md5, "uint*", 33)
+    return md5
+}
+
+RegExMatchAll(haystack, needleRegEx, startingPosition := 1) {
+	out := [], end := StrLen(haystack)+1
+	While startingPosition < end && RegExMatch(haystack, needleRegEx, &outputVar, startingPosition)
+		out.Push(outputVar), startingPosition := outputVar.Pos + (outputVar.Len || 1)
+	return out
+}
+
+class Mapi extends Map {
+    CaseSense := "Off"
 }

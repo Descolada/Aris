@@ -9,7 +9,6 @@ LaunchGui() {
     NapGui.FolderTV := NapGui.Add("TreeView", "r25 w200", "Package files")
 
     NapGui.PackageJson := LoadPackageJson()
-
     NapGui.AddStatusBar(, NapGui.PackageJson["name"] "@" NapGui.PackageJson["version"])
     NapGui.LoadPackageBtn := NapGui.AddButton(, "Load package")
     NapGui.ModifyMetadata := NapGui.AddButton("x+27", "Modify metadata")
@@ -20,7 +19,7 @@ LaunchGui() {
     NapGui.Tabs.UseTab(1)
 
     P := NapGui.Tabs.Package := {}
-    P.LV := NapGui.Add("ListView", "r10 w390 Section -Multi", ["Package name", "Version", "Allowed versions", "In index"])
+    P.LV := NapGui.Add("ListView", "r10 w390 Section -Multi", ["Package name", "Version", "Allowed versions", "Installed", "In index"])
     P.LV.OnEvent("ItemSelect", PackageLVItemSelected)
     P.ReinstallBtn := NapGui.AddButton(, "Reinstall")
     P.ReinstallBtn.OnEvent("Click", PackageAction.Bind("reinstall"))
@@ -99,6 +98,7 @@ PackageAction(Action, Btn, *) {
             InstallPackage(IB.Value)
     }
     PopulateTabs()
+    LoadPackageFolder(A_WorkingDir)
 }
 
 PackageLVItemSelected(LV, Item, Selected) {
@@ -107,15 +107,9 @@ PackageLVItemSelected(LV, Item, Selected) {
     PackageName := LV.GetText(Item, 1), Version := LV.GetText(Item, 2)
 
     Installed := NapGui.InstalledPackages
-    SelectedPackage := ""
-    for PackageInfo in Installed {
-        if PackageInfo.PackageName = PackageName && PackageInfo.Version = Version {
-            SelectedPackage := PackageInfo
-            break
-        }
-    }
-    if !SelectedPackage
+    if !Installed.Has(PackageName)
         return
+    SelectedPackage := Installed[PackageName]
 
     Tab := NapGui.Tabs.Package
 
@@ -180,28 +174,29 @@ PopulateTabs() {
 
 PopulatePackagesTab(Tab) {
     NapGui.InstalledPackages := Installed := ParseInstalledPackages()
+    NapGui.Dependencies := Dependencies := GetPackageDependencies()
+    Tab.LV.Opt("-Redraw")
     Tab.LV.Delete()
 
-    if !NapGui.PackageJson.Has("dependencies")
-        NapGui.PackageJson["dependencies"] := Map()
-    Dependencies := NapGui.PackageJson["dependencies"]
-    for PackageInfo in Installed {
-        VersionRange := "", InIndex := g_Index.Has(PackageInfo.PackageName) ? "Yes" : "No"
-        if Dependencies.Has(PackageInfo.PackageName)
-            VersionRange := Dependencies[PackageInfo.PackageName]
-        Tab.LV.Add(, PackageInfo.PackageName, PackageInfo.Version, VersionRange, InIndex)
+    for PackageName, Version in Dependencies {
+        VersionRange := "", InIndex := g_Index.Has(PackageName) ? "Yes" : "No"
+        if Dependencies.Has(PackageName)
+            VersionRange := g_PackageJson["dependencies"][PackageName]
+        IsInstalled := Installed.Has(PackageName)
+        Tab.LV.Add(, PackageName, IsInstalled ? Version : "", VersionRange, IsInstalled ? "Yes" : "No", InIndex)
     }
-    Tab.LV.ModifyCol(1)
-    Tab.LV.ModifyCol(2)
+    Tab.LV.ModifyCol(1, Installed.Count ? unset : 100)
+    Tab.LV.ModifyCol(2, 50)
+    Tab.LV.ModifyCol(4, 50)
+    Tab.LV.ModifyCol(5, 50)
+    Tab.LV.Opt("+Redraw")
 }
 
 PopulateIndexTab(Tab) {
-    Installed := Map()
-    for PackageInfo in NapGui.InstalledPackages
-        Installed[PackageInfo.PackageName] := 1
-
+    Installed := NapGui.InstalledPackages
     NapGui.UnfilteredIndex := []
 
+    Tab.LV.Opt("-Redraw")
     Tab.LV.Delete()
 
     for PackageName, Info in g_Index {
@@ -212,18 +207,24 @@ PopulateIndexTab(Tab) {
         Tab.LV.Add(, NapGui.UnfilteredIndex[-1]*)
     }
     Tab.LV.ModifyCol(1)
+    Tab.LV.ModifyCol(4, 50)
+    Tab.LV.Opt("+Redraw")
 }
 
 LoadPackageFolder(FullPath) {
     FullPath := Trim(FullPath, "/\") "\"
     NapGui.CurrentFolder := FullPath
     NapGui.CurrentLibDir := FindLibDir(NapGui.CurrentFolder) "\"
+    SetWorkingDir(FullPath)
+    global g_PackageJson := LoadPackageJson()
 
     FolderTV := NapGui.FolderTV
+    FolderTV.Opt("-Redraw")
     FolderTV.Delete()
     split := StrSplit(FullPath, "\")
 
     AddSubFoldersToTree(FolderTV, FullPath, Map())
+    FolderTV.Opt("+Redraw")
 }
 
 AddSubFoldersToTree(TV, Folder, DirList, ParentItemID := 0) {
@@ -242,6 +243,7 @@ OnIndexSearch(Search, *) {
     Query := Search.Value
     Tab := NapGui.Tabs.Index
     LV := Tab.LV
+    LV.Opt("-Redraw")
     LV.Delete()
     if Query = "" {
         for Row in NapGui.UnfilteredIndex
@@ -258,6 +260,7 @@ OnIndexSearch(Search, *) {
             if CompareFunc(Row[1], Query)
                 LV.Add(, Row*)
     }
+    LV.Opt("+Redraw")
 }
 
 SaveSettings(*) {

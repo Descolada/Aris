@@ -32,15 +32,6 @@
     3) Plain project, install package with package.json.
 */
 
-/*
-whr := ComObject("WinHttp.WinHttpRequest.5.1")
-whr.Open("GET", "https://api.github.com/repos/Descolada/UIA-v2/commits", true)
-whr.SetRequestHeader("Accept", "application/vnd.github+json")
-whr.Send()
-whr.WaitForResponse()
-res := whr.ResponseText
-*/
-
 ; Raw files:
 ; https://github.com/user/repository/raw/branch/filename
 ; https://github.com/user/repository/raw/{commitID}/filename
@@ -72,8 +63,10 @@ res := whr.ResponseText
     Addition of @ShortHash  => query for specific commit on repo
 */
 
-global g_GitHubRawBase := "https://raw.githubusercontent.com/Descolada/NAP/main/", g_Index, g_Config := Map(), g_PackageJson, g_LastInstalledDependency := ""
-global g_Switches := Map("global_install", false, "minimal_install", false, "force", false)
+global g_GitHubRawBase := "https://raw.githubusercontent.com/Descolada/NAP/main/", g_Index, g_Config := Map(), g_PackageJson := LoadPackageJson()
+global g_Switches := Mapi("global_install", false, "minimal_install", false, "force", false), g_CacheDir := A_ScriptDir "\cache"
+global g_CommandAliases := Mapi("install", "install", "i", "install", "remove", "remove", "uninstall", "remove", "update", "update", "update-index", "update-index", "list", "list", "clean", "clean")
+global g_SwitchAliases := Mapi("--global-install", "global_install", "-g", "global_install", "--minimal-install", "minimal_install", "-m", "minimal_install", "-f", "force", "--force", "force")
 A_FileEncoding := "UTF-8"
 
 ;A_Args := ["install", "https://github.com/Descolada/UIA-v2/archive/refs/heads/main.zip"]
@@ -88,10 +81,12 @@ A_FileEncoding := "UTF-8"
 ;A_Args := ["install", "cJSON"]
 ;A_Args := ["update", "G33kDude/cJson@2.0.0"]
 ;A_Args := ["install", "CGdip"]
+;A_Args := ["install", "Descolada/OCR"]
 ;A_Args := ["remove", "OCR"]
 ;A_Args := ["install", "crypt"]
 ;A_Args := ["install", "Descolada/OCR", "thqby/Crypt"]
 ;A_Args := ["remove", "Descolada/wInspector"]
+;A_Args := ["install", "graphicsearch"]
 ;A_Args := ["install", "graphicsearch@0.5"]
 ;A_Args := ["update", "graphicsearch"]
 ;A_Args := ["remove", "graphicsearch"]
@@ -99,11 +94,23 @@ A_FileEncoding := "UTF-8"
 ;A_Args := ["install", "gist:4bf163aa9a9922b21fbf/RawInput"]
 ;A_Args := ["remove", "RawInput"]
 
+;A_Args := ["install", "UIA_Browser"]
+;A_Args := ["remove", "UIA"]
 
-;result := QueryGitHubGist("4bf163aa9a9922b21fbf")
+;A_Args := ["remove", "FindText"]
+;A_Args := ["install", "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=116471@latest"]
+;A_Args := ["install", "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=113308@latest"]
+;A_Args := ["remove", "ToolTipOptions", "FindText"]
+
+if DirExist(g_CacheDir)
+    DirDelete(g_CacheDir, true)
+DirCreate(g_CacheDir)
+Loop files A_ScriptDir "\*.*", "D" {
+    if A_LoopFileName ~= "^~temp-\d+"
+        DirDelete(A_LoopFileFullPath, true)
+}
 
 LoadPackageIndex()
-g_PackageJson := LoadPackageJson()
 LoadConfig()
 
 if (!A_Args.Length) {
@@ -112,21 +119,14 @@ if (!A_Args.Length) {
 } else {
     command := "", targets := []
     for Arg in A_Args {
-        switch Arg, 0 {
-            case "install", "i", "remove", "update", "update-index", "list":
-                command := Arg
-            case "-g", "--global-install":
-                g_Switches["global_install"] := true
-            case "-m", "--minimal-install":
-                g_Switches["minimal_install"] := true
-            case "-f", "--force":
-                g_Switches["force"] := true
-            default:
-                if !command
-                    WriteStdOut("Unknown command. Use install, remove, update, or list.")
-                else
-                    targets.Push(Arg)
-        }
+        if g_CommandAliases.Has(Arg)
+            command := g_CommandAliases[Arg]
+        else if g_SwitchAliases.Has(Arg)
+            g_Switches[g_SwitchAliases[Arg]] := true
+        else if !command
+            WriteStdOut("Unknown command. Use install, remove, update, or list.")
+        else
+            targets.Push(Arg)
     }
     switch command, 0 {
         case "install":
@@ -153,30 +153,20 @@ if (!A_Args.Length) {
             UpdatePackageIndex()
         case "list":
             ListInstalledPackages()
+        case "clean":
+            CleanPackages()
     }
 }
 
 InstallPackageDependencies() {
     LibDir := FindLibDir()
-    Dependencies := ParseInstalledPackages()
-    if !Dependencies.Length {
-        if FileExist(".\package.json") {
-            PackageJson := LoadPackageJson()
-            if PackageJson.Has("dependencies") {
-                DependenciesMap := PackageJson["dependencies"]
-                for Dependency, VersionRange in DependenciesMap
-                    Dependencies.Push(ParsePackageName(Dependency "@" VersionRange))
-            }
-        }
-    } else
-        for i, Dependency in Dependencies
-            Dependencies[i] := Dependency.PackageName "@" Dependency.Version
-    if !Dependencies.Length {
+    Dependencies := GetPackageDependencies()
+    if !Dependencies.Count {
         WriteStdOut "No dependencies found"
         return
     }
-    for Dependency in Dependencies
-        InstallPackage(Dependency)
+    for PackageName, PackageInfo in Dependencies
+        InstallPackage(PackageName "@" PackageInfo.Version)
 }
 
 UpdatePackage(PackageName) {
@@ -196,15 +186,19 @@ UpdatePackage(PackageName) {
             WriteStdOut "`t" Match.PackageName "@" Match.Version
     } else {
         try {
-            if InstallPackage(Matches[1].PackageName "@" LoadPackageJson()[Matches[1].PackageName], false)
+            if InstallPackage(Matches[1].PackageName "@" g_PackageJson[Matches[1].PackageName], false)
                 WriteStdOut "Package successfully updated!"
         }
     }
 }
 
 InstallPackage(PackageName, IsMainPackage:=false, CanUpdate:=false) {
+    global g_PackageJson
+    WriteStdOut (CanUpdate ? "Installing/updating" : "Installing") " package '" PackageName '"'
     Result := 0
     TempDir := "~temp-" Random(100000000, 1000000000)
+    if DirExist(TempDir)
+        DirDelete(TempDir, true)
     DirCreate(TempDir)
 
     if !IsSet(LibDir)
@@ -230,9 +224,7 @@ InstallPackage(PackageName, IsMainPackage:=false, CanUpdate:=false) {
             if FileExist(LibDir "\packages.ahk") {
                 Dependencies := ParseInstalledPackages()
             } else if FileExist(".\package.json") {
-                PackageJson := LoadPackageJson()
-                if PackageJson.Has("dependencies")
-                    Dependencies := PackageJson["dependencies"]
+                Dependencies := LoadPackageJson()["dependencies"]
             } else {
                 if g_Index.Has(PackageInfo.PackageName) && g_Index[PackageInfo.PackageName].Has("dependencies")
                     Dependencies := g_Index[PackageInfo.PackageName]["dependencies"]
@@ -242,6 +234,7 @@ InstallPackage(PackageName, IsMainPackage:=false, CanUpdate:=false) {
                     InstallPackage(Dependency "@" Version)
             }
             A_WorkingDir := A_WorkingDir
+            g_PackageJson := LoadPackageJson()
         } catch as err {
             WriteStdOut "Failed to download package"
             WriteStdOut "`t" err.Message (err.Extra ? ": " err.Extra : "")
@@ -276,13 +269,13 @@ InstallPackage(PackageName, IsMainPackage:=false, CanUpdate:=false) {
     else
         IncludeFileContent := "; Avoid modifying this file manually`n`n"
 
-    for Include in Includes {
-        if !PackageJson["dependencies"].Has(Include.PackageName) {
-            PackageJson["dependencies"][Include.PackageName] := (SubStr(Include.Version, 1, 1) ~= "\w" && !IsVersionSha(Include.Version)) ? "^" Include.Version : Include.Version
+    for IncludePackageName, Include in Includes {
+        if !PackageJson["dependencies"].Has(IncludePackageName) {
+            PackageJson["dependencies"][IncludePackageName] := (SubStr(Include.Version, 1, 1) ~= "\w" && !IsVersionSha(Include.Version) && !IsVersionMD5(Include.Version)) ? "^" Include.Version : Include.Version
             if CanUpdate
-                WriteStdOut 'Package successfully updated to "' Include.PackageName "@" Include.Version '"!'
+                WriteStdOut 'Package successfully updated to "' IncludePackageName "@" Include.Version '".'
             else
-                WriteStdOut "Package successfully installed!"
+                WriteStdOut 'Package "' IncludePackageName "@" Include.Version '" successfully installed.'
         }
         if Include.HasProp("Main") && Include.Main {
             Addition := "#include .\" Include.InstallName "\" Include.Main "`n"
@@ -306,7 +299,6 @@ InstallPackage(PackageName, IsMainPackage:=false, CanUpdate:=false) {
 }
 
 DownloadPackageWithDependencies(PackageName, TempDir, &Includes, IsMainPackage:=false, CanUpdate:=false, MarkedForRemove:=[]) {
-    global g_LastInstalledDependency
     try PackageInfo := ExtractPackageInfoFromNameAndIndex(PackageName)
     catch as err {
         WriteStdOut err.Message (err.Extra ? ": " err.Extra : "")
@@ -314,7 +306,7 @@ DownloadPackageWithDependencies(PackageName, TempDir, &Includes, IsMainPackage:=
     }
     IsVersioned := PackageInfo.Version || (PackageInfo.RepositoryType = "archive")
 
-    if CanUpdate && !InStr(PackageName, "@") g_PackageJson["dependencies"].Has(PackageInfo.PackageName) {
+    if CanUpdate && !InStr(PackageName, "@") && PackageInfo.PackageName != "" && g_PackageJson["dependencies"].Has(PackageInfo.PackageName) {
         PackageInfo.Version := g_PackageJson["dependencies"][PackageInfo.PackageName]
     }
 
@@ -335,12 +327,10 @@ DownloadPackageWithDependencies(PackageName, TempDir, &Includes, IsMainPackage:=
     }
 
     if !CanUpdate && PackageInfo.Version {
-        for i, Include in Includes {
-            if (Include.PackageName = PackageInfo.PackageName && (DirExist(TempDir "\" Include.InstallName) || DirExist(LibDir "\" Include.InstallName))) {
-                WriteStdOut 'Package "' Include.InstallName '" already installed, skipping...'
-                PackageInfo.InstallName := Include.InstallName, g_LastInstalledDependency := PackageInfo
-                return Include
-            }
+        if Includes.Has(PackageInfo.PackageName) && (Include := Includes[PackageInfo.PackageName]) && (DirExist(TempDir "\" Include.InstallName) || DirExist(LibDir "\" Include.InstallName)) {
+            WriteStdOut 'Package "' Include.InstallName '" already installed, skipping...'
+            PackageInfo.InstallName := Include.InstallName
+            return Include
         }
     }
 
@@ -360,50 +350,59 @@ DownloadPackageWithDependencies(PackageName, TempDir, &Includes, IsMainPackage:=
     if !FinalDirName
         return 0
 
-    if !IsVersioned {
-        for i, Include in Includes {
-            if (Include.PackageName = PackageInfo.PackageName && DirExist(LibDir "\" Include.InstallName)) {
-                Includes.RemoveAt(i)
-                InstalledPackages := ParseInstalledPackages()
-                ForceRemovePackageWithDependencies(Include, InstalledPackages, LibDir)
-                break
-            }
+    if IsVersioned {
+        if Includes.Has(PackageInfo.PackageName) && (Include := Includes[PackageInfo.PackageName]) && DirExist(LibDir "\" Include.InstallName) {
+            InstalledPackages := ParseInstalledPackages()
+            ForceRemovePackageWithDependencies(Include, InstalledPackages, LibDir)
+            Includes.Delete(PackageInfo.PackageName)
         }
     } else if CanUpdate {
-        for i, Include in Includes {
-            if (Include.PackageName = PackageInfo.PackageName && DirExist(LibDir "\" Include.InstallName) && IsVersionCompatible(PackageInfo.Version, "^" Include.Version)) {
-                ForceRemovePackage(Include, LibDir)
-                Includes.RemoveAt(i)
-                break
-            }
+        if Includes.Has(PackageInfo.PackageName) && (Include := Includes[PackageInfo.PackageName]) && DirExist(LibDir "\" Include.InstallName) && IsVersionCompatible(PackageInfo.Version, "^" Include.Version) {
+            ForceRemovePackage(Include, LibDir)
+            Includes.Delete(PackageInfo.PackageName)
         }
     }
 
     if PackageInfo.Files.Length {
         DirCreate(TempDir "\~" FinalDirName)
-        if PackageInfo.Files.Length = 1 {
-            FileName := Trim(StrReplace(PackageInfo.Files[1], "/", "\"), "\/")
-            if PackageInfo.Main
-                PackageInfo.Main := StrSplit(StrReplace(PackageInfo.Main, "/", "\"), "\")[-1]
-            if DirExist(FileName)
-                DirMove(TempDir "\" FinalDirName "\" PackageInfo.Files[1], TempDir "\~" FinalDirName, 2)
-            else
-                FileMove(TempDir "\" FinalDirName "\" PackageInfo.Files[1], TempDir "\~" FinalDirName "\" PackageInfo.Main)
+        MainFile := Trim(StrReplace(PackageInfo.Main, "/", "\"), "\/")
+        if PackageInfo.Files.Length = 1 && PackageInfo.Files[1] ~= "(?<!\*)\.ahk\d?$" {
+            MainFile := PackageInfo.Main := StrSplit(MainFile, "\")[-1]
+            FileMove(TempDir "\" FinalDirName "\" Trim(StrReplace(PackageInfo.Files[1], "/", "\"), "\/"), TempDir "\~" FinalDirName "\" PackageInfo.Main)
         } else {
-            for FileName in PackageInfo.Files {
-                FileName := Trim(StrReplace(FileName, "/", "\"), "\/")
-
-                DirName := "", SplitName := StrSplit(FileName, "\")
-                if DirExist(FileName)
-                    SplitName.Pop()
-                for SubDir in SplitName
-                    DirName .= SubDir "\", DirCreate(TempDir "\~" FinalDirName "\" DirName)
-
-                if DirExist(FileName)
-                    DirMove(TempDir "\" FinalDirName "\" FileName, TempDir "\~" FinalDirName "\" FileName, 1)
-                else
-                    FileMove(TempDir "\" FinalDirName "\" FileName, TempDir "\~" FinalDirName "\" FileName)
+            Loop Files TempDir, "D" {
+                TempDirFullPath := A_LoopFileFullPath
+                break
             }
+            for Pattern in PackageInfo.Files {
+                Pattern := Trim(StrReplace(Pattern, "/", "\"), "\/")
+                Loop files TempDirFullPath "\" FinalDirName "\" Pattern, "DF" {
+                    FileName := StrReplace(A_LoopFileFullPath, TempDirFullPath "\" FinalDirName,,,,1)
+                    FileName := Trim(StrReplace(FileName, "/", "\"), "\/")
+
+                    DirName := "", SplitName := StrSplit(FileName, "\")
+                    if FileExist(TempDirFullPath "\" FinalDirName "\" FileName)
+                        SplitName.Pop()
+                    for SubDir in SplitName {
+                        DirName .= SubDir "\"
+                        if !DirExist(TempDirFullPath "\~" FinalDirName "\" DirName)
+                            DirCreate(TempDirFullPath "\~" FinalDirName "\" DirName)
+                    }
+
+                    if DirExist(A_LoopFileFullPath)
+                        DirMove(A_LoopFileFullPath, TempDir "\~" FinalDirName "\" FileName, 1)
+                    else
+                        FileMove(A_LoopFileFullPath, TempDir "\~" FinalDirName "\" FileName)
+                }
+            }
+        }
+        
+        if !FileExist(TempDir "\~" FinalDirName "\" MainFile) {
+            PackageInfo.Main := StrSplit(MainFile, "\")[-1]
+            if DirExist(TempDir "\" FinalDirName "\" PackageInfo.Main)
+                DirMove(TempDir "\" FinalDirName "\" PackageInfo.Main, TempDir "\~" FinalDirName, 2)
+            else if FileExist(TempDir "\" FinalDirName "\" PackageInfo.Main)
+                FileMove(TempDir "\" FinalDirName "\" PackageInfo.Main, TempDir "\~" FinalDirName "\" PackageInfo.Main)
         }
         if FileExist(TempDir "\" FinalDirName "\LICENSE")
             FileMove(TempDir "\" FinalDirName "\LICENSE", TempDir "\~" FinalDirName "\LICENSE")
@@ -433,7 +432,7 @@ DownloadPackageWithDependencies(PackageName, TempDir, &Includes, IsMainPackage:=
 
     if !IsMainPackage {
         PackageInfo.Main := Trim(StrReplace(PackageInfo.Main, "/", "\"), "\/")
-        Includes.Push(PackageInfo)
+        Includes[PackageInfo.PackageName] := PackageInfo
     } 
 
     if DirExist(TempDir "\" FinalDirName) && FileExist(TempDir "\" FinalDirName "\package.json") {
@@ -459,13 +458,13 @@ VerifyPackageIsDownloadable(PackageInfo) {
 
         if !(PackageInfo.Main && PackageInfo.Files.Length) {
             Repo := StrSplit(PackageInfo.Repository, "/")
-            PackageInfo.ZipName := PackageInfo.Version ".zip"
+            PackageInfo.ZipName := Repo[1] "_" Repo[2] "_" PackageInfo.Version ".zip"
             PackageInfo.SourceAddress := "https://github.com/" Repo[1] "/" Repo[2] "/archive/" PackageInfo.Version ".zip"
         }
     } else if PackageInfo.RepositoryType = "github" {
         if !PackageInfo.Repository
             throw Error("No GitHub repository found in index.json", -1)
-
+        Repo := StrSplit(PackageInfo.Repository, "/")
         if !(releases := QueryGitHubReleases(PackageInfo.Repository)) || !(releases is Array) || !releases.Length {
             ; No releases found. Try to get commit hash instead.
             if (commits := QueryGitHubCommits(PackageInfo.Repository)) && commits is Array && commits.Length
@@ -477,19 +476,20 @@ VerifyPackageIsDownloadable(PackageInfo) {
             if PackageInfo.Main && PackageInfo.Files.Length
                 return
 
-            Repo := StrSplit(PackageInfo.Repository, "/")
-            PackageInfo.ZipName := (repo.Length = 3 ? repo[3] : QueryGitHubRepo(PackageInfo.Repository)["default_branch"]) ".zip"
-            PackageInfo.SourceAddress := "https://github.com/" Repo[1] "/" Repo[2] "/archive/refs/heads/" PackageInfo.ZipName
+            ZipName := (repo.Length = 3 ? repo[3] : QueryGitHubRepo(PackageInfo.Repository)["default_branch"]) ".zip"
+            PackageInfo.SourceAddress := "https://github.com/" Repo[1] "/" Repo[2] "/archive/refs/heads/" ZipName
+            PackageInfo.ZipName := Repo[1] "_" Repo[2] "_" A_YYYY A_MM A_DD SubStr(MD5(PackageInfo.SourceAddress), 1, 12) ZipName
         } else {
             if !(release := FindMatchingGithubReleaseVersion(releases, PackageInfo.Version))
                 throw Error("No matching version found among GitHub releases")
 
             PackageInfo.Version := release["tag_name"]
-            PackageInfo.ZipName := "github_package.zip"
+            PackageInfo.ZipName := Repo[1] "_" Repo[2] "_" PackageInfo.Version ".zip"
             PackageInfo.SourceAddress := release["zipball_url"]
         }
     } else if PackageInfo.RepositoryType = "archive" {
-        PackageInfo.ZipName := "archive_package" (RegExMatch(PackageInfo.Repository, "\.tar\.gz$") ? ".tar.gz" : "." StrSplit(PackageInfo.Repository, ".")[-1])
+        PackageInfo.Version := A_YYYY A_MM A_DD SubStr(MD5(PackageInfo.Repository), 1, 12)
+        PackageInfo.ZipName := "archive_" PackageInfo.Version (RegExMatch(PackageInfo.Repository, "\.tar\.gz$") ? ".tar.gz" : "." StrSplit(PackageInfo.Repository, ".")[-1])
         PackageInfo.SourceAddress := PackageInfo.Repository
     } else if PackageInfo.RepositoryType = "gist" {
         if !(PackageInfo.Gist := QueryGitHubGist(PackageInfo.Repository)) || !(PackageInfo.Gist is Map) || !PackageInfo.Gist.Has("files")
@@ -506,47 +506,63 @@ VerifyPackageIsDownloadable(PackageInfo) {
             }
             throw Error("No matching gist version found", -1, PackageInfo.Version)
         }
-    } else if PackageInfo.RepositoryType != "archive" && PackageInfo != "gist"
+    } else if PackageInfo.RepositoryType = "forums" {
+        if !(RegExMatch(PackageInfo.Repository, "^(\d+),?(\d+)?$", &match:="") || RegExMatch(PackageInfo.Repository, "t=(\d+).*,?(\d)?$", &match:=""))
+            throw Error("Couldn't find thread id in provided info", -1)
+        PackageInfo.ThreadId := match[1], PackageInfo.CodeNum := (match.Count = 2 && match[2] ? Integer(match[2]) : 1)
+
+        if PackageInfo.Version != "latest" {
+            WriteStdOut('Querying versions from Wayback Machine snapshots of AutoHotkey forums thread with id ' PackageInfo.ThreadId)
+            CdxJson := JSON.Load(DownloadURL("https://web.archive.org/cdx/search/cdx?url=autohotkey.com%2Fboards%2Fviewtopic.php&matchType=prefix&output=json&filter=statuscode:200&filter=urlkey:.*t=" PackageInfo.ThreadId))
+            if !CdxJson.Length
+                throw Error("No Wayback Machine snapshots found for thread with id " PackageInfo.ThreadId, -1)
+            CdxJson.RemoveAt(1)
+            Matches := []
+            for Entry in CdxJson {
+                if !InStr(Entry[3], "start=")
+                    Matches.Push({Repository:Entry[3], Version:Entry[2]})
+            }
+            if !Matches.Length
+                throw Error("No Wayback Machine snapshots found for the main page of thread with id " PackageInfo.ThreadId, -1)
+            LatestEntry := {Repository:"", Version:0}
+            for Entry in Matches {
+                if IsVersionCompatible(Entry.Version, PackageInfo.Version) && Entry.Version > LatestEntry.Version
+                    LatestEntry := Entry
+            }
+            if LatestEntry.Version = 0
+                throw Error("No compatible versions found in Wayback Machine. Use version @latest to download directly from the forums.", -1)
+            PackageInfo.Version := LatestEntry.Version
+            PackageInfo.Repository := "http://web.archive.org/web/" PackageInfo.Version "/" LatestEntry.Repository
+        }
+    } else if PackageInfo.RepositoryType != "archive"
         throw ValueError("Unknown package source", -1, PackageInfo.RepositoryType)
 }
 
 IsPackageInstalled(PackageInfo, Includes, Dirs) {
-    for Include in Includes {
-        if (Include.PackageName = PackageInfo.PackageName) {
-            for Dir in Dirs
-                if DirExist(Dir "\" Include.InstallName)
-                    return true
-        }
+    if Includes.Has(PackageInfo.PackageName) {
+        for Dir in Dirs
+            if DirExist(Dir "\" Includes[PackageInfo.PackageName].InstallName)
+                return true
     }
     return false
 }
 
 DownloadSinglePackage(PackageInfo, TempDir) {
-    global g_LastInstalledDependency
     static TempDownloadDir := "~downloaded_package"
 
     try DirDelete(TempDir "\" TempDownloadDir, 1)
+    DirCreate(TempDir "\" TempDownloadDir)
 
     if PackageInfo.RepositoryType = "github" && IsVersionSha(PackageInfo.Version) && PackageInfo.Main && PackageInfo.Files.Length {
-        DirCreate(TempDir "\" TempDownloadDir)
         GithubDownloadMinimalInstall(PackageInfo, TempDir "\" TempDownloadDir)
         goto AfterDownload
     } else if PackageInfo.RepositoryType = "github" {
-        ; If the package has only one dependency and the source of that dependency
-        if (PackageInfo.Dependencies.Count = 1 && g_LastInstalledDependency.Repository = PackageInfo.Repository) {
-            FinalDirName := g_LastInstalledDependency.InstallName
-            PackageInfo.InstallName := g_LastInstalledDependency.InstallName, g_LastInstalledDependency := PackageInfo
-            return FinalDirName
-        }
-
         if !PackageInfo.HasProp("SourceAddress") && PackageInfo.Main && PackageInfo.Files.Length {
-            DirCreate(TempDir "\" TempDownloadDir)
             GithubDownloadMinimalInstall(PackageInfo, TempDir "\" TempDownloadDir)
             goto AfterDownload
         }
     } else if PackageInfo.RepositoryType = "gist" {
         gist := PackageInfo.Gist
-        DirCreate(TempDir "\" TempDownloadDir)
 
         if !PackageInfo.Author
             PackageInfo.Author := gist["owner"]["login"]
@@ -574,18 +590,51 @@ DownloadSinglePackage(PackageInfo, TempDir) {
         PackageInfo.PackageName := PackageInfo.Author "/" RegExReplace(PackageInfo.Name, "\.ahk\d?$")
         WriteStdOut('Downloading gist as package "' PackageInfo.PackageName '@' PackageInfo.Version '"')
         Download PackageInfo.SourceAddress, TempDir "\" TempDownloadDir "\" PackageInfo.Name
+        FileAppend(JSON.Dump(Map("repository", Map("type", "gist", "url", "gist:" PackageInfo.PackageName '@' PackageInfo.Version), "author", PackageInfo.Author, "name", PackageInfo.PackageName, "version", PackageInfo.FullVersion), true), TempDir "\" TempDownloadDir "\package.json")
+        goto AfterDownload
+    } else if PackageInfo.RepositoryType = "forums" {
+        if PackageInfo.Version = "latest" {
+            WriteStdOut('Downloading from AutoHotkey forums thread ' PackageInfo.ThreadId ' code box ' PackageInfo.CodeNum)
+            PackageInfo.Repository := "https://www.autohotkey.com/boards/viewtopic.php?t=" PackageInfo.ThreadId
+        } else {
+            WriteStdOut('Downloading from Wayback Machine snapshot ' PackageInfo.Version ' of AutoHotkey forums thread ' PackageInfo.ThreadId ' code box ' PackageInfo.CodeNum)
+        }
+
+        Page := DownloadURL(PackageInfo.Repository)
+        if !PackageInfo.Name {
+            if RegExMatch(Page, 'topic-title"><a[^>]*>(.+?)</a>', &title:="") {
+                if RegExMatch(Name := title[1], "(?:\[.+\])?\s*(((?:\w\S*)\s*)+)(?=\s|\W|$)", &cleantitle:="")
+                    Name := cleantitle[1]
+                Name := Trim(RegExReplace(Name, '[<>:"\/\|?*\s]', "-"), "- ")
+                Name := RegExReplace(Name, "i)(^class-)|(\-class$)")
+                PackageInfo.Name := Name
+            } else
+                PackageInfo.Name := PackageInfo.ThreadId
+        }
+        if RegExMatch(Page, 'class="username">(.+?)<\/a>', &author:="")
+            PackageInfo.Author := RegExReplace(author[1], '[<>:"\/\|?*]')
+        else if !PackageInfo.Author
+            PackageInfo.Author := "Unknown"
+        CodeMatches := RegExMatchAll(Page, "<code [^>]*>([\w\W]+?)<\/code>")
+        Code := CodeMatches[PackageInfo.CodeNum]
+        PackageInfo.PackageName := PackageInfo.Author "/" PackageInfo.Name
+        FileAppend(Code[1], TempDir "\" TempDownloadDir "\" PackageInfo.Name ".ahk")
+        if !PackageInfo.Version || PackageInfo.Version = "latest" {
+            PackageInfo.Version := SubStr(MD5(Code[1]), 1, 12)
+        }
+        FileAppend(JSON.Dump(Map("repository", Map("type", "forums", "url", "forums:" PackageInfo.ThreadId "," PackageInfo.CodeNum), "author", PackageInfo.Author, "name", PackageInfo.PackageName, "version", A_YYYY A_MM A_DD "-" PackageInfo.Version), true), TempDir "\" TempDownloadDir "\package.json")
         goto AfterDownload
     }
 
     WriteStdOut('Downloading package "' PackageInfo.PackageName '"')
     ZipName := PackageInfo.ZipName
-    Download PackageInfo.SourceAddress, TempDir "\" ZipName
+    if !FileExist(g_CacheDir "\" ZipName)
+        Download PackageInfo.SourceAddress, g_CacheDir "\" ZipName
 
     if PackageInfo.RepositoryType = "archive"
-        PackageInfo.Version := SubStr(HashFile(TempDir "\" ZipName, 3), 1, 7)
+        PackageInfo.Version := SubStr(HashFile(g_CacheDir "\" ZipName, 3), 1, 7)
 
-    DirCopy TempDir "\" ZipName, TempDir "\" TempDownloadDir, true
-    FileDelete(TempDir "\" ZipName)
+    DirCopy g_CacheDir "\" ZipName, TempDir "\" TempDownloadDir, true
 
     Loop Files TempDir "\" TempDownloadDir "\*.*", "D" {
         if PackageInfo.RepositoryType = "archive"
@@ -597,9 +646,13 @@ DownloadSinglePackage(PackageInfo, TempDir) {
     if FileExist(TempDir "\" TempDownloadDir "\package.json") {
         PackageJson := LoadPackageJson(TempDir "\" TempDownloadDir)
         if PackageJson.Has("name") {
-            PackageInfo.PackageName := PackageJson["name"]
-            Split := ParsePackageName(PackageInfo.PackageName)
-            PackageInfo.Name := Split.Name, PackageInfo.Author := Split.Author
+            if InStr(PackageJson["name"], "/") {
+                PackageInfo.PackageName := PackageJson["name"]
+                Split := ParsePackageName(PackageInfo.PackageName)
+                PackageInfo.Name := Split.Name, PackageInfo.Author := Split.Author
+            } else {
+                PackageInfo.Name := PackageJson["name"], PackageInfo.PackageName := PackageInfo.Author "/" PackageInfo.Name
+            }
         }
         if PackageJson.Has("version")
             PackageInfo.Version := PackageJson["version"]
@@ -609,7 +662,6 @@ DownloadSinglePackage(PackageInfo, TempDir) {
 
     FinalDirName := PackageInfo.Author "_" RegExReplace(PackageInfo.Name, "\.ahk\d?$") "_" PackageInfo.Version
     PackageInfo.InstallName := FinalDirName
-    g_LastInstalledDependency := PackageInfo
 
     if DirExist(TempDir "\" FinalDirName) || DirExist("Lib\" FinalDirName) {
         WriteStdOut 'Package "' FinalDirName '" already installed or up-to-date, skipping...'
@@ -654,6 +706,7 @@ GithubDownloadMinimalInstall(PackageInfo, Path) {
 }
 
 ForceRemovePackage(PackageInfo, LibDir) {
+    global g_PackageJson
     DirDelete(".\" LibDir "\" PackageInfo.InstallName, true)
     if FileExist(".\" LibDir "\packages.ahk") {
         OldPackages := FileRead(".\" LibDir "\packages.ahk")
@@ -662,10 +715,10 @@ ForceRemovePackage(PackageInfo, LibDir) {
             FileOpen(".\" LibDir "\packages.ahk", "w").Write(NewPackages)
     }
     if FileExist(".\package.json") {
-        PackageJson := LoadPackageJson(A_WorkingDir, &OldContent:="")
-        if PackageJson["dependencies"].Has(PackageInfo.PackageName) {
-            PackageJson["dependencies"].Delete(PackageInfo.PackageName)
-            NewContent := JSON.Dump(PackageJson, true)
+        OldContent := FileRead(".\package.json")
+        if g_PackageJson["dependencies"].Has(PackageInfo.PackageName) {
+            g_PackageJson["dependencies"].Delete(PackageInfo.PackageName)
+            NewContent := JSON.Dump(g_PackageJson, true)
             if OldContent != NewContent && NewContent
                 FileOpen(".\package.json", "w").Write(NewContent)
         }
@@ -701,14 +754,16 @@ RemovePackage(PackageName) {
         Match := Matches[1]
         LibDir := FindLibDir()
 
-        Dependencies := QueryInstalledPackageDependencies(Match, InstalledPackages, LibDir)
-        if Dependencies.Length {
-            DepString := 'Cannot remove package "' Match.PackageName "@" Match.Version '" as it is depended on by: '
-            for Dependency in Dependencies
-                DepString .= "`n`t" Dependency.PackageName "@" Dependency.Version
+        if !g_Switches["force"] {
+            Dependencies := QueryInstalledPackageDependencies(Match, InstalledPackages, LibDir)
+            if Dependencies.Length {
+                DepString := 'Cannot remove package "' Match.PackageName "@" Match.Version '" as it is depended on by: '
+                for Dependency in Dependencies
+                    DepString .= "`n`t" Dependency.PackageName "@" Dependency.Version
 
-            WriteStdOut DepString
-            return
+                WriteStdOut DepString
+                return
+            }
         }
 
         ForceRemovePackage(Match, LibDir)
@@ -725,17 +780,17 @@ FindMatchingInstalledPackages(PackageInfo, InstalledPackages) {
         return WriteStdOut("No package.json found")
 
     ; Validate that the removed package is a dependency of the project
-    PackageJson := LoadPackageJson(A_WorkingDir)
-    if !(PackageJson.Has("dependencies") && PackageJson["dependencies"].Count)
+    if !(g_PackageJson["dependencies"].Count)
         return WriteStdOut("No dependencies found in package.json, cannot remove package")
 
+    if InstalledPackages.Has(PackageInfo.PackageName) && VerCompare(InstalledPackages[PackageInfo.PackageName].Version, PackageInfo.Version)
+        return [InstalledPackages[PackageInfo.PackageName]]
+
     Matches := []
-    for Package in InstalledPackages {
-        if Package.Name != PackageInfo.Name
+    for InstalledName, InstalledInfo in InstalledPackages {
+        if InstalledInfo.Name != PackageInfo.Name
             continue
-        if Package.Author && PackageInfo.Author && Package.Author != PackageInfo.Author
-            continue
-        Matches.Push(Package)
+        Matches.Push(InstalledInfo)
     }
     if Matches.Length > 1 {
         Backup := Matches, Matches := []
@@ -744,20 +799,25 @@ FindMatchingInstalledPackages(PackageInfo, InstalledPackages) {
                 Matches.Push(Match)
         }
     }
+    if Matches.Length > 1 {
+        Backup := Matches, Matches := []
+        for Match in Backup {
+            if Match.Author = PackageInfo.Author
+                Matches.Push(Match)
+        }
+    }
     return Matches
 }
 
 QueryInstalledPackageDependencies(PackageInfo, InstalledPackages, LibDir) {
     DependencyList := []
-    for InstalledPackage in InstalledPackages {
+    for _, InstalledPackage in InstalledPackages {
         if InstalledPackage.InstallName = PackageInfo.InstallName
             continue
         PackageDir := A_WorkingDir "\" LibDir "\" InstalledPackage.InstallName
         Dependencies := Map()
         if FileExist(PackageDir "\package.json") {
-            PackageJson := LoadPackageJson(PackageDir)
-            if PackageJson.Has("dependencies")
-                Dependencies := PackageJson["dependencies"]
+            Dependencies := LoadPackageJson(PackageDir)["dependencies"]
         } else {
             if g_Index.Has(InstalledPackage.PackageName) && g_Index[InstalledPackage.PackageName].Has("dependencies")
                 Dependencies := g_Index[InstalledPackage.PackageName]["dependencies"]
@@ -811,16 +871,15 @@ UpdatePackageIndex() {
 
 ListInstalledPackages() {
     Packages := ParseInstalledPackages()
-    for Package in Packages
+    for _, Package in Packages
         WriteStdOut Package.PackageName "@" Package.Version
 }
 
 ParseInstalledPackages() {
     LibDir := FindLibDir()
+    Packages := Mapi()
     if !FileExist(".\" LibDir "\packages.ahk")
-        return []
-
-    Packages := []
+        return Packages
 
     Loop parse FileRead(".\" LibDir "\packages.ahk"), "`n", "`r" {
         if !(A_LoopField ~= "^\s*#include")
@@ -828,14 +887,103 @@ ParseInstalledPackages() {
 
         Split := StrSplit(A_LoopField, "\")
         for Part in Split {
-            try {
-                Packages.Push(ExtractPackageInfoFromInstallName(Part))
-                break
-            }
+            if !RegExMatch(Part, "^.+_.+_.+$")
+                continue
+            if !DirExist(".\" LibDir "\" Part)
+                continue
+            PackageInfo := ExtractPackageInfoFromInstallName(Part)
+            if !g_PackageJson["dependencies"].Has(PackageInfo.PackageName)
+                continue
+            Packages[PackageInfo.PackageName] := PackageInfo
+            break
         }
     }
 
     return Packages
+}
+
+GetPackageDependencies() {
+    LibDir := FindLibDir()
+    Packages := Mapi()
+    for PackageName, VersionRange in g_PackageJson["dependencies"] {
+        Packages[PackageName] := VersionRange
+    }
+    if FileExist(".\" LibDir "\packages.ahk") {
+        for Include in ReadIncludesFromFile(".\" LibDir "\packages.ahk")
+            Packages[Include.PackageName] := Include.Version
+    } else {
+        Loop files ".\*.ahk" {
+            for Include in ReadIncludesFromFile(A_LoopFileFullPath)
+                Packages[Include.PackageName] := Include.Version
+        }
+    }
+    return Packages
+}
+
+ReadIncludesFromFile(path) {
+    Packages := []
+    if !FileExist(path)
+        return Packages
+    Loop parse FileRead(path), "`n", "`r" {
+        if !(A_LoopField ~= "^\s*#include")
+            continue
+
+        Split := StrSplit(A_LoopField, "\")
+        for Part in Split {
+            if !RegExMatch(Part, "^.+_.+_.+$")
+                continue
+            PackageInfo := ExtractPackageInfoFromInstallName(Part)
+            Packages.Push(PackageInfo)
+            break
+        }
+    }
+    return Packages
+}
+
+CleanPackages(Installed?) {
+    if !IsSet(Installed)
+        Installed := ParseInstalledPackages()
+
+    InstalledMap := Map(), Dependencies := Map()
+    for PackageName, PackageInfo in Installed {
+        InstalledMap[PackageInfo.InstallName] := PackageInfo
+        InstalledMap[PackageInfo.PackageName] := PackageInfo
+    }
+
+    if FileExist("package.json") {
+        for Dependency, Version in g_PackageJson["dependencies"] {
+            if InstalledMap.Has(Dependency)
+                Dependencies[Dependency] := Version
+        }
+        g_PackageJson["dependencies"] := Dependencies
+        FileOpen("package.json", "w").Write(JSON.Dump(g_PackageJson, true))
+    }
+
+    LibDir := FindLibDir()
+
+    Loop files ".\" LibDir, "D" {
+        if RegExMatch(A_LoopFileName, "^.+_.+_.+$") && !InstalledMap.Has(A_LoopFileName)
+            DirDelete(A_LoopFileFullPath, true)
+    }
+
+    if !FileExist(".\" LibDir "\packages.ahk")
+        return
+
+    NewContent := FileRead(".\" LibDir "\packages.ahk")
+    Loop parse NewContent, "`n", "`r" {
+        if !(A_LoopField ~= "^\s*#include")
+            continue
+
+        Found := false
+        for PackageName, PackageInfo in Installed
+            if InStr(A_LoopField, PackageInfo.InstallName) {
+                Found := true
+                break
+            }
+        if !Found
+            StrReplace(NewContent, A_LoopField "`n")
+    }
+    FileOpen(".\" LibDir "\packages.ahk", "w").Write(NewContent)
 }
 
 FindLibDir(path := ".\") {
@@ -875,12 +1023,13 @@ GetVersionRangeCompareFunc(range) {
     range := StrLower(range)
     if range = "*"
         range := "latest"
-    if range != "latest" {
+    if range && range != "latest" {
         plain := RegExReplace(range, "[^\w-.]")
         if SubStr(plain, 1, 1) = "v"
             plain := SubStr(plain, 2)
-        if IsVersionSha(plain)
+        if IsVersionSha(plain) || IsVersionMD5(plain)
             return (v) => v == plain
+
         split := StrSplit(plain, ".")
         if split.Length = 3 && split[3] = "x"
             split[3] := "0", range := "~" range, plain := StrReplace(plain, ".x", ".0")
@@ -902,6 +1051,7 @@ GetVersionRangeCompareFunc(range) {
 }
 
 IsVersionSha(version) => StrLen(version) = 7 && RegExMatch(version, "^\w+$")
+IsVersionMD5(version) => StrLen(version) = 12 && RegExMatch(version, "^\w{12}$")
 
 IsVersionCompatible(version, range) => GetVersionRangeCompareFunc(range).Call(version)
 
@@ -991,7 +1141,7 @@ ExtractPackageInfoFromNameAndIndex(source) {
             PackageInfo.Repository := PackageInfo.Repository[1]
         }
         PackageInfo.RepositoryType := "gist"
-    } else if SlashCount < 2 { ; Package name queried from index
+    } else if SlashCount < 2 && !(source ~= "^(http|ftp|forums):") { ; Package name queried from index
         ParsedName := ParsePackageName(source)
         PackageInfo.Author := ParsedName.Author, PackageInfo.Name := ParsedName.Name, PackageInfo.PackageName := ParsedName.PackageName, PackageInfo.Version := ParsedName.Version
         if PackageInfo.Name
@@ -1009,6 +1159,12 @@ ExtractPackageInfoFromNameAndIndex(source) {
             PackageInfo.Author := SplitSource[1], PackageInfo.Name := SplitSource[2], PackageInfo.PackageName := PackageInfo.Repository
         else if PackageInfo.RepositoryType = "archive"
             PackageInfo.Name := SplitSource[-1], SplitPath(PackageInfo.Name,,,, &NameNoExt:=""), PackageInfo.PackageName := NameNoExt
+        else if PackageInfo.RepositoryType = "forums" {
+            if InStr(PackageInfo.Repository, "@") {
+                Info := StrSplit(PackageInfo.Repository, "@",, 2)
+                PackageInfo.Repository := Info[1], PackageInfo.Version := Info[2]
+            }
+        }
     }
 
     if !PackageInfo.Repository && PackageInfo.RepositoryType = "github"
@@ -1064,7 +1220,13 @@ QueryGitHubReleases(repo) => QueryGitHubRepo(repo, "releases")
 QueryGitHubCommits(repo) => QueryGitHubRepo(repo, "commits")
 
 LoadPackageJson(path:=".\", &RawContent:="") {
-    PackageJson := LoadJson(RTrim(path, "\") "\package.json", &RawContent)
+    if FileExist("package.json") {
+        PackageJson := LoadJson(RTrim(path, "\") "\package.json", &RawContent)
+        if !PackageJson.Has("dependencies")
+            PackageJson["dependencies"] := Map()
+    } else {
+        PackageJson := Map("dependencies", Map())       
+    }
     PackageJson.Default := ""
     StandardizeRepositoryInfo(PackageJson)
     return PackageJson
@@ -1091,9 +1253,13 @@ ExtractRepositoryInfo(repo) {
         repo := Map("type", "archive", "url", repo)
     else if InStr(repo, "github.com")
         repo := Map("type", "github", "url", RegExReplace(repo, ".*github\.com\/"))
-    else if repo ~= "^(http|ftp)"
+    else if InStr(repo, "autohotkey.com")
+        repo := Map("type", "forums", "url", repo)
+    else if repo ~= "^(forums:)"
+        repo := Map("type", "forums", "url", StrSplit(repo, ":",,2)[2])
+    else if repo ~= "^(http|ftp):"
         repo := Map("type", "archive", "url", repo)
-    else if repo ~= "^(github:|gh:)"
+    else if repo ~= "^(github|gh):"
         repo := Map("type", "github", "url", StrSplit(repo, ":",,2)[2])
     else if repo ~= "^(gist:)"
         repo := Map("type", "gist", "url", StrSplit(repo, ":",,2)[2])
