@@ -1,15 +1,16 @@
 {
     "version":"1.0.0",
     "Descolada/UIA": {
-        "description": "UIAutomation interface wrapper for AutoHotkey v2",
+        "description": "An AutoHotkey v2 wrapper for the UIAutomation framework, which can be used to automate windows that normally might be difficult or impossible to automate with AHK",
         "website": "https://github.com/Descolada/UIA-v2",
         "repository": "Descolada/UIA-v2/main",
         "files": ["Lib/UIA.ahk"],
         "author": "Author Name",
         "license": "MIT",
-        "tags": ["UIA", "UI", "automation"]
+        "tags": ["UIA", "UI automation"]
     },
     "Descolada/UIA_Browser": {
+        "description": "An addon for Descolada/UIA library to simplify automating browsers via UIA",
         "repository": "Descolada/UIA-v2/main",
         "files": ["Lib/UIA_Browser.ahk"],
         "dependencies": {
@@ -17,7 +18,7 @@
         }
     },
     "G33kDude/cJson": {
-        "description": "JSON parsing library",
+        "description": "A high-performance JSON parsing library",
         "website": "G33kDude/cJson.ahk",
         "repository": "G33kDude/cJson.ahk/v2",
         "main": "Dist/JSON.ahk",
@@ -26,7 +27,7 @@
         "tags": ["JSON", "parser"]
     },
     "thqby/Crypt": {
-        "description": "Cryptograhic functions",
+        "description": "Cryptograhic functions for MD5, SHA, and AES hashes",
         "repository": "thqby/ahk2_lib/master",
         "main": "Crypt.ahk",
         "files": ["Crypt.ahk"],
@@ -34,16 +35,12 @@
         "license": "MIT"
     },
     "thqby/CGdip": {
-        "description": "Gdip class",
+        "description": "Gdip implemented as a class instead of seperate functions",
         "repository": "thqby/ahk2_lib/master",
         "main": "CGdip.ahk",
         "files": ["CGdip.ahk"],
         "author": "thqby",
         "license": "MIT"
-    },
-    "Descolada/wInspector": {
-        "description": "wInspector",
-        "files": ["wInspector.ahk"]
     },
     "Chunjee/graphicsearch": {
         "description": "FindText-based image search library",
@@ -52,8 +49,30 @@
         "license": "MIT"
     },
     "Unknown/VA": {
-        "description":"VA library",
+        "description":"Vista audio control functions, which provide alternatives to some SoundSet/SoundGet subcommands, as well as some additional features that SoundSet/SoundGet do not support.",
         "repository":"Ixiko/AHK-libs-and-classes-collection",
-        "files":["AHK_V2/_VA.ahk"]
+        "files":["AHK_V2/_VA.ahk"],
+        "tags": ["v1"]
+    },
+    "feiyue/FindText": {
+        "description": "A high-performance image search library, which can use images in text form",
+        "main":"FindText.ahk",
+        "repository":"https://www.autohotkey.com/boards/viewtopic.php?f=83&t=116471",
+        "tags":["image"]
+    }, 
+    "just me/ListViewExtensions": {
+        "description": "Additional functions for GUI ListView controls",
+        "repository": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=95019&codebox=2"
+    },
+    "TheZok/RawInputList": {
+        "description": "List all of the \"Raw Input\" devices available for use and allow capture of output",
+        "main": "RawInputList.ahk",
+        "repository": "gist:4bf163aa9a9922b21fbf/RawInputList.ahk"
+    }, 
+    "The-CoDingman/WebViewToo": {
+        "description": "Allows for use of the WebView2 Framework within AHK to create Web-based GUIs",
+        "main":"AHK Resources/WebViewToo.ahk",
+        "files":["AHK Resources/*.*"],
+        "license":"MIT"
     }
 }
