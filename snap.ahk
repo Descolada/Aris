@@ -61,9 +61,9 @@
 
 
 global g_GitHubRawBase := "https://raw.githubusercontent.com/Descolada/SNAP/main/", g_Index, g_Config := Map(), g_PackageJson, g_LibDir, g_InstalledPackages
-global g_Switches := Mapi("global_install", false, "minimal_install", false, "force", false), g_CacheDir := A_ScriptDir "\cache"
+global g_Switches := Mapi("global_install", false, "minimal_install", false, "force", false, "main", "", "files", []), g_CacheDir := A_ScriptDir "\cache"
 global g_CommandAliases := Mapi("install", "install", "i", "install", "remove", "remove", "uninstall", "remove", "update", "update", "update-index", "update-index", "list", "list", "clean", "clean")
-global g_SwitchAliases := Mapi("--global-install", "global_install", "-g", "global_install", "--minimal-install", "minimal_install", "-m", "minimal_install", "-f", "force", "--force", "force")
+global g_SwitchAliases := Mapi("--global-install", "global_install", "-g", "global_install", "--minimal-install", "minimal_install", "-m", "minimal_install", "-f", "force", "--force", "force", "--main", "main", "-m", "main")
 A_FileEncoding := "UTF-8"
 
 ;A_Args := ["install", "https://github.com/Descolada/UIA-v2/archive/refs/heads/main.zip"]
@@ -92,6 +92,8 @@ A_FileEncoding := "UTF-8"
 ;A_Args := ["install", "gist:4bf163aa9a9922b21fbf/RawInputList.ahk@c035e04"]
 ;A_Args := ["remove", "RawInputList.ahk"]
 
+;A_Args := ["install", "https://gist.github.com/anonymous1184/7cce378c9dfdaf733cb3ca6df345b140"]
+
 ;A_Args := ["install", "UIA_Browser"]
 ;A_Args := ["remove", "UIA"]
 
@@ -103,10 +105,12 @@ A_FileEncoding := "UTF-8"
 
 ;A_Args := ["update", "ToolTipOptions"]
 ;A_Args := ["install"]
-;A_Args := ["--working-dir", "C:\Users\minip\source\repos\SnapTests", "install", "UIA"]
-
+;A_Args := ["--working-dir", "C:\Users\user\source\repos\SnapTests", "install", "UIA"]
 
 ;A_Args := ["install", "Unknown/VA@89e5f78"]
+
+;A_Args := ["remove", "RunCmd()-v0.97"]
+;A_Args := ["i", "https://www.autohotkey.com/boards/viewtopic.php?f=6&t=74647&codebox=5"]
 
 for i, Arg in A_Args {
     if Arg = "--working-dir" {
@@ -140,36 +144,50 @@ if (!A_Args.Length) {
     LaunchGui()
 } else {
     DllCall("AttachConsole", "UInt", 0x0ffffffff, "ptr")
-    command := "", targets := []
-    for Arg in A_Args {
+    Command := "", Targets := [], Files := [], LastSwitch := ""
+    for i, Arg in A_Args {
+        if LastSwitch = "main" {
+            LastSwitch := "", g_Switches["main"] := Arg
+            continue
+        }
         if g_CommandAliases.Has(Arg)
-            command := g_CommandAliases[Arg]
-        else if g_SwitchAliases.Has(Arg)
+            Command := g_CommandAliases[Arg]
+        else if g_SwitchAliases.Has(Arg) {
+            if g_SwitchAliases[Arg] = "main" || g_SwitchAliases[Arg] = "files" {
+                LastSwitch := g_SwitchAliases[Arg]
+                continue
+            }
             g_Switches[g_SwitchAliases[Arg]] := true
-        else if !command
+        } else if !Command && !LastSwitch
             WriteStdOut("Unknown command. Use install, remove, update, or list.")
-        else
-            targets.Push(Arg)
+        else {
+            if LastSwitch = "files" {
+                g_Switches["files"].Push(Arg)
+                continue
+            }
+            Targets.Push(Arg)
+        }
+        LastSwitch := ""
     }
-    switch command, 0 {
+    switch Command, 0 {
         case "install":
-            if targets.Length {
-                for target in targets
+            if Targets.Length {
+                for target in Targets
                     InstallPackage(target)
             } else {
                 InstallPackageDependencies()
             }
         case "remove":
-            if targets.Length {
-                for target in targets
+            if Targets.Length {
+                for target in Targets
                     RemovePackage(target)
             } else
                 WriteStdOut("Specify a package to remove.")
         case "update":
             if !FileExist(A_WorkingDir "\package.json")
                 throw ValueError("Missing package.json, cannot update package", -1)
-            if targets.Length
-                for target in targets
+            if Targets.Length
+                for target in Targets
                     InstallPackage(target,, 1)
             ;InstallPackage(LoadPackageJson(A_WorkingDir)["name"], true, )
         case "update-index":
@@ -297,7 +315,7 @@ class PackageInfoBase {
     }
     Author := "", Name := "", PackageName := "", Version := "", Hash := "", Repository := "", 
     RepositoryType := "", Main := "", Dependencies := Map(), DependencyEntry := "", Files := [],
-    Branch := "", ThreadId := "", CodeBox := 1, InstallVersion := "", DependencyVersion := ""
+    Branch := "", ThreadId := "", InstallVersion := "", DependencyVersion := ""
 }
 
 InputToPackageInfo(Input) {
@@ -329,12 +347,12 @@ ParseRepositoryData(PackageInfo) {
     if !PackageInfo.RepositoryType {
         if Input ~= "(\.zip|\.tar\.gz|\.tar|\.7z)$" {
             PackageInfo.RepositoryType := "archive"
+        } else if InStr(Input, "gist.github.com") || Input ~= "^(gist:)" {
+            PackageInfo.RepositoryType := "gist"
         } else if InStr(Input, "github.com") || Input ~= "^(github|gh):" {
             PackageInfo.RepositoryType := "github"
         } else if InStr(Input, "autohotkey.com") || Input ~= "^(forums:)" {
             PackageInfo.RepositoryType := "forums"
-        } else if InStr(Input, "gist.github.com") || Input ~= "^(gist:)" {
-            PackageInfo.RepositoryType := "gist"
         } else {
             Split := StrSplit(Input, "/")
             if Split.Length > 3 {
@@ -355,14 +373,16 @@ ParseRepositoryData(PackageInfo) {
         case "forums":
             if !RegExMatch(Input, "t=(\d+).*?((?<=code=|codebox=)\d+)?$", &match:="")
                 throw Error("Detected AutoHotkey forums link, but couldn't find thread id", -1, Input)
-            PackageInfo.ThreadId := match[1], PackageInfo.CodeNum := (match.Count = 2 && match[2] ? Integer(match[2]) : 1)
+            PackageInfo.ThreadId := match[1], PackageInfo.CodeBox := (match.Count = 2 && match[2] ? Integer(match[2]) : 1)
+            PackageInfo.Start := RegExMatch(Input, "&start=(\d+)", &match:="") ? match[1] : ""
+            PackageInfo.Post := RegExMatch(Input, "&p=(\d+)", &match:="") ? match[1] : ""
             if PackageInfo.Version = "latest" || PackageInfo.Hash
-                PackageInfo.Repository := "https://www.autohotkey.com/boards/viewtopic.php?t=" PackageInfo.ThreadId "&codenum=" PackageInfo.CodeNum
+                PackageInfo.Repository := "https://www.autohotkey.com/boards/viewtopic.php?t=" PackageInfo.ThreadId (PackageInfo.Start ? "&start=" PackageInfo.Start : "") (PackageInfo.Post ? "&p=" PackageInfo.Post : "") "&codenum=" PackageInfo.CodeBox
             if RegExMatch(PackageInfo.Version, "^([><=]*)(\d+)$", &match:="") && (len := StrLen(match[2])) != 14
                 PackageInfo.Version := match[1] (Integer(match[2]) * 10**(14-len))
             ; Wayback Machine repo name is generated after finding a version match or latest version
         case "gist":
-            PackageInfo.Repository := StrSplit(RegExReplace(Input, ".*github\.com\/", ":",, 1), ":",,2)[-1]
+            PackageInfo.Repository := StrSplit(Input := RegExReplace(Input, ".*github\.com\/[^\/]+/", ":",, 1), ":",,2)[-1]
             if InStr(Input, "/") {
                 Split := StrSplit(PackageInfo.Repository, "/")
                 PackageInfo.Repository := Split[1]
@@ -523,6 +543,11 @@ InstallPackage(Package, IsMainPackage:=false, Update:=0) {
         goto Cleanup
     }
 
+    if g_Switches["main"] != ""
+        PackageInfo.Main := g_Switches["main"]
+    if g_Switches["files"].Length
+        PackageInfo.Files := g_Switches["files"]
+
     if IsMainPackage {
         PrevWorkingDir := A_WorkingDir
         try {
@@ -562,7 +587,7 @@ InstallPackage(Package, IsMainPackage:=false, Update:=0) {
             goto Cleanup
         }
     }
-    if !(DownloadResult is String) {
+    if DownloadResult is Integer && DownloadResult > 0 {
         Result := DownloadResult = 1
         goto Cleanup
     }
@@ -593,12 +618,12 @@ InstallPackage(Package, IsMainPackage:=false, Update:=0) {
         if Include.HasProp("Main") && Include.Main {
             Addition := "#include .\" Include.InstallName "\" Include.Main (Include.DependencyEntry != "" ? " `; Source: " Include.DependencyEntry : "") "`n"
             if !InStr(IncludeFileContent, Addition)
-                IncludeFileContent .= Addition, AddedIncludesString .= Addition "`n"
+                IncludeFileContent .= Addition, AddedIncludesString .= Addition
         }
     }
 
     if AddedIncludesString
-        WriteStdOut "`n" (Update ? "Updated" : "Installed") " packages include directives:`n" AddedIncludesString
+        WriteStdOut "`n" (Update ? "Updated" : "Installed") " packages include directives:`n" StrReplace(AddedIncludesString, "#include .\", "#include .\" g_LibDir "\")
 
     if !PackageJson["dependencies"].Count
         PackageJson.Delete("dependencies")
@@ -657,7 +682,7 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, IsMainPackage:=f
 
     FinalDirName := DownloadSinglePackage(PackageInfo, TempDir, g_LibDir)
 
-    if !(FinalDirName is String)
+    if FinalDirName is Integer
         return FinalDirName
 
     if IsVersioned { ; A specific version was requested, in which case force the install
@@ -725,23 +750,30 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, IsMainPackage:=f
     AddMainInclude:
 
     if !PackageInfo.Main {
-        if FileExist(TempDir "\" FinalDirName "\main.ahk")
-            PackageInfo.Main := "main.ahk"
-        else if FileExist(TempDir "\" FinalDirName "\export.ahk")
-            PackageInfo.Main := "export.ahk"
-        else if FileExist(TempDir "\" FinalDirName "\" PackageInfo.Name ".ahk")
-            PackageInfo.Main := PackageInfo.Name ".ahk"
-        else if DirExist(TempDir "\" FinalDirName "\Lib") && FileExist(TempDir "\" FinalDirName "\Lib\" PackageInfo.Name ".ahk")
-            PackageInfo.Main := "Lib\" PackageInfo.Name ".ahk"
-        else {
-            Loop Files TempDir "\" FinalDirName "\*.ahk", "R" {
+        Loop Files TempDir "\" FinalDirName "\*.ah*" {
+            if (A_LoopFileName = (PackageInfo.Name "." A_LoopFileExt)) || (A_LoopFileName ~= "^(main|export)\.ah") || (PackageInfo.Name ~= "\.ahk?\d*$" && StrSplitLast(A_LoopFileName, ".")[1] = StrSplitLast(PackageInfo.Name, ".")[1]) {
+                PackageInfo.Main := A_LoopFileFullPath
+                break
+            }
+        }
+        if !PackageInfo.Main && DirExist(TempDir "\" FinalDirName "\Lib") {
+            Loop Files TempDir "\" FinalDirName "\Lib\*.ah*" {
+                if (A_LoopFileName = (PackageInfo.Name "." A_LoopFileExt)) || (A_LoopFileName ~= "^(main|export)\.ah") || (PackageInfo.Name ~= "\.ahk?\d*$" && StrSplitLast(A_LoopFileName, ".")[1] = StrSplitLast(PackageInfo.Name, ".")[1]) {
+                    PackageInfo.Main := A_LoopFileFullPath
+                    break
+                }
+            }
+        }
+        if !PackageInfo.Main {
+            Loop Files TempDir "\" FinalDirName "\*.ah*", "R" {
                 if PackageInfo.Main
                     throw Error("Unable to lock onto a specific main file", -1)
-                PackageInfo.Main := A_LoopFileName
+                PackageInfo.Main := A_LoopFileFullPath
                 if PackageInfo.RepositoryType = "archive"
                     break
             }
         }
+        PackageInfo.Main := LTrim(StrSplit(PackageInfo.Main, FinalDirName,, 2)[-1], "\")
     }
 
     PackageInfo.InstallVersion := PackageInfo.Version
@@ -823,15 +855,13 @@ VerifyPackageIsDownloadable(PackageInfo) {
         }
     } else if PackageInfo.RepositoryType = "forums" {
         if !PackageInfo.ThreadId {
-            if !RegExMatch(PackageInfo.Repository, "t=(\d+).*?((?<=code=|codebox=)\d+)?$", &match:="")
-                throw Error("Detected AutoHotkey forums link, but couldn't find thread id", -1, PackageInfo.Repository)
-            PackageInfo.ThreadId := match[1], PackageInfo.CodeNum := (match.Count = 2 && match[2] ? Integer(match[2]) : 1)
+            ParseRepositoryData(PackageInfo)
         }
         if PackageInfo.Version != "latest" && !PackageInfo.Hash {
             WriteStdOut('Querying versions from Wayback Machine snapshots of AutoHotkey forums thread with id ' PackageInfo.ThreadId)
             Matches := QueryForumsReleases(PackageInfo)
             if !Matches.Length
-                throw Error("No Wayback Machine snapshots found for the main page of thread with id " PackageInfo.ThreadId, -1)
+                throw Error("No Wayback Machine snapshots found for the forums thread with id " PackageInfo.ThreadId (PackageInfo.Post ? ", post id " PackageInfo.Post : "") (PackageInfo.Start ? ", start number " PackageInfo.Start : ""), -1)
             LatestEntry := {Repository:"", Version:0}
             for Entry in Matches {
                 if IsVersionCompatible(Entry.Version, PackageInfo.Version) && Entry.Version > LatestEntry.Version
@@ -901,16 +931,16 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
         goto AfterDownload
     } else if PackageInfo.RepositoryType = "forums" {
         if PackageInfo.Version = "latest" || PackageInfo.Hash {
-            WriteStdOut('Downloading from AutoHotkey forums thread ' PackageInfo.ThreadId ' code box ' PackageInfo.CodeNum)
-            PackageInfo.Repository := "https://www.autohotkey.com/boards/viewtopic.php?t=" PackageInfo.ThreadId
+            WriteStdOut('Downloading from AutoHotkey forums thread ' PackageInfo.ThreadId ' code box ' PackageInfo.CodeBox)
+            PackageInfo.Repository := "https://www.autohotkey.com/boards/viewtopic.php?t=" PackageInfo.ThreadId (PackageInfo.Start ? "&start=" PackageInfo.Start : "") (PackageInfo.Post ? "&p=" PackageInfo.Post : "")
         } else {
-            WriteStdOut('Downloading from Wayback Machine snapshot ' PackageInfo.Version ' of AutoHotkey forums thread ' PackageInfo.ThreadId ' code box ' PackageInfo.CodeNum)
+            WriteStdOut('Downloading from Wayback Machine snapshot ' PackageInfo.Version ' of AutoHotkey forums thread ' PackageInfo.ThreadId ' code box ' PackageInfo.CodeBox)
         }
 
         Page := DownloadURL(PackageInfo.Repository)
         if PackageInfo.Name = "" {
             if RegExMatch(Page, 'topic-title"><a[^>]*>(.+?)</a>', &title:="") {
-                if RegExMatch(MainName := title[1], "(?:\[.+\])?\s*(((?:\w\S*)\s*)+)(?=\s|\W|$)", &cleantitle:="")
+                if RegExMatch(MainName := title[1], "(?:\[[^]]+\])?\s*(((?:\w\S*)\s*)+)(?=\s|\W|$)", &cleantitle:="")
                     MainName := cleantitle[1]
                 MainName := Trim(RegExReplace(MainName, '[<>:"\/\|?*\s]', "-"), "- ")
                 MainName := RegExReplace(MainName, "i)(^class-)|(\-class$)")
@@ -918,12 +948,12 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
             } else
                 PackageInfo.Name := PackageInfo.ThreadId
         }
-        if PackageInfo.Author = "" && RegExMatch(Page, 'class="username">(.+?)<\/a>', &author:="")
+        if PackageInfo.Author = "" && RegExMatch(Page, 'class="username(?:-coloured)?">(.+?)<\/a>', &author:="")
             PackageInfo.Author := RegExReplace(author[1], '[<>:"\/\|?*]')
         else if PackageInfo.Author = ""
             PackageInfo.Author := "Unknown"
         CodeMatches := RegExMatchAll(Page, "<code [^>]*>([\w\W]+?)<\/code>")
-        Code := UnHTM(CodeMatches[PackageInfo.CodeNum][1])
+        Code := UnHTM(CodeMatches[PackageInfo.CodeBox][1])
         if !PackageInfo.PackageName
             PackageInfo.PackageName := PackageInfo.Author "/" PackageInfo.Name
 
@@ -935,8 +965,8 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
 
         FileAppend(Code, TempDir "\" TempDownloadDir "\" PackageInfo.Name ".ahk")
 
-        PackageInfo.DependencyEntry := "forums:t=" PackageInfo.ThreadId "&codebox=" PackageInfo.CodeNum "@" PackageInfo.Version
-        FileAppend(JSON.Dump(Map("repository", Map("type", "forums", "url", "https://www.autohotkey.com/boards/viewtopic.php?t=" PackageInfo.ThreadId "&codebox=" PackageInfo.CodeNum), "author", PackageInfo.Author, "name", PackageInfo.PackageName, "version", PackageInfo.Version), true), TempDir "\" TempDownloadDir "\package.json")
+        PackageInfo.DependencyEntry := "forums:t=" PackageInfo.ThreadId "&codebox=" PackageInfo.CodeBox "@" PackageInfo.Version
+        FileAppend(JSON.Dump(Map("repository", Map("type", "forums", "url", "https://www.autohotkey.com/boards/viewtopic.php?t=" PackageInfo.ThreadId "&codebox=" PackageInfo.CodeBox), "author", PackageInfo.Author, "name", PackageInfo.PackageName, "version", PackageInfo.Version), true), TempDir "\" TempDownloadDir "\package.json")
         goto AfterDownload
     }
 
@@ -1337,8 +1367,9 @@ FindLibDir(path := ".\") {
 IsGithubMinimalInstallPossible(PackageInfo, IgnoreVersion := false) {
     if !IgnoreVersion && !IsVersionSha(PackageInfo.Version)
         return false
-    if PackageInfo.Main && !PackageInfo.Files.Length
-        return true
+    if !PackageInfo.Files.Length {
+        return !!PackageInfo.Main
+    }
     if PackageInfo.Files.Length = 1 {
         if PackageInfo.Files[1] ~= "(?<!\*)\.ahk\d?$"
             return true
@@ -1493,8 +1524,15 @@ QueryForumsReleases(PackageInfo) {
     CdxJson.RemoveAt(1)
     Matches := []
     for Entry in CdxJson {
-        if !InStr(Entry[3], "start=")
-            Matches.Push({Repository:Entry[3], Version:Entry[2]})
+        if PackageInfo.Start
+            if !(RegExMatch(Entry[3], "start=(\d+)", &match:="") && match[1] = PackageInfo.Start)
+                continue
+        if PackageInfo.Post
+            if !(RegExMatch(Entry[3], "p=(\d+)", &match:="") && match[1] = PackageInfo.Post)
+                continue
+        if !PackageInfo.Start && InStr(Entry[3], "start=")
+            continue
+        Matches.Push({Repository:Entry[3], Version:Entry[2]})
     }
     return Matches
 }

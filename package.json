@@ -5,23 +5,23 @@
 		"website": "https://github.com/Descolada"
 	},
 	"bugs": {
-		"url": "https://github.com/Descolada/NAP/issues"
+		"url": "https://github.com/Descolada/SNAP/issues"
 	},
 	"dependencies": {
 
 	},
 	"description": "A basic package manager for AutoHotkey",
-	"homepage": "github.com/Descolada/NAP",
+	"homepage": "github.com/Descolada/SNAP",
 	"keywords": [
 		"package",
 		"manager"
 	],
 	"license": "MIT",
-	"main": "example.ahk",
-	"name": "Descolada/NAP",
+	"main": "snap.ahk",
+	"name": "Descolada/SNAP",
 	"repository": {
 		"type": "github",
-		"url": "Descolada/NAP"
+		"url": "Descolada/SNAP"
 	},
-	"version": "0.0.2"
+	"version": "0.0.3"
 }

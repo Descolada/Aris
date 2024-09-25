@@ -307,9 +307,7 @@ LaunchVersionSelectionGui(*) {
     else if PackageInfo.RepositoryType = "forums" {
         Columns := ["Snapshot date"]
         if !PackageInfo.ThreadId {
-            if !RegExMatch(PackageInfo.Repository, "t=(\d+).*?((?<=code=|codebox=)\d+)?$", &match:="")
-                throw Error("Detected AutoHotkey forums link, but couldn't find thread id", -1, PackageInfo.Repository)
-            PackageInfo.ThreadId := match[1], PackageInfo.CodeNum := (match.Count = 2 && match[2] ? Integer(match[2]) : 1)
+            ParseRepositoryData(PackageInfo)
         }
     } else if PackageInfo.RepositoryType = "gist" {
         Columns := ["Commit", "Date"]
