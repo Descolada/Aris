@@ -8,7 +8,7 @@
     4) If an installed library has package.json, then its dependencies should also be installed in the main Lib folder
     5) A package is considered "installed" if it has an entry in package.json dependencies, packages.ahk #include,
         and it has an install folder in Lib folder
-    6) "npm update" should query for package.json, packages.ahk, and search all .ahk files for matching
+    6) "snap install" should query for package.json, packages.ahk, and search all .ahk files for matching
         SNAP version style "Author_Name_Version".
     7) Dependencies should also be findable if a package.json and packages.ahk don't exist. In that case
         all .ahk files should be queried for matching SNAP version styles AND that entry must contain
@@ -67,8 +67,6 @@ global g_Switches := Mapi("global_install", false, "force", false, "main", "", "
 global g_CommandAliases := Mapi("install", "install", "i", "install", "remove", "remove", "r", "remove", "rm", "remove", "uninstall", "remove", "update", "update", "update-index", "update-index", "list", "list", "clean", "clean")
 global g_SwitchAliases := Mapi("--global-install", "global_install", "-g", "global_install", "-f", "force", "--force", "force", "--main", "main", "-m", "main", "--files", "files")
 A_FileEncoding := "UTF-8"
-
-A_Args := ["update"]
 
 for i, Arg in A_Args {
     if Arg = "--working-dir" {
