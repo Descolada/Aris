@@ -100,7 +100,7 @@ PackageAction(Tab, Action, Btn, *) {
         case "remove":
             RemovePackage(PackageInfo.PackageName "@" PackageInfo.Version)
         case "update":
-            InstallPackage(PackageInfo.PackageName "@" g_InstalledPackages[PackageInfo.PackageName].DependencyVersion,, true)
+            InstallPackage(PackageInfo.PackageName "@" g_InstalledPackages[PackageInfo.PackageName].DependencyVersion, 1)
         case "update-latest":
             InstallPackage(PackageInfo.PackageName "@latest")
         case "install":
@@ -336,7 +336,7 @@ VersionSelectionInstallBtnClicked(G, PackageName, *) {
         return
     WinClose(G)
     MainGui.Tabs.Index.Metadata.Value := ""
-    InstallPackage(PackageName "@" Version,,2)
+    InstallPackage(PackageName "@" Version,2)
     LoadPackageFolder(A_WorkingDir)
     PopulateTabs()
 }

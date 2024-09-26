@@ -68,6 +68,8 @@ global g_CommandAliases := Mapi("install", "install", "i", "install", "remove", 
 global g_SwitchAliases := Mapi("--global-install", "global_install", "-g", "global_install", "-f", "force", "--force", "force", "--main", "main", "-m", "main", "--files", "files")
 A_FileEncoding := "UTF-8"
 
+A_Args := ["update"]
+
 for i, Arg in A_Args {
     if Arg = "--working-dir" {
         if A_Args.Length > i && DirExist(A_Args[i+1]) {
@@ -141,10 +143,16 @@ if (!A_Args.Length) {
         case "update":
             if !FileExist(A_WorkingDir "\package.json")
                 throw ValueError("Missing package.json, cannot update package", -1)
-            if Targets.Length
+            if Targets.Length {
                 for target in Targets
-                    InstallPackage(target,, 1)
-            ;InstallPackage(LoadPackageJson(A_WorkingDir)["name"], true, )
+                    InstallPackage(target, 1)
+            } else {
+                ThisPackage := ParsePackageName(g_PackageJson["name"])
+                MergeJsonInfoToPackageInfo(g_PackageJson, ThisPackage)
+                ThisPackage.IsMain := 1
+                ThisPackage.Files := ["*.*"]
+                InstallPackage(ThisPackage, 1)
+            }
         case "update-index":
             UpdatePackageIndex()
         case "list":
@@ -231,7 +239,7 @@ InstallPackageDependencies() {
         return
     }
     for PackageName, PackageInfo in Dependencies
-        InstallPackage(PackageInfo,, 2) ; InStr(PackageInfo.DependencyEntry, ":") ? PackageInfo.DependencyEntry : PackageName "@" PackageInfo.Version)
+        InstallPackage(PackageInfo, 2) ; InStr(PackageInfo.DependencyEntry, ":") ? PackageInfo.DependencyEntry : PackageName "@" PackageInfo.Version)
 }
 
 UpdatePackage(PackageName) {
@@ -249,7 +257,7 @@ UpdatePackage(PackageName) {
             WriteStdOut "`t" Match.PackageName "@" Match.InstallVersion
     } else {
         try {
-            if InstallPackage(Matches[1].PackageName "@" g_PackageJson[Matches[1].PackageName], false, 1)
+            if InstallPackage(Matches[1].PackageName "@" g_PackageJson[Matches[1].PackageName], 1)
                 WriteStdOut "Package successfully updated!"
         }
     }
@@ -281,7 +289,7 @@ class PackageInfoBase {
     }
     Author := "", Name := "", PackageName := "", Version := "", Hash := "", Repository := "", 
     RepositoryType := "", Main := "", Dependencies := Map(), DependencyEntry := "", Files := [],
-    Branch := "", ThreadId := "", InstallVersion := "", DependencyVersion := ""
+    Branch := "", ThreadId := "", InstallVersion := "", DependencyVersion := "", IsMain := 0
 }
 
 InputToPackageInfo(Input) {
@@ -485,7 +493,7 @@ SearchPackageByName(Input, Skip := 0) {
 ; Update=0 means install and skip if already installed
 ; Update=1 means allow update if package is already installed, but skip if is not installed
 ; Update=2 means allow update and install if not installed
-InstallPackage(Package, IsMainPackage:=false, Update:=0) {
+InstallPackage(Package, Update:=0) {
     global g_PackageJson, g_InstalledPackages, g_LibDir
     CurrentlyInstalled := Mapi()
     if !(Package is Object) {
@@ -496,7 +504,7 @@ InstallPackage(Package, IsMainPackage:=false, Update:=0) {
         }
     } else
         PackageInfo := Package
-    if Update && !g_InstalledPackages.Has(PackageInfo.PackageName)
+    if Update && !g_InstalledPackages.Has(PackageInfo.PackageName) && !PackageInfo.IsMain
         Update := 0
     WriteStdOut 'Starting ' (Update ? "update" : "install") ' of package "' (Package is Object ? Package.PackageName : Package) '"'
     Result := 0, DownloadResult := 0
@@ -508,7 +516,7 @@ InstallPackage(Package, IsMainPackage:=false, Update:=0) {
     for PackageName, PackageInfo in g_InstalledPackages
         CurrentlyInstalled[PackageName "@" PackageInfo.InstallVersion] := 1
 
-    if (Update = 1) && !g_InstalledPackages.Has(PackageInfo.PackageName) {
+    if (Update = 1) && !g_InstalledPackages.Has(PackageInfo.PackageName) && !PackageInfo.IsMain {
         WriteStdOut 'Cannot update package "' PackageInfo.PackageName '" as it is not installed.'
         goto Cleanup
     }
@@ -542,7 +550,7 @@ InstallPackage(Package, IsMainPackage:=false, Update:=0) {
             PackageInfo.Files.Push(PackageInfo.Main)
     }
 
-    if IsMainPackage {
+    if PackageInfo.IsMain {
         PrevWorkingDir := A_WorkingDir
         try {
             VerifyPackageIsDownloadable(PackageInfo)
@@ -574,20 +582,20 @@ InstallPackage(Package, IsMainPackage:=false, Update:=0) {
             goto Cleanup
         }
     } else {
-        try DownloadResult := DownloadPackageWithDependencies(PackageInfo, TempDir, g_InstalledPackages, IsMainPackage, Update)
+        try DownloadResult := DownloadPackageWithDependencies(PackageInfo, TempDir, g_InstalledPackages, Update)
         catch as err {
             WriteStdOut "Failed to download package with dependencies"
             WriteStdOut "`t" err.Message (err.Extra ? ": " err.Extra : "")
             goto Cleanup
         }
     }
-    if DownloadResult is Integer && DownloadResult > 0 {
+    if DownloadResult is Integer && DownloadResult > 0 && !PackageInfo.IsMain {
         Result := DownloadResult = 1
         goto Cleanup
     }
 
-    if IsMainPackage {
-        DirMove(TempDir, A_WorkingDir, 2)
+    if PackageInfo.IsMain {
+        DirMove(TempDir "\" FinalDirName, A_WorkingDir, 2)
     } else
         DirMove(TempDir, g_LibDir, 2)
 
@@ -622,7 +630,7 @@ InstallPackage(Package, IsMainPackage:=false, Update:=0) {
     if !PackageJson["dependencies"].Count
         PackageJson.Delete("dependencies")
 
-    if !IsMainPackage
+    if !PackageInfo.IsMain
         FileOpen("package.json", 0x1).Write(JSON.Dump(PackageJson, true))
     FileOpen(g_LibDir "\packages.ahk", 0x1).Write(IncludeFileContent)
     g_PackageJson := LoadPackageJson()
@@ -634,14 +642,14 @@ InstallPackage(Package, IsMainPackage:=false, Update:=0) {
     return Result
 }
 
-DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, IsMainPackage:=false, CanUpdate:=false, MarkedForRemove:=[]) {
+DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false, MarkedForRemove:=[]) {
     IsVersioned := PackageInfo.Version || (PackageInfo.RepositoryType = "archive")
 
     if CanUpdate && !PackageInfo.Version && PackageInfo.PackageName != "" && g_PackageJson["dependencies"].Has(PackageInfo.PackageName) {
         PackageInfo.Version := g_PackageJson["dependencies"][PackageInfo.PackageName]
     }
 
-    if IsMainPackage {
+    if PackageInfo.IsMain {
         PrevWorkingDir := A_WorkingDir
         A_WorkingDir := TempDir
         goto DownloadPackage
@@ -782,13 +790,13 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, IsMainPackage:=f
     PackageInfo.InstallHash := PackageInfo.Hash
     PackageInfo.DependencyVersion := IsSemVer(PackageInfo.Version) ? (PackageInfo.DependencyVersion ? PackageInfo.DependencyVersion : ((PackageInfo.Version ~= "^[~^><=]") ? "" : "^") PackageInfo.Version) : PackageInfo.Version
 
-    if !IsMainPackage {
+    if !PackageInfo.IsMain {
         PackageInfo.Main := Trim(StrReplace(PackageInfo.Main, "/", "\"), "\/")
         Includes[PackageInfo.PackageName] := PackageInfo
     } 
 
     if DirExist(TempDir "\" FinalDirName) && FileExist(TempDir "\" FinalDirName "\package.json") {
-        if IsMainPackage {
+        if PackageInfo.IsMain {
             LibDir := FindLibDir(TempDir "\" FinalDirName)
             TempDir .= "\" FinalDirName "\" LibDir
         }
@@ -998,7 +1006,7 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
         break
     }
 
-    if FileExist(TempDir "\" TempDownloadDir "\package.json") && !g_Index.Has(PackageInfo.PackageName) {
+    if !PackageInfo.IsMain && FileExist(TempDir "\" TempDownloadDir "\package.json") && !g_Index.Has(PackageInfo.PackageName) {
         PackageJson := LoadPackageJson(TempDir "\" TempDownloadDir)
         if PackageJson.Has("name") {
             if InStr(PackageJson["name"], "/") {
@@ -1478,7 +1486,7 @@ MergeJsonInfoToPackageInfo(JsonInfo, PackageInfo) {
 }
 
 ParsePackageName(PackageName) {
-    PackageInfo := {Author:"", Name:"", Version:"", PackageName:""}
+    PackageInfo := PackageInfoBase()
     SplitId := StrSplit(PackageName, "@")
     if SplitId.Length > 1 {
         PackageInfo.Version := SplitId.Pop()

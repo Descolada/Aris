@@ -18,10 +18,10 @@
 	],
 	"license": "MIT",
 	"main": "snap.ahk",
-	"name": "Descolada/SNAP",
+	"name": "Descolada/Snap",
 	"repository": {
 		"type": "github",
-		"url": "Descolada/SNAP"
+		"url": "Descolada/Snap"
 	},
-	"version": "0.0.3"
+	"version": "0.0.4"
 }
