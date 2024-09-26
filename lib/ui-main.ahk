@@ -7,6 +7,7 @@ LaunchGui() {
     MainGui.OnEvent("Close", (*) => ExitApp())
 
     MainGui.FolderTV := MainGui.Add("TreeView", "r25 w200", "Package files")
+    MainGui.OnEvent("ContextMenu", ShowFolderTVContextMenu)
     LoadPackageFolder(g_Config.Has("last_project_directory") && DirExist(g_Config["last_project_directory"]) ? g_Config["last_project_directory"] : A_WorkingDir)
 
     MainGui.PackageJson := LoadPackageJson()
@@ -128,9 +129,10 @@ PackageLVItemSelected(LV, Item, Selected) {
 
     Tab := MainGui.Tabs.Package
 
-    if FileExist(MainGui.CurrentFolder MainGui.CurrentLibDir SelectedPackage.InstallName "\package.json")
+    if FileExist(MainGui.CurrentFolder MainGui.CurrentLibDir SelectedPackage.InstallName "\package.json") {
         Info := LoadPackageJson(MainGui.CurrentFolder MainGui.CurrentLibDir SelectedPackage.InstallName)
-    else if g_Index.Has(SelectedPackage.PackageName)
+        Info["main"] := SelectedPackage.Main
+    } else if g_Index.Has(SelectedPackage.PackageName)
         Info := g_Index[SelectedPackage.PackageName]
     else {
         Tab.Metadata.Value := "No information available about this package (missing package.json and index entry)."
@@ -155,13 +157,13 @@ ExtractPackageDescription(Info) {
     if Info.Has("description")
         Content .= "Description: " Info["description"] "`n"
     if Info.Has("author") {
-        if Info["author"] is String
+        if (Info["author"] is String) && Info["author"]
             Content .= "Author: " Info["author"] "`n"
         else if Info["author"].Has("name")
             Content .= "Author: " Info["author"]["name"] "`n"
     }
     if Info.Has("main") {
-        if Info["main"] is String
+        if (Info["main"] is String) && Info["main"]
             Content .= "Main: " Info["main"] "`n"
     }
     if Info.Has("homepage")
@@ -238,9 +240,10 @@ LoadPackageFolder(FullPath) {
     FolderTV := MainGui.FolderTV
     FolderTV.Opt("-Redraw")
     FolderTV.Delete()
-    split := StrSplit(FullPath, "\")
+    split := StrSplit(Trim(FullPath, "\"), "\")
 
-    AddSubFoldersToTree(FolderTV, FullPath, Map())
+    ItemID := FolderTV.Add(split[-1], 0, "Expand")
+    AddSubFoldersToTree(FolderTV, FullPath, Map(), ItemID)
     FolderTV.Opt("+Redraw")
 }
 
@@ -305,7 +308,7 @@ LaunchVersionSelectionGui(*) {
     if PackageInfo.RepositoryType = "github"
         Columns := ["Release/commit", "Date", "Message"]
     else if PackageInfo.RepositoryType = "forums" {
-        Columns := ["Snapshot date"]
+        Columns := ["Snapshot date", "Comments"]
         if !PackageInfo.ThreadId {
             ParseRepositoryData(PackageInfo)
         }
@@ -368,10 +371,12 @@ PopulateVersionsLV(PackageInfo, LV) {
         LV.Opt("+SortDesc")
         LV.Add(, "Querying snapshots, this may take time...")
         LV.ModifyCol(1)
+        LV.ModifyCol(2, 160)
         Matches := QueryForumsReleases(PackageInfo)
         if !WinExist(LV.hwnd)
             return
         LV.Delete()
+        LV.Add(, "latest", "Unversioned from live forums")
         for Match in Matches {
             LV.Add(, Match.Version)
         } else
@@ -489,4 +494,21 @@ SavePackageMetadata(G, *) {
     }
     FileOpen("package.json", "w").Write(JSON.Dump(g_PackageJson, true))
     WinClose G
+}
+
+ShowFolderTVContextMenu(GuiObj, FolderTV, Item, IsRightClick, *) {
+    static FolderMenu
+    FolderMenu := Menu()
+    if Item {
+        Folder := FolderTV.GetText(Item), ParentId := Item
+        while ParentId := FolderTV.GetParent(ParentId)
+            Folder := FolderTV.GetText(ParentId) "\" Folder
+        FullPath := A_WorkingDir "\" StrSplit(Folder, "\",, 2)[-1]
+        if InStr(Text := FolderTV.GetText(Item), ".")
+            FolderMenu.Add("Edit file", (*) => Run('edit "' FullPath '"'))
+        else
+            FolderMenu.Add("Open in Explorer", (*) => Run('explore "' FullPath '"'))
+    }
+    FolderMenu.Add("Open project folder in Explorer", (*) => Run('explore "' A_WorkingDir '"'))
+    FolderMenu.Show()
 }

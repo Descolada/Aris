@@ -1,78 +1,229 @@
-{
-    "version":"1.0.0",
-    "Descolada/UIA": {
-        "description": "An AutoHotkey v2 wrapper for the UIAutomation framework, which can be used to automate windows that normally might be difficult or impossible to automate with AHK",
-        "website": "https://github.com/Descolada/UIA-v2",
-        "repository": "Descolada/UIA-v2/main",
-        "files": ["Lib/UIA.ahk"],
-        "author": "Author Name",
-        "license": "MIT",
-        "tags": ["UIA", "UI automation"]
-    },
-    "Descolada/UIA_Browser": {
-        "description": "An addon for Descolada/UIA library to simplify automating browsers via UIA",
-        "repository": "Descolada/UIA-v2/main",
-        "files": ["Lib/UIA_Browser.ahk"],
-        "dependencies": {
-            "Descolada/UIA": "*"
-        }
-    },
-    "G33kDude/cJson": {
-        "description": "A high-performance JSON parsing library",
-        "website": "G33kDude/cJson.ahk",
-        "repository": "G33kDude/cJson.ahk/v2",
-        "main": "Dist/JSON.ahk",
-        "author": "G33kDude",
-        "license": "MIT",
-        "tags": ["JSON", "parser"]
-    },
-    "thqby/Crypt": {
-        "description": "Cryptograhic functions for MD5, SHA, and AES hashes",
-        "repository": "thqby/ahk2_lib/master",
-        "main": "Crypt.ahk",
-        "files": ["Crypt.ahk"],
-        "author": "thqby",
-        "license": "MIT"
-    },
-    "thqby/CGdip": {
-        "description": "Gdip implemented as a class instead of seperate functions",
-        "repository": "thqby/ahk2_lib/master",
-        "main": "CGdip.ahk",
-        "files": ["CGdip.ahk"],
-        "author": "thqby",
-        "license": "MIT"
-    },
-    "Chunjee/graphicsearch": {
-        "description": "FindText-based image search library",
-        "repository": "Chunjee/graphicsearch.ahk",
-        "files": ["export.ahk"],
-        "license": "MIT"
-    },
-    "Unknown/VA": {
-        "description":"Vista audio control functions, which provide alternatives to some SoundSet/SoundGet subcommands, as well as some additional features that SoundSet/SoundGet do not support.",
-        "repository":"Ixiko/AHK-libs-and-classes-collection",
-        "files":["AHK_V2/_VA.ahk"],
-        "tags": ["v1"]
-    },
-    "feiyue/FindText": {
-        "description": "A high-performance image search library, which can use images in text form",
-        "main":"FindText.ahk",
-        "repository":"https://www.autohotkey.com/boards/viewtopic.php?f=83&t=116471",
-        "tags":["image"]
-    }, 
-    "just me/ListViewExtensions": {
-        "description": "Additional functions for GUI ListView controls",
-        "repository": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=95019&codebox=2"
-    },
-    "TheZok/RawInputList": {
-        "description": "List all of the \"Raw Input\" devices available for use and allow capture of output",
-        "main": "RawInputList.ahk",
-        "repository": "gist:4bf163aa9a9922b21fbf/RawInputList.ahk"
-    }, 
-    "The-CoDingman/WebViewToo": {
-        "description": "Allows for use of the WebView2 Framework within AHK to create Web-based GUIs",
-        "main":"AHK Resources/WebViewToo.ahk",
-        "files":["AHK Resources/*.*"],
-        "license":"MIT"
-    }
+﻿{
+	"anonymous1184/GetUrl": {
+		"description": "Get the current URL from a browser window",
+		"main": "GetUrl.ahk",
+		"repository": "gist:7cce378c9dfdaf733cb3ca6df345b140/GetUrl.ahk"
+	},
+	"Descolada/Acc": {
+		"description": "Acc library for AHK v2 (note: use of UIA is preferred over Acc)",
+		"license": "MIT",
+		"main": "Lib/Acc.ahk",
+		"repository": "Descolada/Acc-v2/main",
+		"website": "https://github.com/Descolada/Acc-v2"
+	},
+	"Descolada/Array": {
+		"description": "Adds useful methods to arrays",
+		"license": "MIT",
+		"main": "Lib/Array.ahk",
+		"repository": "Descolada/AHK-v2-libraries/main",
+		"website": "https://github.com/Descolada/AHK-v2-libraries"
+	},
+	"Descolada/JAB": {
+		"description": "Java Access Bridge library to automate Java applications interfaces",
+		"license": "MIT",
+		"main": "Lib/JAB.ahk",
+		"repository": "Descolada/AHK-v2-libraries/main",
+		"website": "https://github.com/Descolada/AHK-v2-libraries"
+	},
+	"Descolada/Map": {
+		"description": "Adds useful methods to maps",
+		"license": "MIT",
+		"main": "Lib/Map.ahk",
+		"repository": "Descolada/AHK-v2-libraries/main",
+		"website": "https://github.com/Descolada/AHK-v2-libraries"
+	},
+	"Descolada/Media": {
+		"description": "Implements UWP Media Control, allowing access and control of the playing media (but not any media, only UWP ones that are notified by a tray tip with the play-pause buttons and playing song title)",
+		"license": "MIT",
+		"main": "Lib/Media.ahk",
+		"repository": "Descolada/AHK-v2-libraries/main",
+		"website": "https://github.com/Descolada/AHK-v2-libraries"
+	},
+	"Descolada/Misc": {
+		"description": "Miscallaneous useful functions such as Range, RegExMatchAll, Highlight, WinGetInfo, GetCaretPos, ConvertWinPos, etc",
+		"license": "MIT",
+		"main": "Lib/Misc.ahk",
+		"repository": "Descolada/AHK-v2-libraries/main",
+		"website": "https://github.com/Descolada/AHK-v2-libraries"
+	},
+	"Descolada/OCR": {
+		"description": "OCR library using Windows' built-in UWP OCR capabilities",
+		"license": "MIT",
+		"main": "Lib/OCR.ahk",
+		"repository": "Descolada/OCR/main",
+		"tags": [
+			"OCR",
+			"optical character recognition",
+			"image search"
+		],
+		"website": "https://github.com/Descolada/OCR"
+	},
+	"Descolada/String": {
+		"description": "Adds useful methods to strings",
+		"license": "MIT",
+		"main": "Lib/String.ahk",
+		"repository": "Descolada/AHK-v2-libraries/main",
+		"website": "https://github.com/Descolada/AHK-v2-libraries"
+	},
+	"Descolada/UIA": {
+		"description": "An AutoHotkey v2 wrapper for the UIAutomation framework, which can be used to automate windows that normally might be difficult or impossible to automate with AHK",
+		"files": [
+			"Lib/UIA.ahk"
+		],
+		"license": "MIT",
+		"repository": "Descolada/UIA-v2/main",
+		"tags": [
+			"UIA",
+			"UI automation"
+		],
+		"website": "https://github.com/Descolada/UIA-v2"
+	},
+	"Descolada/UIA_Browser": {
+		"dependencies": {
+			"Descolada/UIA": "*"
+		},
+		"description": "An addon for Descolada/UIA library to simplify automating browsers via UIA",
+		"files": [
+			"Lib/UIA_Browser.ahk"
+		],
+		"repository": "Descolada/UIA-v2/main"
+	},
+	"Descolada/WinEvent": {
+		"description": "Can be used to monitor for window events such as close, open, minimize etc",
+		"license": "MIT",
+		"main": "Lib/WinEvent.ahk",
+		"repository": "Descolada/AHK-v2-libraries/main",
+		"website": "https://github.com/Descolada/AHK-v2-libraries"
+	},
+	"Descolada/XHotstring": {
+		"description": "Implements regular expression hotstrings",
+		"license": "MIT",
+		"main": "Lib/XHotstring.ahk",
+		"repository": "Descolada/AHK-v2-libraries/main",
+		"tags": [
+			"RegEx",
+			"hotstrings"
+		],
+		"website": "https://github.com/Descolada/AHK-v2-libraries"
+	},
+	"feiyue/FindText": {
+		"description": "A high-performance image search library, which can use images in text form",
+		"main": "FindText.ahk",
+		"repository": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=116471",
+		"tags": [
+			"image"
+		]
+	},
+	"G33kDude/cJson": {
+		"description": "A high-performance JSON parsing library",
+		"license": "MIT",
+		"main": "Dist/JSON.ahk",
+		"repository": "G33kDude/cJson.ahk/v2",
+		"tags": [
+			"JSON",
+			"parser"
+		],
+		"website": "https://github.com/G33kDude/cJson.ahk"
+	},
+	"G33kDude/HashMap": {
+		"description": "Provides a hash map based alternative implementation of AutoHotkey's Map class, with the goal of allowing drop-in replacement for situations where the native Map's performance limitations have been reached",
+		"license": "MIT",
+		"main": "Dist/HashMap.ahk",
+		"repository": "G33kDude/HashMap.ahk/main",
+		"website": "https://github.com/G33kDude/cJson.ahk"
+	},
+	"iseahound/ImagePut": {
+		"description": "A core library for images in AutoHotkey",
+		"license": "MIT",
+		"main": "ImagePut.ahk",
+		"website": "https://github.com/iseahound/ImagePut"
+	},
+	"just me/ListViewExtensions": {
+		"description": "Additional functions for GUI ListView controls",
+		"repository": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=95019&codebox=2"
+	},
+	"just me/ToolTipOptions": {
+		"description": "Can set font, color and title options for subsequent calls to the ToolTip command",
+		"repository": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=113308"
+	},
+	"SKAN/WiseGui": {
+		"description": "Create highly customizable notifications",
+		"repository": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=94044&p=416867"
+	},
+	"The-CoDingman/WebViewToo": {
+		"description": "Allows for use of the WebView2 Framework within AHK to create Web-based GUIs",
+		"files": [
+			"AHK Resources/*.*"
+		],
+		"license": "MIT",
+		"main": "AHK Resources/WebViewToo.ahk"
+	},
+	"thqby/Audio": {
+		"description": "Core Audio APIs",
+		"license": "MIT",
+		"main": "Audio.ahk",
+		"repository": "thqby/ahk2_lib/master"
+	},
+	"thqby/CGdip": {
+		"description": "Gdip implemented as a class instead of seperate functions",
+		"files": [
+			"CGdip.ahk"
+		],
+		"license": "MIT",
+		"main": "CGdip.ahk",
+		"repository": "thqby/ahk2_lib/master"
+	},
+	"thqby/child_process": {
+		"description": "Create a child process, and read stdout/stderr asynchronously, supporting multiple stdin inputs",
+		"license": "MIT",
+		"main": "child_process.ahk",
+		"repository": "thqby/ahk2_lib/master"
+	},
+	"thqby/Chrome": {
+		"description": "Automate Google Chrome using native AutoHotkey",
+		"files": [
+			"Chrome.ahk",
+			"WebSocket.ahk"
+		],
+		"license": "MIT",
+		"main": "Chrome.ahk",
+		"repository": "thqby/ahk2_lib/master"
+	},
+	"thqby/Crypt": {
+		"description": "Cryptograhic functions for MD5, SHA, and AES hashes",
+		"license": "MIT",
+		"main": "Crypt.ahk",
+		"repository": "thqby/ahk2_lib/master"
+	},
+	"thqby/DirectoryWatcher": {
+		"description": "Call the notification function when the specified directory changes",
+		"license": "MIT",
+		"main": "DirectoryWatcher.ahk",
+		"repository": "thqby/ahk2_lib/master"
+	},
+	"thqby/RapidOcr": {
+		"description": "A cross platform OCR Library based on PaddleOCR & OnnxRuntime",
+		"files": [
+			"RapidOcr/*.*"
+		],
+		"license": "MIT",
+		"main": "RapidOcr.ahk",
+		"repository": "thqby/ahk2_lib/master"
+	},
+	"thqby/WebSocket": {
+		"description": "The websocket client implemented through winhttp",
+		"license": "MIT",
+		"main": "WebSocket.ahk",
+		"repository": "thqby/ahk2_lib/master"
+	},
+	"thqby/WebView2": {
+		"description": "The Microsoft Edge WebView2 control enables you to host web content in your application using Microsoft Edge (Chromium) as the rendering engine",
+		"files": [
+			"WebView2/*.*"
+		],
+		"license": "MIT",
+		"main": "WebView2.ahk",
+		"repository": "thqby/ahk2_lib/master"
+	},
+	"version": "1.0.0"
 }
