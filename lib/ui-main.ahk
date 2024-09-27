@@ -1,4 +1,4 @@
-global MainGui := Gui("+MinSize640x480", "Snap")
+global MainGui := Gui("+MinSize640x480", "Aris")
 
 LaunchGui() {
 
@@ -65,8 +65,8 @@ LaunchGui() {
     MainGui.AddText("Section", "Github private token:")
     S := MainGui.Tabs.Settings := {}
     S.GithubToken := MainGui.AddEdit("x+5 yp-3 w280 r1", g_Config.Has("github_token") ? g_Config["github_token"] : "")
-    S.AddRemoveFromPATH := MainGui.AddButton("xs y+5 w150", (IsSnapInPATH() ? "Remove Snap from PATH" : "Add Snap to PATH"))
-    S.AddRemoveFromPATH.OnEvent("Click", (btnCtrl, *) => btnCtrl.Text = "Remove Snap from PATH" ? (RemoveSnapFromPATH(), btnCtrl.Text := "Add Snap to PATH") : (AddSnapToPATH(), btnCtrl.Text := "Remove Snap from PATH") )
+    S.AddRemoveFromPATH := MainGui.AddButton("xs y+5 w150", (IsArisInPATH() ? "Remove Aris from PATH" : "Add Aris to PATH"))
+    S.AddRemoveFromPATH.OnEvent("Click", (btnCtrl, *) => btnCtrl.Text = "Remove Aris from PATH" ? (RemoveArisFromPATH(), btnCtrl.Text := "Add Aris to PATH") : (AddArisToPATH(), btnCtrl.Text := "Remove Aris from PATH") )
     S.SaveSettings := MainGui.AddButton("xs y+5", "Save settings")
     S.SaveSettings.OnEvent("Click", (*) => (ApplyGuiConfigChanges(), SaveSettings(true)))
 

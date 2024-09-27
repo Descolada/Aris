@@ -5,23 +5,23 @@
 		"website": "https://github.com/Descolada"
 	},
 	"bugs": {
-		"url": "https://github.com/Descolada/SNAP/issues"
+		"url": "https://github.com/Descolada/Aris/issues"
 	},
 	"dependencies": {
 
 	},
 	"description": "A basic package manager for AutoHotkey",
-	"homepage": "github.com/Descolada/SNAP",
+	"homepage": "github.com/Descolada/Aris",
 	"keywords": [
 		"package",
 		"manager"
 	],
 	"license": "MIT",
-	"main": "snap.ahk",
-	"name": "Descolada/Snap",
+	"main": "aris.ahk",
+	"name": "Descolada/Aris",
 	"repository": {
 		"type": "github",
-		"url": "Descolada/Snap"
+		"url": "Descolada/Aris"
 	},
 	"version": "0.0.4"
 }

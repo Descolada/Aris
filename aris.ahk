@@ -1,5 +1,7 @@
 /*
-    Requirements that SNAP must fulfill and situations it must handle:
+    ARIS: AutoHotkey Repository Install System
+
+    Requirements that Aris must fulfill and situations it must handle:
     1) Installing a library should install it either in Lib or includes folder (hereby mentioned as the Lib folder), whichever exists.
     2) Installation creates a packages.ahk file, which also acts as a lock file describing the exact dependencies needed.
     3) Installation creates a package.json file to describe the range of dependencies allowed. This should
@@ -8,26 +10,26 @@
     4) If an installed library has package.json, then its dependencies should also be installed in the main Lib folder
     5) A package is considered "installed" if it has an entry in package.json dependencies, packages.ahk #include,
         and it has an install folder in Lib folder
-    6) "snap install" should query for package.json, packages.ahk, and search all .ahk files for matching
-        SNAP version style "Author_Name_Version".
+    6) "aris install" should query for package.json, packages.ahk, and search all .ahk files for matching
+        ARIS version style "Author_Name_Version".
     7) Dependencies should also be findable if a package.json and packages.ahk don't exist. In that case
-        all .ahk files should be queried for matching SNAP version styles AND that entry must contain
+        all .ahk files should be queried for matching ARIS version styles AND that entry must contain
         all pertinent information for installing the package.
-        This is especially important with archive installs or Gists, as the SNAP version will contain
+        This is especially important with archive installs or Gists, as the ARIS version will contain
         only a hash, which means the source will need to be added as a comment after it. The source is 
         optional for GitHub installs.
     8) Supported install locations/commands:
-        snap i Name          => queries index.json for a matching package, and if only 1 match is found then it's installed
-        snap i Author/Name   => queries index.json, otherwise falls back to GitHub main branch
-        snap i Name@version  => Requires a specific version range. If a specific version is specified then other installed versions are automatically removed.
-        snap i Name@ShortHash    => Requires a specific GitHub commit
-        snap i Author/Name/branch    => installs a GitHub branch
-        snap i github:URL    => installs from a GitHub link. URL can also be in the short form Author/Name
-        snap i gist:hash         => installs the first found file in a Gist
-        snap i gist:hash/file    => installs a specific file from a Gist
-        snap i forums:t=thread-id  => Installs from a AHK forums thread, the first encountered code-box
-        snap i forums:t=thread-id&codebox=number  => Installs from a AHK forums thread, optionally a codebox number can be specified
-        snap i URL           => GitHub URL, or AHK forums URL, or an archive (.zip, .tar.bz) link
+        aris i Name          => queries index.json for a matching package, and if only 1 match is found then it's installed
+        aris i Author/Name   => queries index.json, otherwise falls back to GitHub main branch
+        aris i Name@version  => Requires a specific version range. If a specific version is specified then other installed versions are automatically removed.
+        aris i Name@ShortHash    => Requires a specific GitHub commit
+        aris i Author/Name/branch    => installs a GitHub branch
+        aris i github:URL    => installs from a GitHub link. URL can also be in the short form Author/Name
+        aris i gist:hash         => installs the first found file in a Gist
+        aris i gist:hash/file    => installs a specific file from a Gist
+        aris i forums:t=thread-id  => Installs from a AHK forums thread, the first encountered code-box
+        aris i forums:t=thread-id&codebox=number  => Installs from a AHK forums thread, optionally a codebox number can be specified
+        aris i URL           => GitHub URL, or AHK forums URL, or an archive (.zip, .tar.bz) link
 */
 
 ; Raw files:
@@ -62,7 +64,7 @@ TraySetIcon A_ScriptDir "\assets\main.ico"
 #include <ui-main>
 #include <utils>
 
-global g_GitHubRawBase := "https://raw.githubusercontent.com/Descolada/SNAP/main/", g_Index, g_Config := Map(), g_PackageJson, g_LibDir, g_InstalledPackages
+global g_GitHubRawBase := "https://raw.githubusercontent.com/Descolada/ARIS/main/", g_Index, g_Config := Map(), g_PackageJson, g_LibDir, g_InstalledPackages
 global g_Switches := Mapi("global_install", false, "force", false, "main", "", "files", []), g_CacheDir := A_ScriptDir "\cache"
 global g_CommandAliases := Mapi("install", "install", "i", "install", "remove", "remove", "r", "remove", "rm", "remove", "uninstall", "remove", "update", "update", "update-index", "update-index", "list", "list", "clean", "clean")
 global g_SwitchAliases := Mapi("--global-install", "global_install", "-g", "global_install", "-f", "force", "--force", "force", "--main", "main", "-m", "main", "--files", "files")
@@ -88,7 +90,7 @@ Loop files A_ScriptDir "\*.*", "D" {
 ClearCache()
 
 if !g_Config.Has("first_run") {
-    AddSnapToPATH()
+    AddArisToPATH()
     g_Config["first_run"] := false
     FileOpen("assets/config.json", "w").Write(JSON.Dump(g_Config, true))
 }
@@ -171,7 +173,7 @@ ClearCache(Force := false) {
     }
 }
 
-AddSnapToPATH() {
+AddArisToPATH() {
     ; Get the current PATH in this roundabout way because of the Store version registry virtualization
     CurrPath := RunCMD(A_ComSpec . " /c " 'reg query HKCU\Environment /v PATH')
     CurrPath := RegExReplace(CurrPath, "^[\w\W]*?PATH\s+REG_SZ\s+",,,1)
@@ -180,40 +182,40 @@ AddSnapToPATH() {
     if !(LocalAppData := EnvGet("LOCALAPPDATA"))
         return
     BatContent := '@echo off`n@"' A_AhkPath '" "' A_ScriptFullPath '" "--working-dir" "%cd%" %*'
-    if !DirExist(LocalAppData "\Programs\Snap")
-        DirCreate(LocalAppData "\Programs\Snap")
-    if !FileExist(LocalAppData "\Programs\Snap\Snap.bat") || FileRead(LocalAppData "\Programs\Snap\Snap.bat") != BatContent
-        FileOpen(LocalAppData "\Programs\Snap\Snap.bat", "w", "CP0").Write(BatContent)
-    if !InStr(CurrPath, LocalAppData "\Programs\Snap") {
+    if !DirExist(LocalAppData "\Programs\Aris")
+        DirCreate(LocalAppData "\Programs\Aris")
+    if !FileExist(LocalAppData "\Programs\Aris\Aris.bat") || FileRead(LocalAppData "\Programs\Aris\Aris.bat") != BatContent
+        FileOpen(LocalAppData "\Programs\Aris\Aris.bat", "w", "CP0").Write(BatContent)
+    if !InStr(CurrPath, LocalAppData "\Programs\Aris") {
         FileOpen(A_ScriptDir "\assets\user-path-backup.txt", "w").Write(CurrPath)
         ; https://stackoverflow.com/questions/9546324/adding-a-directory-to-the-path-environment-variable-in-windows
-        RunWait A_ComSpec ' /c SETX PATH "' CurrPath '";"' LocalAppData '\Programs\Snap"',, "Hide"
+        RunWait A_ComSpec ' /c SETX PATH "' CurrPath '";"' LocalAppData '\Programs\Aris"',, "Hide"
         SendMessage(0x1A, 0, StrPtr("Environment"), 0xFFFF)
     }
 }
 
-RemoveSnapFromPATH() {
+RemoveArisFromPATH() {
     if !(LocalAppData := EnvGet("LOCALAPPDATA"))
         return
 
     CurrPath := RunCMD(A_ComSpec . " /c " 'reg query HKCU\Environment /v PATH')
     CurrPath := RegExReplace(CurrPath, "^[\w\W]*?PATH\s+REG_SZ\s+",,,1)
 
-    if CurrPath && InStr(CurrPath, ";" LocalAppData "\Programs\Snap") {
-        RunWait A_ComSpec ' /c SETX PATH "' StrReplace(CurrPath, ";" LocalAppData "\Programs\Snap") '"',, "Hide"
+    if CurrPath && InStr(CurrPath, ";" LocalAppData "\Programs\Aris") {
+        RunWait A_ComSpec ' /c SETX PATH "' StrReplace(CurrPath, ";" LocalAppData "\Programs\Aris") '"',, "Hide"
         SendMessage(0x1A, 0, StrPtr("Environment"), 0xFFFF)
     }
-    if FileExist(LocalAppData "\Programs\Snap\Snap.bat") {
-        DirDelete(LocalAppData "\Programs\Snap", true)
+    if FileExist(LocalAppData "\Programs\Aris\Aris.bat") {
+        DirDelete(LocalAppData "\Programs\Aris", true)
     }
 }
 
-IsSnapInPATH() {
+IsArisInPATH() {
     if !(LocalAppData := EnvGet("LOCALAPPDATA"))
         return false
     CurrPath := RunCMD(A_ComSpec . " /c " 'reg query HKCU\Environment /v PATH')
     CurrPath := RegExReplace(CurrPath, "^[\w\W]*?PATH\s+REG_SZ\s+",,,1)
-    if CurrPath && InStr(CurrPath, LocalAppData "\Programs\Snap")
+    if CurrPath && InStr(CurrPath, LocalAppData "\Programs\Aris")
         return true
     return false
 }
