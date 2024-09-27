@@ -1,79 +1,96 @@
-global MainGui := Gui("+MinSize640x480", "Aris")
-
 LaunchGui() {
+    WriteStdOut.DefineProp("call", {call:(this, msg) => g_MainGui.Tabs.Value = 1 ? g_MainGui.Tabs.Package.Metadata.Value .= msg "`n" : g_MainGui.Tabs.Index.Metadata.Value .= msg "`n"})
 
-    WriteStdOut.DefineProp("call", {call:(this, msg) => MainGui.Tabs.Value = 1 ? MainGui.Tabs.Package.Metadata.Value .= msg "`n" : MainGui.Tabs.Index.Metadata.Value .= msg "`n"})
+    g_MainGui.OnEvent("Size", GuiReSizer)
+    g_MainGui.OnEvent("Close", (*) => ExitApp())
 
-    MainGui.OnEvent("Close", (*) => ExitApp())
-
-    MainGui.FolderTV := MainGui.Add("TreeView", "r25 w200", "Package files")
-    MainGui.OnEvent("ContextMenu", ShowFolderTVContextMenu)
+    g_MainGui.FolderTV := g_MainGui.Add("TreeView", "r25 w200", "Package files")
+    g_MainGui.FolderTV.X := 10, g_MainGui.FolderTV.Height := -50, g_MainGui.FolderTV.WidthP := 0.3
+    g_MainGui.OnEvent("ContextMenu", ShowFolderTVContextMenu)
     LoadPackageFolder(g_Config.Has("last_project_directory") && DirExist(g_Config["last_project_directory"]) ? g_Config["last_project_directory"] : A_WorkingDir)
 
-    MainGui.PackageJson := LoadPackageJson()
-    MainGui.AddStatusBar(, MainGui.PackageJson["name"] ? (MainGui.PackageJson["name"] "@" (MainGui.PackageJson["version"] || "undefined-version")) : "Undefined package: add package name and version in metadata.")
-    MainGui.LoadPackageBtn := MainGui.AddButton(, "Load package")
-    MainGui.ModifyMetadata := MainGui.AddButton("x+27", "Modify metadata")
-    MainGui.ModifyMetadata.OnEvent("Click", LaunchModifyMetadataGui)
-    MainGui.LoadPackageBtn.OnEvent("Click", (*) => (dir := DirSelect("*" MainGui.CurrentFolder), dir ? (LoadPackageFolder(dir), PopulateTabs()) : ""))
+    g_MainGui.PackageJson := LoadPackageJson()
+    g_MainGui.AddStatusBar(, g_MainGui.PackageJson["name"] ? (g_MainGui.PackageJson["name"] "@" (g_MainGui.PackageJson["version"] || "undefined-version")) : "Undefined package: add package name and version in metadata.")
+    g_MainGui.LoadPackageBtn := g_MainGui.AddButton(, "Load package")
+    g_MainGui.LoadPackageBtn.Y := -45
+    g_MainGui.ModifyMetadata := g_MainGui.AddButton("x+27", "Modify metadata")
+    g_MainGui.ModifyMetadata.Anchor := g_MainGui.FolderTV, g_MainGui.ModifyMetadata.AnchorIn := false, g_MainGui.ModifyMetadata.YP := 1.0, g_MainGui.ModifyMetadata.Y := 5, g_MainGui.ModifyMetadata.XP := 1.0, g_MainGui.ModifyMetadata.X := -92
+    g_MainGui.ModifyMetadata.OnEvent("Click", LaunchModifyMetadataGui)
+    g_MainGui.LoadPackageBtn.OnEvent("Click", (*) => (dir := DirSelect("*" g_MainGui.CurrentFolder), dir ? (LoadPackageFolder(dir), PopulateTabs()) : ""))
 
-    MainGui.Tabs := MainGui.AddTab3("w410 h395 x220 y6", ["Current package", "Index", "Settings"])
-    MainGui.Tabs.UseTab(1)
+    g_MainGui.Tabs := g_MainGui.AddTab3("w410 h395 x220 y6", ["Current package", "Index", "Settings"])
+    g_MainGui.Tabs.UseTab(1)
+    g_MainGui.Tabs.XP := 0.30, g_MainGui.Tabs.X := 15, g_MainGui.Tabs.W := -5, g_MainGui.Tabs.H := -25
 
-    P := MainGui.Tabs.Package := {}
-    P.LV := MainGui.Add("ListView", "r10 w390 Section -Multi", ["Package name", "Version", "Allowed versions", "Installed", "In index"])
+    P := g_MainGui.Tabs.Package := {}
+    P.LV := g_MainGui.Add("ListView", "r10 w390 Section -Multi", ["Package name", "Version", "Allowed versions", "Installed", "In index"])
+    P.LV.W := -15
     P.LV.OnEvent("ItemSelect", PackageLVItemSelected)
-    P.ReinstallBtn := MainGui.AddButton("w50", "Reinstall")
+    P.ReinstallBtn := g_MainGui.AddButton("w50", "Reinstall")
     P.ReinstallBtn.OnEvent("Click", PackageAction.Bind(P, "reinstall"))
-    P.RemoveBtn := MainGui.AddButton("x+10 yp+0 w50", "Remove")
+    P.RemoveBtn := g_MainGui.AddButton("x+10 yp+0 w50", "Remove")
     P.RemoveBtn.OnEvent("Click", PackageAction.Bind(P, "remove"))
-    P.UpdateBtn := MainGui.AddButton("x+10 yp+0 w50", "Update")
+    P.UpdateBtn := g_MainGui.AddButton("x+10 yp+0 w50", "Update")
     P.UpdateBtn.OnEvent("Click", PackageAction.Bind(P, "update"))
-    P.AddBtn := MainGui.AddButton("x+10 yp+0 w50", "Add")
+    P.AddBtn := g_MainGui.AddButton("x+10 yp+0 w50", "Add")
     P.AddBtn.OnEvent("Click", PackageAction.Bind(P, "install-external"))
-    P.UpdateLatestBtn := MainGui.AddButton("x+10 yp+0", "Force update to latest")
+    P.UpdateLatestBtn := g_MainGui.AddButton("x+10 yp+0", "Force update to latest")
     P.UpdateLatestBtn.OnEvent("Click", PackageAction.Bind(P, "update-latest"))
-    P.Metadata := MainGui.Add("Edit", "xs y+10 w390 h140 ReadOnly")
+    P.Metadata := g_MainGui.Add("Edit", "xs y+10 w390 h140 ReadOnly")
+    P.Metadata.W := -15, P.Metadata.H := -35
 
     PopulatePackagesTab(P)
 
-    MainGui.Tabs.UseTab(2)
+    g_MainGui.Tabs.UseTab(2)
 
-    I := MainGui.Tabs.Index := {}
-    I.LV := MainGui.Add("ListView", "r10 w390 Section -Multi", ["Package name", "Installed version", "Allowed versions", "Source"])
+    I := g_MainGui.Tabs.Index := {}
+    I.LV := g_MainGui.Add("ListView", "r10 w390 Section -Multi", ["Package name", "Installed version", "Allowed versions", "Source"])
+    I.LV.W := -15, I.LV.HP := 0.4
     I.LV.OnEvent("ItemSelect", IndexLVItemSelected)
-    MainGui.Add("Text",, "Search:")
-    I.Search := MainGui.Add("Edit", "x+5 yp-2 -Multi")
+    I.SearchText := g_MainGui.Add("Text",, "Search:")
+
+    AnchorUnder := (o, to, X, Y) => (o.Anchor := to, o.AnchorIn := false, o.YP := 1.0, o.Y := Y, o.X := X)
+    AnchorAfter := (o, to, X, Y) => (o.Anchor := to, o.AnchorIn := false, o.XP := 1.0, o.Y := Y, o.X := X)
+
+    AnchorUnder(I.SearchText, I.LV, 5, 7)
+    I.Search := g_MainGui.Add("Edit", "x+5 yp-2 -Multi")
+    AnchorUnder(I.Search, I.LV, 45, 5)
     I.Search.OnEvent("Change", OnIndexSearch)
-    I.SearchByStartCB := MainGui.Add("Checkbox", "x+10 yp+4", "Match start")
+    I.SearchByStartCB := g_MainGui.Add("Checkbox", "x+10 yp+4", "Match start")
+    AnchorAfter(I.SearchByStartCB, I.Search, 7, 3)
     I.SearchByStartCB.OnEvent("Click", (*) => OnIndexSearch(I.Search))
-    I.SearchCaseSenseCB := MainGui.Add("Checkbox", "x+5 yp", "Match case")
+    I.SearchCaseSenseCB := g_MainGui.Add("Checkbox", "x+5 yp", "Match case")
+    AnchorAfter(I.SearchCaseSenseCB, I.SearchByStartCB, 5, 0)
     I.SearchCaseSenseCB.OnEvent("Click", (*) => OnIndexSearch(I.Search))
 
-    I.InstallBtn := MainGui.AddButton("xs y+8 w60", "Install")
+    I.InstallBtn := g_MainGui.AddButton("xs y+8 w60", "Install")
+    AnchorUnder(I.InstallBtn, I.LV, 5, 30)
     I.InstallBtn.OnEvent("Click", PackageAction.Bind(I, "install"))
-    I.QueryVersionBtn := MainGui.AddButton("x+10 yp+0", "Query versions")
+    I.QueryVersionBtn := g_MainGui.AddButton("x+10 yp+0", "Query versions")
+    AnchorAfter(I.QueryVersionBtn, I.InstallBtn, 5, 0)
     I.QueryVersionBtn.OnEvent("Click", LaunchVersionSelectionGui)
-    I.UpdateIndexBtn := MainGui.AddButton("x+10 yp+0", "Update index")
+    I.UpdateIndexBtn := g_MainGui.AddButton("x+10 yp+0", "Update index")
+    AnchorAfter(I.UpdateIndexBtn, I.QueryVersionBtn, 5, 0)
     I.UpdateIndexBtn.OnEvent("Click", (*) => (UpdatePackageIndex(), PopulateIndexTab(I)))
-    I.Metadata := MainGui.Add("Edit", "xs y+10 w390 h120 ReadOnly")
+    I.Metadata := g_MainGui.Add("Edit", "xs y+10 w390 h120 ReadOnly")
+    I.Metadata.YP := 0.4, I.Metadata.Y := 90, I.Metadata.H := -30, I.Metadata.W := -15
 
     PopulateIndexTab(I)
 
-    MainGui.Tabs.UseTab(3)
+    g_MainGui.Tabs.UseTab(3)
 
-    MainGui.AddText("Section", "Github private token:")
-    S := MainGui.Tabs.Settings := {}
-    S.GithubToken := MainGui.AddEdit("x+5 yp-3 w280 r1", g_Config.Has("github_token") ? g_Config["github_token"] : "")
-    S.AddRemoveFromPATH := MainGui.AddButton("xs y+5 w150", (IsArisInPATH() ? "Remove Aris from PATH" : "Add Aris to PATH"))
+    g_MainGui.AddText("Section", "Github private token:")
+    S := g_MainGui.Tabs.Settings := {}
+    S.GithubToken := g_MainGui.AddEdit("x+5 yp-3 w280 r1", g_Config.Has("github_token") ? g_Config["github_token"] : "")
+    S.AddRemoveFromPATH := g_MainGui.AddButton("xs y+5 w150", (IsArisInPATH() ? "Remove Aris from PATH" : "Add Aris to PATH"))
     S.AddRemoveFromPATH.OnEvent("Click", (btnCtrl, *) => btnCtrl.Text = "Remove Aris from PATH" ? (RemoveArisFromPATH(), btnCtrl.Text := "Add Aris to PATH") : (AddArisToPATH(), btnCtrl.Text := "Remove Aris from PATH") )
-    S.SaveSettings := MainGui.AddButton("xs y+5", "Save settings")
+    S.SaveSettings := g_MainGui.AddButton("xs y+5", "Save settings")
     S.SaveSettings.OnEvent("Click", (*) => (ApplyGuiConfigChanges(), SaveSettings(true)))
 
-    MainGui.Tabs.UseTab(0)
+    g_MainGui.Tabs.UseTab(0)
 
-    MainGui.Show("w640 h425")
-    WinRedraw(MainGui) ; Prevents the edit box from sometimes being black
+    g_MainGui.Show("w640 h425")
+    WinRedraw(g_MainGui) ; Prevents the edit box from sometimes being black
 }
 
 LVGetPackageInfo(LV) {
@@ -127,10 +144,10 @@ PackageLVItemSelected(LV, Item, Selected) {
         return
     SelectedPackage := g_InstalledPackages[PackageName]
 
-    Tab := MainGui.Tabs.Package
+    Tab := g_MainGui.Tabs.Package
 
-    if FileExist(MainGui.CurrentFolder MainGui.CurrentLibDir SelectedPackage.InstallName "\package.json") {
-        Info := LoadPackageJson(MainGui.CurrentFolder MainGui.CurrentLibDir SelectedPackage.InstallName)
+    if FileExist(g_MainGui.CurrentFolder g_MainGui.CurrentLibDir SelectedPackage.InstallName "\package.json") {
+        Info := LoadPackageJson(g_MainGui.CurrentFolder g_MainGui.CurrentLibDir SelectedPackage.InstallName)
         Info["main"] := SelectedPackage.Main
     } else if g_Index.Has(SelectedPackage.PackageName)
         Info := g_Index[SelectedPackage.PackageName]
@@ -146,7 +163,7 @@ IndexLVItemSelected(LV, Item, Selected) {
     if !Selected
         return
     PackageName := LV.GetText(Item, 1)
-    Tab := MainGui.Tabs.Index
+    Tab := g_MainGui.Tabs.Index
     Tab.Metadata.Value := ExtractPackageDescription(g_Index[PackageName])
     Tab.InstallBtn.Text := LV.GetText(Item, 4) = "Yes" ? "Reinstall" : "Install"
 }
@@ -185,12 +202,12 @@ ExtractPackageDescription(Info) {
 }
 
 PopulateTabs() {
-    PopulatePackagesTab(MainGui.Tabs.Package)
-    PopulateIndexTab(MainGui.Tabs.Index)
+    PopulatePackagesTab(g_MainGui.Tabs.Package)
+    PopulateIndexTab(g_MainGui.Tabs.Index)
 }
 
 PopulatePackagesTab(Tab) {
-    MainGui.Dependencies := Dependencies := QueryPackageDependencies()
+    g_MainGui.Dependencies := Dependencies := QueryPackageDependencies()
     Tab.LV.Opt("-Redraw")
     Tab.LV.Delete()
 
@@ -209,7 +226,7 @@ PopulatePackagesTab(Tab) {
 }
 
 PopulateIndexTab(Tab) {
-    MainGui.UnfilteredIndex := []
+    g_MainGui.UnfilteredIndex := []
 
     Tab.LV.Opt("-Redraw")
     Tab.LV.Delete()
@@ -218,8 +235,8 @@ PopulateIndexTab(Tab) {
         if PackageName = "version"
             continue
 
-        MainGui.UnfilteredIndex.Push([PackageName, g_InstalledPackages.Has(PackageName) ? g_InstalledPackages[PackageName].InstallVersion : unset, g_InstalledPackages.Has(PackageName) ? g_InstalledPackages[PackageName].DependencyVersion : unset, g_Index[PackageName]["repository"]["type"]])
-        Tab.LV.Add(, MainGui.UnfilteredIndex[-1]*)
+        g_MainGui.UnfilteredIndex.Push([PackageName, g_InstalledPackages.Has(PackageName) ? g_InstalledPackages[PackageName].InstallVersion : unset, g_InstalledPackages.Has(PackageName) ? g_InstalledPackages[PackageName].DependencyVersion : unset, g_Index[PackageName]["repository"]["type"]])
+        Tab.LV.Add(, g_MainGui.UnfilteredIndex[-1]*)
     }
     Tab.LV.ModifyCol(1)
     Tab.LV.ModifyCol(4, 80)
@@ -234,10 +251,10 @@ LoadPackageFolder(FullPath) {
 
     SetWorkingDir(FullPath)
     RefreshWorkingDirGlobals()
-    MainGui.CurrentFolder := FullPath
-    MainGui.CurrentLibDir := g_LibDir "\"
+    g_MainGui.CurrentFolder := FullPath
+    g_MainGui.CurrentLibDir := g_LibDir "\"
 
-    FolderTV := MainGui.FolderTV
+    FolderTV := g_MainGui.FolderTV
     FolderTV.Opt("-Redraw")
     FolderTV.Delete()
     split := StrSplit(Trim(FullPath, "\"), "\")
@@ -261,12 +278,12 @@ AddSubFoldersToTree(TV, Folder, DirList, ParentItemID := 0) {
 
 OnIndexSearch(Search, *) {
     Query := Search.Value
-    Tab := MainGui.Tabs.Index
+    Tab := g_MainGui.Tabs.Index
     LV := Tab.LV
     LV.Opt("-Redraw")
     LV.Delete()
     if Query = "" {
-        for Row in MainGui.UnfilteredIndex
+        for Row in g_MainGui.UnfilteredIndex
             LV.Add(, Row*)
     } else {
         if Tab.SearchByStartCB.Value {
@@ -276,7 +293,7 @@ OnIndexSearch(Search, *) {
                 CompareFunc := (v1, v2) => SubStr(v1, 1, StrLen(v2)) = v2
         } else
             CompareFunc := (v1, v2) => InStr(v1, v2, Tab.SearchCaseSenseCB.Value)
-        for Row in MainGui.UnfilteredIndex
+        for Row in g_MainGui.UnfilteredIndex
             if CompareFunc(Row[1], Query)
                 LV.Add(, Row*)
     }
@@ -284,7 +301,7 @@ OnIndexSearch(Search, *) {
 }
 
 ApplyGuiConfigChanges() {
-    S := MainGui.Tabs.Settings
+    S := g_MainGui.Tabs.Settings
     g_Config["github_token"] := S.GithubToken.Value
 }
 
@@ -297,8 +314,9 @@ SaveSettings(ShowToolTip := false) {
 }
 
 LaunchVersionSelectionGui(*) {
-    G := Gui("+MinSize640x480", "Package metadata")
-    I := MainGui.Tabs.Index
+    G := Gui("+MinSize400x200 +Resize", "Package metadata")
+    G.OnEvent("Size", GuiReSizer)
+    I := g_MainGui.Tabs.Index
     PackageName := I.LV.GetText(Selected := I.LV.GetNext(0), 1)
     if !PackageName || Selected = 0 {
         MsgBox "No package selected"
@@ -320,12 +338,14 @@ LaunchVersionSelectionGui(*) {
         return
     }
     G.LVVersions := G.Add("ListView", "w380 h200", Columns)
+    G.LVVersions.X := 5, G.LVVersions.Y := 5, G.LVVersions.W := -5, G.LVVersions.H := -35
     
     G.BtnInstall := G.Add("Button", "x140", "Install selected")
+    G.BtnInstall.Y := -30, G.BtnInstall.XP := 0.5, G.BtnInstall.X := -50
     G.BtnInstall.OnEvent("Click", VersionSelectionInstallBtnClicked.Bind(G, PackageName))
     G.Show("w400 h240")
-    MainGui.Opt("+Disabled")
-    G.OnEvent("Close", (*) => (MainGui.Opt("-Disabled"), G.Destroy()))
+    g_MainGui.Opt("+Disabled")
+    G.OnEvent("Close", (*) => (g_MainGui.Opt("-Disabled"), G.Destroy()))
 
     PopulateVersionsLV(PackageInfo, G.LVVersions)
 }
@@ -335,7 +355,7 @@ VersionSelectionInstallBtnClicked(G, PackageName, *) {
     if Version = "" || G.LVVersions.GetText(selected, 2) = ""
         return
     WinClose(G)
-    MainGui.Tabs.Index.Metadata.Value := ""
+    g_MainGui.Tabs.Index.Metadata.Value := ""
     InstallPackage(PackageName "@" Version,2)
     LoadPackageFolder(A_WorkingDir)
     PopulateTabs()
@@ -427,12 +447,12 @@ LaunchModifyMetadataGui(*) {
     G.PFiles := G.AddEdit("yp x75 r1 w195", g_PackageJson["files"])
     G.PKeywords.ToolTip := WordWrap('Comma-delimited file names, or a pattern of files such as "lib\*.ahk", or a directory, which will be included in the package if used as a dependency.')
     G.AddText("h20 xs +0x200", "Bugs:")
-    G.PBugs := G.AddEdit("yp x75 r1 w195", g_PackageJson["bugs"].Has("url") ? g_PackageJson["bugs"]["url"] : "")
+    G.PBugs := G.AddEdit("yp x75 r1 w195", g_PackageJson["bugs"] is Map ? (g_PackageJson["bugs"].Has("url") ? g_PackageJson["bugs"]["url"] : "") : g_PackageJson["bugs"])
     G.PBugs.ToolTip := WordWrap("The URL at which bug reports may be filed.")
     G.AddText("h20 xs +0x200", "Hover over the textboxes to see additional info.")
     G.AddButton(,"Save metadata").OnEvent("Click", SavePackageMetadata.Bind(G))
-    MainGui.Opt("+Disabled")
-    G.OnEvent("Close", (*) => (MainGui.Opt("-Disabled"), G.Destroy()))
+    g_MainGui.Opt("+Disabled")
+    G.OnEvent("Close", (*) => (g_MainGui.Opt("-Disabled"), G.Destroy()))
     OnMessage(0x0200, On_WM_MOUSEMOVE)
 }
 

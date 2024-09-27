@@ -1,7 +1,7 @@
 ; Run this to load and then resave index.json to sort it and make visually uniform
 
 #Requires AutoHotkey v2
-#include ..\lib\cJSON.ahk
+#include ..\lib\packages.ahk
 #include ..\lib\utils.ahk
 
 A_FileEncoding := "UTF-8"

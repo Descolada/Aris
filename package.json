@@ -8,7 +8,8 @@
 		"url": "https://github.com/Descolada/Aris/issues"
 	},
 	"dependencies": {
-
+		"FanaticGuru/GuiReSizer": "forums:t=113921&codebox=1@20240927185858+e174cfada9ae",
+		"G33kDude/cJson": "^2.0.0"
 	},
 	"description": "A basic package manager for AutoHotkey",
 	"homepage": "github.com/Descolada/Aris",

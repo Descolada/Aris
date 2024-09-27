@@ -59,8 +59,7 @@
 
 TraySetIcon A_ScriptDir "\assets\main.ico"
 
-;#include <packages>
-#include <cJSON>
+#include <packages>
 #include <ui-main>
 #include <utils>
 
@@ -68,6 +67,7 @@ global g_GitHubRawBase := "https://raw.githubusercontent.com/Descolada/ARIS/main
 global g_Switches := Mapi("global_install", false, "force", false, "main", "", "files", []), g_CacheDir := A_ScriptDir "\cache"
 global g_CommandAliases := Mapi("install", "install", "i", "install", "remove", "remove", "r", "remove", "rm", "remove", "uninstall", "remove", "update", "update", "update-index", "update-index", "list", "list", "clean", "clean")
 global g_SwitchAliases := Mapi("--global-install", "global_install", "-g", "global_install", "-f", "force", "--force", "force", "--main", "main", "-m", "main", "--files", "files")
+global g_MainGui := Gui("+MinSize640x400 +Resize", "Aris")
 A_FileEncoding := "UTF-8"
 
 for i, Arg in A_Args {
@@ -1388,7 +1388,9 @@ IsGithubMinimalInstallPossible(PackageInfo, IgnoreVersion := false) {
     if !IgnoreVersion && !IsVersionSha(PackageInfo.Version)
         return false
     if !PackageInfo.Files.Length {
-        return !!PackageInfo.Main
+        if PackageInfo.Main
+            PackageInfo.Files := [PackageInfo.Main]
+        return PackageInfo.Files.Length
     }
     if PackageInfo.Files.Length = 1 {
         if PackageInfo.Files[1] ~= "(?<!\*)\.ahk?\d?$"
