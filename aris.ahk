@@ -931,12 +931,12 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
                 break
             }
         }
-        PackageInfo.SourceAddress := "https://gist.github.com/raw/" PackageInfo.Repository "/" PackageInfo.FullVersion "/" PackageInfo.Name
+        PackageInfo.SourceAddress := "https://gist.github.com/raw/" PackageInfo.Repository "/" PackageInfo.FullVersion "/" PackageInfo.Main
         PackageInfo.DependencyEntry := "gist:" PackageInfo.Repository "/" PackageInfo.Main "@" ((IsVersionSha(PackageInfo.DependencyVersion) ? "" : PackageInfo.DependencyVersion) || PackageInfo.Version || PackageInfo.InstallVersion)
         if !PackageInfo.PackageName
             PackageInfo.PackageName := PackageInfo.Author "/" PackageInfo.Name
         WriteStdOut('Downloading gist as package "' PackageInfo.PackageName '@' PackageInfo.Version '"')
-        Download PackageInfo.SourceAddress, TempDir "\" TempDownloadDir "\" PackageInfo.Name
+        Download PackageInfo.SourceAddress, TempDir "\" TempDownloadDir "\" PackageInfo.Main
         FileAppend(JSON.Dump(Map("repository", Map("type", "gist", "url", PackageInfo.DependencyEntry), "author", PackageInfo.Author, "name", PackageInfo.PackageName, "version", PackageInfo.FullVersion), true), TempDir "\" TempDownloadDir "\package.json")
         goto AfterDownload
     } else if PackageInfo.RepositoryType = "forums" {
@@ -1388,9 +1388,7 @@ IsGithubMinimalInstallPossible(PackageInfo, IgnoreVersion := false) {
     if !IgnoreVersion && !IsVersionSha(PackageInfo.Version)
         return false
     if !PackageInfo.Files.Length {
-        if PackageInfo.Main
-            PackageInfo.Files := [PackageInfo.Main]
-        return PackageInfo.Files.Length
+        return !!PackageInfo.Main
     }
     if PackageInfo.Files.Length = 1 {
         if PackageInfo.Files[1] ~= "(?<!\*)\.ahk?\d?$"

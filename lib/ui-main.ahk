@@ -372,7 +372,7 @@ PopulateVersionsLV(PackageInfo, LV) {
                 Found.Push([release["tag_name"], release["published_at"]])
         }
         LV.Add(, "Querying GitHub commits...")
-        if (commits := (IsGithubMinimalInstallPossible(PackageInfo, true) ? QueryGitHubRepo(PackageInfo.Repository, "commits?path=" PackageInfo.Files[1]) : QueryGitHubCommits(PackageInfo.Repository))) && commits is Array && commits.Length {
+        if (commits := (IsGithubMinimalInstallPossible(PackageInfo, true) ? QueryGitHubRepo(PackageInfo.Repository, "commits?path=" (PackageInfo.Files.Length ? PackageInfo.Files[1] : PackageInfo.Main)) : QueryGitHubCommits(PackageInfo.Repository))) && commits is Array && commits.Length {
             if Found.Length
                 Found.Push([""])
             Found.Push(["Commits:"])
