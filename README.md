@@ -113,9 +113,38 @@ For archive installs use the download URL. A version can't be specified in this 
 aris i https://github.com/Descolada/UIA-v2/archive/refs/heads/main.zip
 ```
 
+# Developer info
+
+## Adding packages to index
+The minimum information for an index.json entry is "description", "main", and "repository". If the package consists of more than a single file and not all files in the package are needed, then the "files" array should be filled with the appropriate file names or wildcard patterns. In that case "main" also needs to be specified with the relative path to the file, but doesn't need to be duplicated in the "files" array. 
+Including a GitHub repo branch name is optional and will default to the default branch.
+
+Example minimal entry, which downloads all files in the repository and sets main.ahk as the entry-point. "files" is implicitly ["*.*"] in this case.
+```
+	"Author/Name": {
+		"description": "A short package description",
+		"main": "main.ahk",
+		"repository": "Author/repo[/branch]"
+	}
+```
+Example multiple files minimal entry, which downloads the assets folder, include.ahk and main.ahk:
+```
+	"Author/Name": {
+		"description": "A short package description",
+		"main": "subfolder/main.ahk",
+        "files": ["subfolder/include.ahk", "subfolder/assets/*.*"]
+		"repository": "Author/repo/branch"
+	}
+```
+
 # Roadmap
+Not in order of priority:
 1. Updating a main package (eg Aris itself) is currently untested, most likely needs fixing.
 2. Add global install support (currently only local installs)
 3. Add package name aliases support
 4. Improve GUI experience (beautify, make GUI resizable, search packages by tags etc)
 5. Create automated tests
+6. Support GitHub installs by tags
+7. Support installs from local files/folders
+8. Add shell context menu item to install script dependencies
+9. Set up automatic updates mechanism for index.json and Aris
