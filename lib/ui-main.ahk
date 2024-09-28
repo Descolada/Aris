@@ -6,7 +6,7 @@ LaunchGui() {
 
     g_MainGui.FolderTV := g_MainGui.Add("TreeView", "r25 w200", "Package files")
     g_MainGui.FolderTV.X := 10, g_MainGui.FolderTV.Height := -50, g_MainGui.FolderTV.WidthP := 0.3
-    g_MainGui.OnEvent("ContextMenu", ShowFolderTVContextMenu)
+    g_MainGui.FolderTV.OnEvent("ContextMenu", ShowFolderTVContextMenu)
     LoadPackageFolder(g_Config.Has("last_project_directory") && DirExist(g_Config["last_project_directory"]) ? g_Config["last_project_directory"] : A_WorkingDir)
 
     g_MainGui.PackageJson := LoadPackageJson()
@@ -516,7 +516,7 @@ SavePackageMetadata(G, *) {
     WinClose G
 }
 
-ShowFolderTVContextMenu(GuiObj, FolderTV, Item, IsRightClick, *) {
+ShowFolderTVContextMenu(FolderTV, Item, IsRightClick, *) {
     static FolderMenu
     FolderMenu := Menu()
     if Item {
@@ -524,10 +524,10 @@ ShowFolderTVContextMenu(GuiObj, FolderTV, Item, IsRightClick, *) {
         while ParentId := FolderTV.GetParent(ParentId)
             Folder := FolderTV.GetText(ParentId) "\" Folder
         FullPath := StrSplitLast(A_WorkingDir, "\")[1] "\" Folder
-        if InStr(Text := FolderTV.GetText(Item), ".")
-            FolderMenu.Add("Edit file", (*) => Run('edit "' FullPath '"'))
-        else
+        if DirExist(FullPath)
             FolderMenu.Add("Open in Explorer", (*) => Run('explore "' FullPath '"'))
+        else
+            FolderMenu.Add("Edit file", (*) => Run('edit "' FullPath '"'))
     }
     FolderMenu.Add("Open project folder in Explorer", (*) => Run('explore "' A_WorkingDir '"'))
     FolderMenu.Show()
