@@ -6,50 +6,64 @@
 	},
 	"Descolada/Acc": {
 		"description": "Acc library for AHK v2 (note: use of UIA is preferred over Acc)",
+		"files": [
+			"Lib/Acc.ahk"
+		],
 		"license": "MIT",
-		"main": "Lib/Acc.ahk",
 		"repository": "Descolada/Acc-v2/main",
 		"website": "https://github.com/Descolada/Acc-v2"
 	},
 	"Descolada/Array": {
 		"description": "Adds useful methods to arrays",
+		"files": [
+			"Lib/Array.ahk"
+		],
 		"license": "MIT",
-		"main": "Lib/Array.ahk",
 		"repository": "Descolada/AHK-v2-libraries/main",
 		"website": "https://github.com/Descolada/AHK-v2-libraries"
 	},
 	"Descolada/JAB": {
 		"description": "Java Access Bridge library to automate Java applications interfaces",
+		"files": [
+			"Lib/JAB.ahk"
+		],
 		"license": "MIT",
-		"main": "Lib/JAB.ahk",
 		"repository": "Descolada/AHK-v2-libraries/main",
 		"website": "https://github.com/Descolada/AHK-v2-libraries"
 	},
 	"Descolada/Map": {
 		"description": "Adds useful methods to maps",
+		"files": [
+			"Lib/Map.ahk"
+		],
 		"license": "MIT",
-		"main": "Lib/Map.ahk",
 		"repository": "Descolada/AHK-v2-libraries/main",
 		"website": "https://github.com/Descolada/AHK-v2-libraries"
 	},
 	"Descolada/Media": {
 		"description": "Implements UWP Media Control, allowing access and control of the playing media (but not any media, only UWP ones that are notified by a tray tip with the play-pause buttons and playing song title)",
+		"files": [
+			"Lib/Media.ahk"
+		],
 		"license": "MIT",
-		"main": "Lib/Media.ahk",
 		"repository": "Descolada/AHK-v2-libraries/main",
 		"website": "https://github.com/Descolada/AHK-v2-libraries"
 	},
 	"Descolada/Misc": {
 		"description": "Miscallaneous useful functions such as Range, RegExMatchAll, Highlight, WinGetInfo, GetCaretPos, ConvertWinPos, etc",
+		"files": [
+			"Lib/Misc.ahk"
+		],
 		"license": "MIT",
-		"main": "Lib/Misc.ahk",
 		"repository": "Descolada/AHK-v2-libraries/main",
 		"website": "https://github.com/Descolada/AHK-v2-libraries"
 	},
 	"Descolada/OCR": {
 		"description": "OCR library using Windows' built-in UWP OCR capabilities",
+		"files": [
+			"Lib/OCR.ahk"
+		],
 		"license": "MIT",
-		"main": "Lib/OCR.ahk",
 		"repository": "Descolada/OCR/main",
 		"tags": [
 			"OCR",
@@ -60,8 +74,10 @@
 	},
 	"Descolada/String": {
 		"description": "Adds useful methods to strings",
+		"files": [
+			"Lib/String.ahk"
+		],
 		"license": "MIT",
-		"main": "Lib/String.ahk",
 		"repository": "Descolada/AHK-v2-libraries/main",
 		"website": "https://github.com/Descolada/AHK-v2-libraries"
 	},
@@ -90,15 +106,19 @@
 	},
 	"Descolada/WinEvent": {
 		"description": "Can be used to monitor for window events such as close, open, minimize etc",
+		"files": [
+			"Lib/WinEvent.ahk"
+		],
 		"license": "MIT",
-		"main": "Lib/WinEvent.ahk",
 		"repository": "Descolada/AHK-v2-libraries/main",
 		"website": "https://github.com/Descolada/AHK-v2-libraries"
 	},
 	"Descolada/XHotstring": {
 		"description": "Implements regular expression hotstrings",
+		"files": [
+			"Lib/XHotstring.ahk"
+		],
 		"license": "MIT",
-		"main": "Lib/XHotstring.ahk",
 		"repository": "Descolada/AHK-v2-libraries/main",
 		"tags": [
 			"RegEx",
@@ -121,8 +141,10 @@
 	},
 	"G33kDude/cJson": {
 		"description": "A high-performance JSON parsing library",
+		"files": [
+			"Dist/JSON.ahk"
+		],
 		"license": "MIT",
-		"main": "Dist/JSON.ahk",
 		"repository": "G33kDude/cJson.ahk/v2",
 		"tags": [
 			"JSON",
@@ -132,15 +154,19 @@
 	},
 	"G33kDude/HashMap": {
 		"description": "Provides a hash map based alternative implementation of AutoHotkey's Map class, with the goal of allowing drop-in replacement for situations where the native Map's performance limitations have been reached",
+		"files": [
+			"Dist/HashMap.ahk"
+		],
 		"license": "MIT",
-		"main": "Dist/HashMap.ahk",
 		"repository": "G33kDude/HashMap.ahk/main",
 		"website": "https://github.com/G33kDude/cJson.ahk"
 	},
 	"iseahound/ImagePut": {
 		"description": "A core library for images in AutoHotkey",
+		"files": [
+			"ImagePut.ahk"
+		],
 		"license": "MIT",
-		"main": "ImagePut.ahk",
 		"website": "https://github.com/iseahound/ImagePut"
 	},
 	"just me/ListViewExtensions": {
@@ -165,8 +191,10 @@
 	},
 	"thqby/Audio": {
 		"description": "Core Audio APIs",
+		"files": [
+			"Audio.ahk"
+		],
 		"license": "MIT",
-		"main": "Audio.ahk",
 		"repository": "thqby/ahk2_lib/master"
 	},
 	"thqby/CGdip": {
@@ -175,13 +203,14 @@
 			"CGdip.ahk"
 		],
 		"license": "MIT",
-		"main": "CGdip.ahk",
 		"repository": "thqby/ahk2_lib/master"
 	},
 	"thqby/child_process": {
 		"description": "Create a child process, and read stdout/stderr asynchronously, supporting multiple stdin inputs",
+		"files": [
+			"child_process.ahk"
+		],
 		"license": "MIT",
-		"main": "child_process.ahk",
 		"repository": "thqby/ahk2_lib/master"
 	},
 	"thqby/Chrome": {
@@ -196,14 +225,18 @@
 	},
 	"thqby/Crypt": {
 		"description": "Cryptograhic functions for MD5, SHA, and AES hashes",
+		"files": [
+			"Crypt.ahk"
+		],
 		"license": "MIT",
-		"main": "Crypt.ahk",
 		"repository": "thqby/ahk2_lib/master"
 	},
 	"thqby/DirectoryWatcher": {
 		"description": "Call the notification function when the specified directory changes",
+		"files": [
+			"DirectoryWatcher.ahk"
+		],
 		"license": "MIT",
-		"main": "DirectoryWatcher.ahk",
 		"repository": "thqby/ahk2_lib/master"
 	},
 	"thqby/RapidOcr": {
@@ -217,8 +250,10 @@
 	},
 	"thqby/WebSocket": {
 		"description": "The websocket client implemented through winhttp",
+		"files": [
+			"WebSocket.ahk"
+		],
 		"license": "MIT",
-		"main": "WebSocket.ahk",
 		"repository": "thqby/ahk2_lib/master"
 	},
 	"thqby/WebView2": {
