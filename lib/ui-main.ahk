@@ -398,7 +398,7 @@ PopulateVersionsLV(PackageInfo, LV) {
         LV.Delete()
         LV.Add(, "latest", "Unversioned from live forums")
         for Match in Matches {
-            LV.Add(, Match.Version)
+            LV.Add(, Match.Version, " ")
         } else
             LV.Add(, "No snapshots found in Wayback Machine")
         LV.ModifyCol(1)
@@ -523,7 +523,7 @@ ShowFolderTVContextMenu(GuiObj, FolderTV, Item, IsRightClick, *) {
         Folder := FolderTV.GetText(Item), ParentId := Item
         while ParentId := FolderTV.GetParent(ParentId)
             Folder := FolderTV.GetText(ParentId) "\" Folder
-        FullPath := A_WorkingDir "\" StrSplit(Folder, "\",, 2)[-1]
+        FullPath := StrSplitLast(A_WorkingDir, "\")[1] "\" Folder
         if InStr(Text := FolderTV.GetText(Item), ".")
             FolderMenu.Add("Edit file", (*) => Run('edit "' FullPath '"'))
         else

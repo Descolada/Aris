@@ -294,6 +294,10 @@ class PackageInfoBase {
 
 InputToPackageInfo(Input) {
     PackageInfo := PackageInfoBase()
+
+    if g_Switches["files"].Length
+        PackageInfo.Files := g_Switches["files"]
+
     if loc := InStr(Input, "@",,-1) {
         PackageInfo.Version := SubStr(Input, loc+1)
         Input := SubStr(Input, 1, loc-1)
@@ -308,12 +312,32 @@ InputToPackageInfo(Input) {
     PackageInfo.Repository := Input
     ParseRepositoryData(PackageInfo)
 
-    if PackageInfo.RepositoryType
-        return PackageInfo
+    if !PackageInfo.RepositoryType {
+        FoundPackageInfo := SearchPackageByName(Input)
+        FoundPackageInfo.Version := PackageInfo.Version || FoundPackageInfo.Version || PackageInfo.InstallVersion || FoundPackageInfo.InstallVersion, FoundPackageInfo.Hash := PackageInfo.Hash || FoundPackageInfo.Hash
+        PackageInfo := FoundPackageInfo
+    }
 
-    FoundPackageInfo := SearchPackageByName(Input)
-    FoundPackageInfo.Version := PackageInfo.Version || FoundPackageInfo.Version || PackageInfo.InstallVersion || FoundPackageInfo.InstallVersion, FoundPackageInfo.Hash := PackageInfo.Hash || FoundPackageInfo.Hash
-    return FoundPackageInfo
+    if g_Switches["main"] != "" {
+        PackageInfo.Main := g_Switches["main"]
+        if !g_Index.Has(PackageInfo.PackageName) {
+            PackageInfo.Name := StrSplit(g_Switches["main"], "/")[-1] 
+            PackageInfo.PackageName := PackageInfo.Author "/" PackageInfo.Name
+        }
+    }
+
+    StandardizePackageInfo(PackageInfo)
+
+    return PackageInfo
+}
+
+StandardizePackageInfo(PackageInfo) {
+    local i
+    PackageInfo.Main := Trim(StrReplace(PackageInfo.Main, "\", "/"), "/ ")
+    for i, PackageFile in PackageInfo.Files {
+        PackageInfo.Files[i] := Trim(StrReplace(PackageFile, "\", "/"), "/ ")
+    }
+    return PackageInfo
 }
 
 ParseRepositoryData(PackageInfo) {
@@ -411,6 +435,7 @@ InstallInfoToPackageInfo(InstallInfo) {
 
     ParseRepositoryData(PackageInfo)
 
+    StandardizePackageInfo(PackageInfo)
     return PackageInfo        
 }
 
@@ -432,6 +457,7 @@ DependencyInfoToPackageInfo(PackageName, DependencyInfo) {
     Split := StrSplit(PackageName, "/",, 2)
     PackageInfo.Author := Split[1]
     PackageInfo.Name := Split[2]
+    StandardizePackageInfo(PackageInfo)
     return PackageInfo
 }
 
@@ -525,31 +551,6 @@ InstallPackage(Package, Update:=0) {
         PackageInfo.Version := PackageInfo.DependencyVersion
     }
 
-    if g_Switches["main"] != "" {
-        PackageInfo.Main := g_Switches["main"]
-        if !g_Index.Has(PackageInfo.PackageName) {
-            PackageInfo.Name := StrSplit(g_Switches["main"], "/")[-1] 
-            PackageInfo.PackageName := PackageInfo.Author "/" PackageInfo.Name
-        }
-    }
-    if g_Switches["files"].Length
-        PackageInfo.Files := g_Switches["files"]
-
-    if PackageInfo.Main {
-        if !PackageInfo.Files.Length
-            PackageInfo.Files := [PackageInfo.Main]
-
-        MainFileInFiles := false
-        for PackageFile in PackageInfo.Files {
-            if PackageFile = PackageInfo.Main {
-                MainFileInFiles := true
-                break
-            }
-        }
-        if !MainFileInFiles
-            PackageInfo.Files.Push(PackageInfo.Main)
-    }
-
     if PackageInfo.IsMain {
         PrevWorkingDir := A_WorkingDir
         try {
@@ -618,7 +619,7 @@ InstallPackage(Package, Update:=0) {
             WriteStdOut 'Package "' IncludePackageName "@" Include.InstallVersion '" successfully installed.'
 
         if Include.HasProp("Main") && Include.Main {
-            Addition := "#include .\" Include.InstallName "\" Include.Main (Include.DependencyEntry != "" ? " `; Source: " Include.DependencyEntry : "") "`n"
+            Addition := "#include .\" Include.InstallName "\" StrReplace(Include.Main, "/", "\") (Include.DependencyEntry != "" ? " `; Source: " Include.DependencyEntry : "") "`n"
             if !InStr(IncludeFileContent, Addition)
                 IncludeFileContent .= Addition, AddedIncludesString .= Addition
         }
@@ -704,7 +705,7 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
 
     if PackageInfo.Files.Length {
         DirCreate(TempDir "\~" FinalDirName)
-        MainFile := Trim(StrReplace(PackageInfo.Main, "/", "\"), "\/")
+        MainFile := StrReplace(PackageInfo.Main, "/", "\")
         if !FileExist(TempDir "\" FinalDirName "\" MainFile) {
             Loop files TempDir "\" FinalDirName "\*.ah*", "R" {
                 if A_LoopFileName = MainFile {
@@ -813,7 +814,12 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
 
 VerifyPackageIsDownloadable(PackageInfo) {
     if PackageInfo.RepositoryType = "github" && IsVersionSha(PackageInfo.Version) {
-        if !(PackageInfo.Main && PackageInfo.Files.Length) {
+        if PackageInfo.Files.Length > 1 {
+            Repo := StrSplit(PackageInfo.Repository, "/")
+            ZipName := (repo.Length = 3 ? Repo[3] : QueryGitHubRepo(PackageInfo.Repository)["default_branch"]) ".zip"
+            PackageInfo.SourceAddress := "https://github.com/" Repo[1] "/" Repo[2] "/archive/refs/heads/" ZipName
+            PackageInfo.ZipName := Repo[1] "_" Repo[2] "_" PackageInfo.Version "-" ZipName
+        } else if !PackageInfo.Files.Length {
             Repo := StrSplit(PackageInfo.Repository, "/")
             PackageInfo.ZipName := Repo[1] "_" Repo[2] "_" PackageInfo.Version ".zip"
             PackageInfo.SourceAddress := "https://github.com/" Repo[1] "/" Repo[2] "/archive/" PackageInfo.Version ".zip"
@@ -845,7 +851,7 @@ VerifyPackageIsDownloadable(PackageInfo) {
             PackageInfo.SourceAddress := release["zipball_url"]
         }
     } else if PackageInfo.RepositoryType = "archive" {
-        PackageInfo.Version := A_YYYY A_MM A_DD SubStr(MD5(PackageInfo.Repository), 1, 12)
+        PackageInfo.Version := A_YYYY A_MM A_DD SubStr(MD5(PackageInfo.Repository), 1, 14)
         PackageInfo.ZipName := "archive_" PackageInfo.Version (RegExMatch(PackageInfo.Repository, "\.tar\.gz$") ? ".tar.gz" : "." StrSplit(PackageInfo.Repository, ".")[-1])
         PackageInfo.SourceAddress := PackageInfo.Repository
     } else if PackageInfo.RepositoryType = "gist" {
@@ -971,7 +977,7 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
             PackageInfo.PackageName := PackageInfo.Author "/" PackageInfo.Name
 
         if !PackageInfo.Version || PackageInfo.Version = "latest" || PackageInfo.Hash {
-            PackageInfo.Version := A_YYYY A_MM A_DD A_Hour A_Min A_Sec "+" (Hash := SubStr(MD5(Code), 1, 12))
+            PackageInfo.Version := A_YYYY A_MM A_DD A_Hour A_Min A_Sec "+" (Hash := SubStr(MD5(Code), 1, 14))
             if PackageInfo.Hash && Hash != PackageInfo.Hash
                 throw Error("Download from forums succeeded, but there was a package hash mismatch", -1, "Found " Hash " but expected " PackageInfo.Hash)
         }
@@ -1051,10 +1057,8 @@ GithubDownloadMinimalInstall(PackageInfo, Path) {
     Path := Trim(Path, "\/")
     Repo := StrSplit(PackageInfo.Repository, "/")
     if PackageInfo.Files.Length = 1 {
-        Result := QueryGitHubRepo(PackageInfo.Repository, "commits?path=" PackageInfo.Files[1])
-        PackageInfo.Version := SubStr(Result[1]["sha"], 1, 7)
-        PackageInfo.MainPath := StrSplit(PackageInfo.Main, "\")[-1], PackageInfo.Main := StrSplit(PackageInfo.Main, "/")[-1]
-        PackageInfo.DependencyEntry := "github:" PackageInfo.Repository "@" (PackageInfo.DependencyVersion || PackageInfo.Version || PackageInfo.InstallVersion)
+        PackageInfo.MainPath := PackageInfo.Files[1], PackageInfo.Main := StrSplit(PackageInfo.Main, "/")[-1]
+        PackageInfo.DependencyEntry := "github:" PackageInfo.Repository "@" PackageInfo.Version
         try Download("https://github.com/" Repo[1] "/" Repo[2] "/raw/" PackageInfo.Version "/"  PackageInfo.MainPath, Path "\" PackageInfo.Main)
         catch
             throw Error("Download failed", -1, '"' Path "\" PackageInfo.Main '@' PackageInfo.Version '" from GitHub repo "' Repo[1] "/" Repo[2] '"')
@@ -1077,7 +1081,7 @@ GithubDownloadMinimalInstall(PackageInfo, Path) {
             }
         }
         Download("https://github.com/" Repo[1] "/" Repo[2] "/raw/" PackageInfo.Version "/" MinFile, Path TargetPath "\" Split[-1])
-        PackageInfo.DependencyEntry := "github:" PackageInfo.Repository "@" (PackageInfo.DependencyVersion || PackageInfo.Version || PackageInfo.InstallVersion)
+        PackageInfo.DependencyEntry := "github:" PackageInfo.Repository "@" PackageInfo.Version
     }
     return 1
 }
@@ -1467,8 +1471,8 @@ GetVersionRangeCompareFunc(Range) {
 }
 
 IsVersionSha(version) => StrLen(version) = 7 && RegExMatch(version, "^\w+$")
-IsVersionMD5(version) => StrLen(version) = 12 && RegExMatch(version, "^\w{12}$")
-IsSemVer(input) => RegExMatch(input, "^[><=^~]*v?(?:((0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)|\d+|\d+\.\d+|latest|\*)$")
+IsVersionMD5(version) => StrLen(version) = 14 && RegExMatch(version, "^\w{14}$")
+IsSemVer(input) => !RegExMatch(input, "(^\w{7}$)|^\w{14}$") && RegExMatch(input, "^[><=^~]*v?(?:((0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)|\d+|\d+\.\d+|latest|\*)$")
 IsVersionCompatible(version, range) => GetVersionRangeCompareFunc(range).Call(version)
 
 MergeJsonInfoToPackageInfo(JsonInfo, PackageInfo) {
@@ -1478,11 +1482,23 @@ MergeJsonInfoToPackageInfo(JsonInfo, PackageInfo) {
         PackageInfo.Repository := JsonInfo["repository"]["url"], PackageInfo.RepositoryType := JsonInfo["repository"]["type"]
         ParseRepositoryData(PackageInfo)
     }
-    if !PackageInfo.Files.Length && JsonInfo.Has("files")
-        PackageInfo.Files := JsonInfo["files"]
+    if !PackageInfo.Files.Length {
+        if JsonInfo.Has("files")
+            PackageInfo.Files := JsonInfo["files"]
+        if JsonInfo.Has("main")
+            MergeMainFileToFiles(PackageInfo, JsonInfo["main"])
+    }
     if !PackageInfo.Main && JsonInfo.Has("main")
         PackageInfo.Main := JsonInfo["main"]
     return PackageInfo
+}
+
+MergeMainFileToFiles(PackageInfo, MainFile) {
+    for PackageFile in PackageInfo.Files {
+        if PackageFile = MainFile
+            return
+    }
+    PackageInfo.Files.Push(MainFile)
 }
 
 ParsePackageName(PackageName) {
@@ -1562,7 +1578,7 @@ QueryForumsReleases(PackageInfo) {
         */
         if !PackageInfo.Start && InStr(Entry[3], "start=")
             continue
-        Matches.Push({Repository:Entry[3], Version:Entry[2]})
+        Matches.Push({Repository:Entry[3], Version:Entry[2], Digest:Entry[6]})
     }
     return Matches
 }
