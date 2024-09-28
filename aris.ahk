@@ -10,7 +10,7 @@
     4) If an installed library has package.json, then its dependencies should also be installed in the main Lib folder
     5) A package is considered "installed" if it has an entry in package.json dependencies, packages.ahk #include,
         and it has an install folder in Lib folder
-    6) "aris install" should query for package.json, packages.ahk, and search all .ahk files for matching
+    6) "aris install" should query for package.json, packages.ahk, and search all project main folder and lib folder .ahk files for matching
         ARIS version style "Author_Name_Version".
     7) Dependencies should also be findable if a package.json and packages.ahk don't exist. In that case
         all .ahk files should be queried for matching ARIS version styles AND that entry must contain
@@ -141,8 +141,11 @@ if (!A_Args.Length) {
             } else
                 WriteStdOut("Specify a package to remove.")
         case "update":
-            if !FileExist(A_WorkingDir "\package.json")
-                throw ValueError("Missing package.json, cannot update package", -1)
+            if !FileExist(A_WorkingDir "\package.json") {
+                WriteStdOut "Missing package.json, cannot update package!"
+                WriteStdOut '`tInformation: Use "aris install" if you want to install missing dependecies from the projects scripts.'
+                ExitApp
+            }
             if Targets.Length {
                 for target in Targets
                     InstallPackage(target, 1)
@@ -427,6 +430,9 @@ InstallInfoToPackageInfo(InstallInfo) {
             PackageInfo.DependencyVersion := "*"
     } else 
         PackageInfo.DependencyVersion := PackageInfo.InstallVersion
+
+    if g_Index.Has(PackageInfo.PackageName)
+        MergeJsonInfoToPackageInfo(g_Index[PackageInfo.PackageName], PackageInfo)
 
     if !PackageInfo.RepositoryType
         PackageInfo.RepositoryType := "github"
