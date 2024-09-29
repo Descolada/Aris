@@ -68,9 +68,8 @@ global g_Switches := Mapi("global_install", false, "force", false, "main", "", "
 global g_CommandAliases := Mapi("install", "install", "i", "install", "remove", "remove", "r", "remove", "rm", "remove", "uninstall", "remove", "update", "update", "update-index", "update-index", "list", "list", "clean", "clean")
 global g_SwitchAliases := Mapi("--global-install", "global_install", "-g", "global_install", "-f", "force", "--force", "force", "--main", "main", "-m", "main", "--files", "files")
 global g_MainGui := Gui("+MinSize640x400 +Resize", "Aris")
+global g_AddedIncludesString := ""
 A_FileEncoding := "UTF-8"
-
-;A_Args := ["--working-dir", "C:\Users\minip\source\repos\SnapTests", "update", "String@latest"]
 
 for i, Arg in A_Args {
     if Arg = "--working-dir" {
@@ -136,6 +135,7 @@ if (!A_Args.Length) {
             } else {
                 InstallPackageDependencies()
             }
+            OutputAddedIncludesString(, !!Targets.Length)
         case "remove":
             if Targets.Length {
                 for target in Targets
@@ -158,6 +158,7 @@ if (!A_Args.Length) {
                 ThisPackage.Files := ["*.*"]
                 InstallPackage(ThisPackage, 1)
             }
+            OutputAddedIncludesString(1, !!Targets.Length)
         case "update-index":
             UpdatePackageIndex()
         case "list":
@@ -235,6 +236,18 @@ RefreshWorkingDirGlobals() {
     global g_PackageJson := LoadPackageJson()
     global g_LibDir := FindLibDir()
     global g_InstalledPackages := QueryInstalledPackages()
+}
+
+; InstallType: 0 = install, 1 := update
+; PackageType: 0 = regular, 1 = dependency
+OutputAddedIncludesString(InstallType:=0, PackageType:=0) {
+    global g_AddedIncludesString
+    if !g_AddedIncludesString
+        return
+    Plural := InStr(g_AddedIncludesString := Trim(g_AddedIncludesString), "`n")
+    WriteStdOut "`n" (InstallType = 0 ? "Installed" : "Updated") " " (PackageType = 0 ? "package" (Plural ? "s" : "") : "dependenc" (Plural ? "ies" : "y")) " include directive" (Plural ? "s" : "") ":"
+    WriteStdOut g_AddedIncludesString
+    g_AddedIncludesString := ""
 }
 
 InstallPackageDependencies() {
@@ -528,7 +541,7 @@ SearchPackageByName(Input, Skip := 0) {
 ; Update=1 means allow update if package is already installed, but skip if is not installed
 ; Update=2 means allow update and install if not installed
 InstallPackage(Package, Update:=0) {
-    global g_PackageJson, g_InstalledPackages, g_LibDir
+    global g_PackageJson, g_InstalledPackages, g_LibDir, g_AddedIncludesString
     CurrentlyInstalled := Mapi()
     if !(Package is Object) {
         try PackageInfo := InputToPackageInfo(Package)
@@ -634,7 +647,7 @@ InstallPackage(Package, Update:=0) {
     }
 
     if AddedIncludesString
-        WriteStdOut "`n" (Update ? "Updated" : "Installed") " packages include directives:`n" StrReplace(AddedIncludesString, "#include .\", "#include .\" g_LibDir "\")
+        g_AddedIncludesString .= StrReplace(AddedIncludesString, "#include .\", "#include .\" g_LibDir "\")
 
     if !PackageJson["dependencies"].Count
         PackageJson.Delete("dependencies")
@@ -667,6 +680,7 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
     ; First download dependencies listed in index.json, except if we are updating our package
     if !CanUpdate && PackageInfo.Dependencies.Count {
         for DependencyName, DependencyVersion in PackageInfo.Dependencies {
+            WriteStdOut "Starting install of dependency " DependencyName "@" DependencyVersion
             if !DownloadPackageWithDependencies(DependencyInfoToPackageInfo(DependencyName, DependencyVersion), TempDir, Includes)
                 throw Error("Failed to install dependency", -1, DependencyName "@" DependencyVersion)
         }
@@ -796,8 +810,11 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
 
         PackageJson := LoadJson(TempDir "\" FinalDirName "\package.json")
         if PackageJson.Has("dependencies") {
-            for DependencyName, DependencyVersion in PackageJson["dependencies"]
+            WriteStdOut "Found dependencies in extracted package manifest"
+            for DependencyName, DependencyVersion in PackageJson["dependencies"] {
+                WriteStdOut "Starting install of dependency " DependencyName "@" DependencyVersion
                 DownloadPackageWithDependencies(DependencyName "@" DependencyVersion, TempDir, Includes)
+            }
         }
     }
 
@@ -1016,14 +1033,16 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
         }
     }
 
-    WriteStdOut('Downloading package "' PackageInfo.PackageName '"')
     ZipName := PackageInfo.ZipName
-    if !FileExist(g_CacheDir "\" ZipName)
+    if !FileExist(g_CacheDir "\" ZipName) {
         Download PackageInfo.SourceAddress, g_CacheDir "\" ZipName
+        WriteStdOut('Downloading package "' PackageInfo.PackageName '"')
+    }
 
     if PackageInfo.RepositoryType = "archive"
         PackageInfo.Version := SubStr(HashFile(g_CacheDir "\" ZipName, 3), 1, 7)
 
+    WriteStdOut('Extracting package from "' ZipName '"')
     DirCopy g_CacheDir "\" ZipName, TempDir "\" TempDownloadDir, true
 
     Loop Files TempDir "\" TempDownloadDir "\*.*", "D" {
@@ -1077,7 +1096,7 @@ GithubDownloadMinimalInstall(PackageInfo, Path) {
 
     Path := Trim(Path, "\/")
     Repo := StrSplit(PackageInfo.Repository, "/")
-    
+
     try Download("https://github.com/" Repo[1] "/" Repo[2] "/raw/" PackageInfo.Version "/LICENSE", Path "\LICENSE")
     if InStr(FileRead(Path "\LICENSE"), "<!DOCTYPE html>")
         FileDelete(Path "\LICENSE")

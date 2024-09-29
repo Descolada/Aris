@@ -131,6 +131,7 @@ PackageAction(Tab, Action, Btn, *) {
         if IB.Result != "Cancel"
             InstallPackage(IB.Value)
     }
+    OutputAddedIncludesString(!!InStr(Action, "update"))
     LoadPackageFolder(A_WorkingDir)
     PopulateTabs()
 }
@@ -357,6 +358,7 @@ VersionSelectionInstallBtnClicked(G, PackageName, *) {
     WinClose(G)
     g_MainGui.Tabs.Index.Metadata.Value := ""
     InstallPackage(PackageName "@" Version,2)
+    OutputAddedIncludesString()
     LoadPackageFolder(A_WorkingDir)
     PopulateTabs()
 }
