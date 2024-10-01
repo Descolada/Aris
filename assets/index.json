@@ -4,6 +4,26 @@
 		"main": "GetUrl.ahk",
 		"repository": "gist:7cce378c9dfdaf733cb3ca6df345b140/GetUrl.ahk"
 	},
+	"buliasz/Gdip": {
+		"description": "GDI+ library (Gdip_All.ahk) for graphics manipulation",
+		"files": "Gdip_All.ahk",
+		"repository": "buliasz/AHKv2-Gdip/master"
+	},
+	"cyruz/ConfMan": {
+		"description": "Ini files management class, implementing an object central storage and an interface dealing with the underlined classes",
+		"files": "v2/cyruz/ConfMan.ahk",
+		"repository": "ahkscript/ScriptHub/main"
+	},
+	"cyruz/StdoutToVar": {
+		"description": "Runs a command line program and returns its output",
+		"files": "v2/cyruz/StdoutToVar.ahk",
+		"repository": "ahkscript/ScriptHub/main"
+	},
+	"DaveT1/Expect": {
+		"description": "Rapid units testing class",
+		"files": "v2/DaveT1/Expect.ahk",
+		"repository": "ahkscript/ScriptHub/main"
+	},
 	"Descolada/Acc": {
 		"description": "Acc library for AHK v2 (note: use of UIA is preferred over Acc)",
 		"files": "Lib/Acc.ahk",
@@ -17,6 +37,11 @@
 		"license": "MIT",
 		"repository": "Descolada/AHK-v2-libraries/main",
 		"website": "https://github.com/Descolada/AHK-v2-libraries"
+	},
+	"Descolada/FileReadLine": {
+		"description": "Read a single line from a file",
+		"files": "v2/Descolada/FileReadLine.ahk",
+		"repository": "ahkscript/ScriptHub/main"
 	},
 	"Descolada/JAB": {
 		"description": "Java Access Bridge library to automate Java applications interfaces",
@@ -102,11 +127,6 @@
 		],
 		"website": "https://github.com/Descolada/AHK-v2-libraries"
 	},
-	"Descolada/FileReadLine": {
-		"description": "Read a single line from a file",
-		"repository": "ahkscript/ScriptHub/main",
-		"files":"v2/Descolada/FileReadLine.ahk"
-	},
 	"evilC/AutoHotInterception": {
 		"description": "AutoHotInterception (AHI) allows you to execute AutoHotkey code in response to events from a specific keyboard or mouse, whilst (optionally) blocking the native functionality (i.e. stopping Windows from seeing that keyboard or mouse event).",
 		"files": [
@@ -138,6 +158,11 @@
 			"image"
 		]
 	},
+	"Flipeador/WinCloseEx": {
+		"description": "Close a window with different methods",
+		"files": "v2/Ruevil2/ADOSQL.ahk",
+		"repository": "ahkscript/ScriptHub/main"
+	},
 	"G33kDude/cJson": {
 		"description": "A high-performance JSON parsing library",
 		"files": "Dist/JSON.ahk",
@@ -156,11 +181,112 @@
 		"repository": "G33kDude/HashMap.ahk/main",
 		"website": "https://github.com/G33kDude/cJson.ahk"
 	},
+	"Hellbent/PopupWindow": {
+		"dependencies": {
+			"buliasz/Gdip": "*"
+		},
+		"description": "Simplifies the process of working with layered windows",
+		"files": "v2/Hellbent/PopupWindow.ahk",
+		"repository": "ahkscript/ScriptHub/main"
+	},
+	"Hellbent/Vector": {
+		"description": "Vector math class",
+		"files": "v2/Hellbent/Vector.ahk",
+		"repository": "ahkscript/ScriptHub/main"
+	},
 	"iseahound/ImagePut": {
 		"description": "A core library for images in AutoHotkey",
 		"files": "ImagePut.ahk",
 		"license": "MIT",
 		"website": "https://github.com/iseahound/ImagePut"
+	},
+	"jNizM/DNSQuery": {
+		"description": "Retrieves the Resource Record (RR) depends on DNS Record Type",
+		"files": "src/Network/DNSQuery.ahk",
+		"repository": "jNizM/ahk-scripts-v2/main",
+		"scripts": {
+			"postdownload": "A_FileEncoding := \"UTF-8\", Path := A_Args[1] \"\\DNSQuery.ahk\", Content := FileRead(Path), FileOpen(Path, \"w\").Write(RegExReplace(Content, \"; ======+\\r?\\n; Example[\\w\\W]+$\"))"
+		}
+	},
+	"jNizM/DnsServerList": {
+		"description": "Gets a list of DNS servers for the local computer",
+		"files": "src/Network/DnsServerList.ahk",
+		"repository": "jNizM/ahk-scripts-v2/main",
+		"scripts": {
+			"postdownload": "A_FileEncoding := \"UTF-8\", Path := A_Args[1] \"\\DnsServerList.ahk\", Content := FileRead(Path), FileOpen(Path, \"w\").Write(RegExReplace(Content, \"; ======+\\r?\\n; Example[\\w\\W]+$\"))"
+		}
+	},
+	"jNizM/EnumInstalledApps": {
+		"description": "Gets general information about an application (from the Add/Remove Programs Application)",
+		"files": "src/ComObject/EnumInstalledApps.ahk",
+		"repository": "jNizM/ahk-scripts-v2/main",
+		"scripts": {
+			"postdownload": "A_FileEncoding := \"UTF-8\", Path := A_Args[1] \"\\EnumInstalledApps.ahk\", Content := FileRead(Path), FileOpen(Path, \"w\").Write(RegExReplace(Content, \"; ======+\\r?\\n; Example[\\w\\W]+$\"))"
+		}
+	},
+	"jNizM/FileCountLines": {
+		"description": "Count the number of lines in a file",
+		"files": "src/FileObject/FileCountLines.ahk",
+		"repository": "jNizM/ahk-scripts-v2/main",
+		"scripts": {
+			"postdownload": "A_FileEncoding := \"UTF-8\", Path := A_Args[1] \"\\FileCountLines.ahk\", Content := FileRead(Path), FileOpen(Path, \"w\").Write(RegExReplace(Content, \"; ======+\\r?\\n; Example[\\w\\W]+$\"))"
+		}
+	},
+	"jNizM/FileFindString": {
+		"description": "Finds a specific word / string in a text file",
+		"files": "src/FileObject/FileFindString.ahk",
+		"repository": "jNizM/ahk-scripts-v2/main",
+		"scripts": {
+			"postdownload": "A_FileEncoding := \"UTF-8\", Path := A_Args[1] \"\\FileFindString.ahk\", Content := FileRead(Path), FileOpen(Path, \"w\").Write(RegExReplace(Content, \"; ======+\\r?\\n; Example[\\w\\W]+$\"))"
+		}
+	},
+	"jNizM/FileReadLastLines": {
+		"description": "Read last x lines of a text file",
+		"files": "src/FileObject/FileReadLastLines.ahk",
+		"repository": "jNizM/ahk-scripts-v2/main",
+		"scripts": {
+			"postdownload": "A_FileEncoding := \"UTF-8\", Path := A_Args[1] \"\\FileReadLastLines.ahk\", Content := FileRead(Path), FileOpen(Path, \"w\").Write(RegExReplace(Content, \"; ======+\\r?\\n; Example[\\w\\W]+$\"))"
+		}
+	},
+	"jNizM/GetAdaptersInfo": {
+		"description": "Gets network adapter information for the local computer",
+		"files": "src/Network/GetAdaptersInfo.ahk",
+		"repository": "jNizM/ahk-scripts-v2/main",
+		"scripts": {
+			"postdownload": "A_FileEncoding := \"UTF-8\", Path := A_Args[1] \"\\GetAdaptersInfo.ahk\", Content := FileRead(Path), FileOpen(Path, \"w\").Write(RegExReplace(Content, \"; ======+\\r?\\n; Example[\\w\\W]+$\"))"
+		}
+	},
+	"jNizM/GetFilePEHeader": {
+		"description": "Get the PE File Header information (Machine Type)",
+		"files": "src/FileObject/GetFilePEHeader.ahk",
+		"repository": "jNizM/ahk-scripts-v2/main",
+		"scripts": {
+			"postdownload": "A_FileEncoding := \"UTF-8\", Path := A_Args[1] \"\\GetFilePEHeader.ahk\", Content := FileRead(Path), FileOpen(Path, \"w\").Write(RegExReplace(Content, \"; ======+\\r?\\n; Example[\\w\\W]+$\"))"
+		}
+	},
+	"jNizM/IsProcessElevated": {
+		"description": "Retrieves whether a process has elevated privileges",
+		"files": "src/ProcessThreadModule/IsProcessElevated.ahk",
+		"repository": "jNizM/ahk-scripts-v2/main",
+		"scripts": {
+			"postdownload": "A_FileEncoding := \"UTF-8\", Path := A_Args[1] \"\\IsProcessElevated.ahk\", Content := FileRead(Path), FileOpen(Path, \"w\").Write(RegExReplace(Content, \"; ======+\\r?\\n; Example[\\w\\W]+$\"))"
+		}
+	},
+	"jNizM/ResolveHostname": {
+		"description": "Gets the IP Address from a Hostname (Resolve Hostname to IP Address) like nslookup",
+		"files": "src/Network/ResolveHostname.ahk",
+		"repository": "jNizM/ahk-scripts-v2/main",
+		"scripts": {
+			"postdownload": "A_FileEncoding := \"UTF-8\", Path := A_Args[1] \"\\ResolveHostname.ahk\", Content := FileRead(Path), FileOpen(Path, \"w\").Write(RegExReplace(Content, \"; ======+\\r?\\n; Example[\\w\\W]+$\"))"
+		}
+	},
+	"jNizM/ReverseLookup": {
+		"description": "Gets the Hostname by the IP Address (Reverse Lookup) like nslookup",
+		"files": "src/Network/ReverseLookup.ahk",
+		"repository": "jNizM/ahk-scripts-v2/main",
+		"scripts": {
+			"postdownload": "A_FileEncoding := \"UTF-8\", Path := A_Args[1] \"\\ReverseLookup.ahk\", Content := FileRead(Path), FileOpen(Path, \"w\").Write(RegExReplace(Content, \"; ======+\\r?\\n; Example[\\w\\W]+$\"))"
+		}
 	},
 	"just me/GuiCtrlTips": {
 		"description": "Add tooltips to your Gui.Controls",
@@ -170,63 +296,102 @@
 	},
 	"just me/ListViewExtensions": {
 		"description": "Additional functions for GUI ListView controls",
-		"files":"v2/just me/ListViewExtensions.ahk",
+		"files": "v2/just me/ListViewExtensions.ahk",
 		"repository": "ahkscript/ScriptHub/main"
 	},
 	"just me/SQLiteDB": {
 		"description": "Class definitions as wrappers for SQLite3.dll to work with SQLite DBs",
-		"files":"v2/just me/SQLiteDB.ahk",
+		"files": "v2/just me/SQLiteDB.ahk",
 		"repository": "ahkscript/ScriptHub/main"
 	},
 	"just me/ToolTipOptions": {
 		"description": "Can set font, color and title options for subsequent calls to the ToolTip command",
-		"files":"v2/just me/ToolTipOptions.ahk",
+		"files": "v2/just me/ToolTipOptions.ahk",
 		"repository": "ahkscript/ScriptHub/main"
 	},
 	"just me/WatchFolder": {
 		"description": "Notifies about changes within folders, a rewrite of HotKeyIt's WatchDirectory()",
-		"files":"v2/just me/WatchFolder.ahk",
+		"files": "v2/just me/WatchFolder.ahk",
+		"repository": "ahkscript/ScriptHub/main"
+	},
+	"lexikos/CLR": {
+		"description": "Load the Common Language Runtime into the script's process, load .NET assemblies, instantiate objects and call instance methods or properties, compile C# or VB code on the fly or to file",
+		"files": "CLR.ahk",
+		"repository": "Lexikos/CLR.ahk/v2.0"
+	},
+	"lexikos/OnProcessClose": {
+		"description": "Monitor for process close event efficiently",
+		"files": [
+			"v2/lexikos/OnProcessClose.ahk",
+			"v2/lexikos/RegisterWaitCallback.ahk"
+		],
+		"main": "v2/lexikos/OnProcessClose.ahk",
+		"repository": "ahkscript/ScriptHub/main"
+	},
+	"lexikos/RegisterWaitCallback": {
+		"description": "Monitor for a handle signal event",
+		"files": "v2/lexikos/RegisterWaitCallback.ahk",
+		"repository": "ahkscript/ScriptHub/main"
+	},
+	"MrDoge/MemoryModule": {
+		"description": "Include a .dll into a compiled .exe and then load the .dll and use it without having to extract the .dll",
+		"files": "v2/MrDoge/MemoryModule.ahk",
+		"repository": "ahkscript/ScriptHub/main"
+	},
+	"neogna2/GetOpenedFiles": {
+		"description": "Gets an array of files currently in use by a process",
+		"files": "v2/neogna2/GetOpenedFiles.ahk",
+		"repository": "ahkscript/ScriptHub/main"
+	},
+	"Ruevil2/ADOSQL": {
+		"description": "Wraps the utility of ADODB to connect to a database, submit a query, and read the resulting recordset",
+		"files": "v2/Ruevil2/ADOSQL.ahk",
+		"repository": "ahkscript/ScriptHub/main"
+	},
+	"SKAN/InBuf": {
+		"description": "Find values from a buffer",
+		"files": "v2/SKAN/InBuf.ahk",
+		"repository": "ahkscript/ScriptHub/main"
+	},
+	"SKAN/ListBuffer": {
+		"description": "UI as a function to view/search binary content, up to few MB's",
+		"files": "v2/SKAN/ListBuffer.ahk",
+		"repository": "ahkscript/ScriptHub/main"
+	},
+	"SKAN/MapFile": {
+		"description": "Maps a view of a file object (Parameter FileObj) into the address space of AutoHotkey process",
+		"files": "v2/SKAN/MapFile.ahk",
+		"repository": "ahkscript/ScriptHub/main"
+	},
+	"SKAN/MonitorFind": {
+		"description": "Enumerates a list (database) of plugged-in monitors",
+		"files": "v2/SKAN/MonitorFind.ahk",
+		"repository": "ahkscript/ScriptHub/main"
+	},
+	"SKAN/PathX": {
+		"description": "PathX() is an alternative solution for SplitPath(). It breaks down a fullpath to individual parts and returns them as an object.",
+		"files": "v2/SKAN/PathX.ahk",
+		"repository": "ahkscript/ScriptHub/main"
+	},
+	"SKAN/RunAsTask": {
+		"description": "Auto-elevates script without UAC prompt",
+		"files": "v2/SKAN/RunAsTask.ahk",
+		"repository": "ahkscript/ScriptHub/main"
+	},
+	"SKAN/ToggleSound": {
+		"description": "Toggle between audio devices using their names or IDs",
+		"files": "v2/SKAN/ToggleSound.ahk",
 		"repository": "ahkscript/ScriptHub/main"
 	},
 	"SKAN/WiseGui": {
 		"description": "Create highly customizable notifications",
-		"repository": "ahkscript/ScriptHub/main",
-		"files":"v2/SKAN/WiseGui.ahk"
+		"files": "v2/SKAN/WiseGui.ahk",
+		"repository": "ahkscript/ScriptHub/main"
 	},
-	"SKAN/InBuf": {
-		"description": "Find values from a buffer",
-		"repository": "ahkscript/ScriptHub/main",
-		"files":"v2/SKAN/InBuf.ahk"
-	},
-	"SKAN/ListBuffer": {
-		"description": "UI as a function to view/search binary content, up to few MB's",
-		"repository": "ahkscript/ScriptHub/main",
-		"files":"v2/SKAN/ListBuffer.ahk"
-	},
-	"SKAN/MapFile": {
-		"description": "Maps a view of a file object (Parameter FileObj) into the address space of AutoHotkey process",
-		"repository": "ahkscript/ScriptHub/main",
-		"files":"v2/SKAN/MapFile.ahk"
-	},
-	"SKAN/MonitorFind": {
-		"description": "Enumerates a list (database) of plugged-in monitors",
-		"repository": "ahkscript/ScriptHub/main",
-		"files":"v2/SKAN/MonitorFind.ahk"
-	},
-	"SKAN/PathX": {
-		"description": "PathX() is an alternative solution for SplitPath(). It breaks down a fullpath to individual parts and returns them as an object.",
-		"repository": "ahkscript/ScriptHub/main",
-		"files":"v2/SKAN/PathX.ahk"
-	},
-	"SKAN/RunAsTask": {
-		"description": "Auto-elevates script without UAC prompt",
-		"repository": "ahkscript/ScriptHub/main",
-		"files":"v2/SKAN/RunAsTask.ahk"
-	},
-	"SKAN/ToggleSound": {
-		"description": "Toggle between audio devices using their names or IDs",
-		"repository": "ahkscript/ScriptHub/main",
-		"files":"v2/SKAN/ToggleSound.ahk"
+	"Spawnova/ShinsImageScanClass": {
+		"description": "Search for images and pixels extremely fast and also with background window support",
+		"files": "AHK V2/ShinsImageScanClass.ahk",
+		"repository": "Spawnova/ShinsImageScanClass/main"
 	},
 	"The-CoDingman/WebViewToo": {
 		"description": "Allows for use of the WebView2 Framework within AHK to create Web-based GUIs",
@@ -235,6 +400,12 @@
 		],
 		"license": "MIT",
 		"main": "AHK Resources/WebViewToo.ahk"
+	},
+	"TheArkive/CliSAK": {
+		"description": "CLI class: easy one-time and streaming output that collects stdOut and stdErr, and allows writing to stdIn",
+		"files": "AHK2/TheArkive_CliSAK.ahk",
+		"license": "MIT",
+		"repository": "TheArkive/CLSAK_AHK/master"
 	},
 	"TheArkive/WinClip": {
 		"dependencies": {
@@ -331,54 +502,10 @@
 		"main": "WebView2.ahk",
 		"repository": "thqby/ahk2_lib/master"
 	},
-	"buliasz/Gdip": {
-		"description": "GDI+ library (Gdip_All.ahk) for graphics manipulation",
-		"repository": "buliasz/AHKv2-Gdip/master",
-		"files": "Gdip_All.ahk"
-	}, 
-	"Hellbent/PopupWindow": {
-		"description": "Simplifies the process of working with layered windows",
-		"repository": "ahkscript/ScriptHub/main",
-		"files":"v2/Hellbent/PopupWindow.ahk",
-		"dependencies": {
-			"buliasz/Gdip":"*"
-		}
-	},
-	"Hellbent/Vector": {
-		"description": "Vector math class",
-		"repository": "ahkscript/ScriptHub/main",
-		"files":"v2/Hellbent/Vector.ahk"
-	},
-	"MrDoge/MemoryModule": {
-		"description": "Include a .dll into a compiled .exe and then load the .dll and use it without having to extract the .dll",
-		"repository": "ahkscript/ScriptHub/main",
-		"files":"v2/MrDoge/MemoryModule.ahk"
-	},
 	"Tigerlily/MonitorFind": {
 		"description": "Wrapper for monitor configuration WinAPI functions, get and set monitor properties (brightness etc)",
-		"repository": "ahkscript/ScriptHub/main",
-		"files":"v2/Tigerlily/MonitorFind.ahk"
-	},
-	"lexikos/OnProcessClose": {
-		"description": "Monitor for process close event efficiently",
-		"repository": "ahkscript/ScriptHub/main",
-		"main": "v2/lexikos/OnProcessClose.ahk",
-		"files":["v2/lexikos/OnProcessClose.ahk", "v2/lexikos/RegisterWaitCallback.ahk"]
-	},
-	"lexikos/RegisterWaitCallback": {
-		"description": "Monitor for a handle signal event",
-		"repository": "ahkscript/ScriptHub/main",
-		"files":"v2/lexikos/RegisterWaitCallback.ahk"
-	},
-	"lexikos/CLR": {
-		"description": "Load the Common Language Runtime into the script's process, load .NET assemblies, instantiate objects and call instance methods or properties, compile C# or VB code on the fly or to file",
-		"repository": "Lexikos/CLR.ahk/v2.0",
-		"files":"CLR.ahk"
-	},
-	"Spawnova/ShinsImageScanClass": {
-		"description": "Search for images and pixels extremely fast and also with background window support",
-		"repository": "Spawnova/ShinsImageScanClass/main",
-		"files":"AHK V2/ShinsImageScanClass.ahk"
+		"files": "v2/Tigerlily/MonitorFind.ahk",
+		"repository": "ahkscript/ScriptHub/main"
 	},
 	"version": "1.0.0"
 }
