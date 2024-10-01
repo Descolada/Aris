@@ -363,6 +363,8 @@ ParseRepositoryData(PackageInfo) {
     if !PackageInfo.RepositoryType {
         if Input ~= "(\.zip|\.tar\.gz|\.tar|\.7z)$" {
             PackageInfo.RepositoryType := "archive"
+        } else if Input ~= "\.ahk?\d?$" {
+            PackageInfo.RepositoryType := "ahk"
         } else if InStr(Input, "gist.github.com") || Input ~= "^(gist:)" {
             PackageInfo.RepositoryType := "gist"
         } else if InStr(Input, "github.com") || Input ~= "^(github|gh):" {
@@ -382,6 +384,8 @@ ParseRepositoryData(PackageInfo) {
         case "archive":
             SplitSource := StrSplit(PackageInfo.Repository, "/")
             PackageInfo.Name := SplitSource[-1], SplitPath(PackageInfo.Name,,,, &NameNoExt:=""), PackageInfo.PackageName := NameNoExt
+        case "ahk":
+            PackageInfo.Author := PackageInfo.Author || "Unknown", PackageInfo.Name := PackageInfo.Name || RegExReplace(StrSplit(PackageInfo.Repository, "/")[-1], "\.ahk?\d?$"), PackageInfo.PackageName := PackageInfo.PackageName || (PackageInfo.Author "/" PackageInfo.Name)
         case "github":
             PackageInfo.Repository := StrSplit(RegExReplace(Input, ".*github\.com\/", ":",, 1), ":",, 2)[-1]
             Split := StrSplit(PackageInfo.Repository)
@@ -665,6 +669,14 @@ InstallPackage(Package, Update:=0) {
 }
 
 DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false, MarkedForRemove:=[]) {
+    if PackageInfo.HasProp("Preinstall") {
+        Exec := ExecScript(PackageInfo.Preinstall, '"' TempDir '"')
+        if Exec.ExitCode {
+            WriteStdOut "Package preinstall script failed with ExitCode " Exec.ExitCode ", install aborted"
+            return 0
+        }
+    }
+
     IsVersioned := PackageInfo.Version || (PackageInfo.RepositoryType = "archive")
 
     if CanUpdate && !PackageInfo.Version && PackageInfo.PackageName != "" && g_PackageJson["dependencies"].Has(PackageInfo.PackageName) {
@@ -709,6 +721,16 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
 
     if FinalDirName is Integer
         return FinalDirName
+
+    if PackageInfo.HasProp("Postdownload") {
+        A_Clipboard := PackageInfo.Postdownload
+        Exec := ExecScript(PackageInfo.Postdownload, '"' TempDir "\" FinalDirName '"')
+        if Exec.ExitCode {
+            WriteStdOut "Package postdownload script failed with ExitCode " Exec.ExitCode ", install aborted"
+            DirDelete('"' TempDir "\" FinalDirName '"')
+            return 0
+        }
+    }
 
     if IsVersioned { ; A specific version was requested, in which case force the install
         if Includes.Has(PackageInfo.PackageName) && (Include := Includes[PackageInfo.PackageName]) && DirExist(g_LibDir "\" Include.InstallName) {
@@ -755,7 +777,7 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
             }
             for Pattern in PackageInfo.Files {
                 Pattern := Trim(StrReplace(Pattern, "/", "\"), "\/")
-                Loop files TempDirFullPath "\" FinalDirName "\" Pattern, "DF" (Pattern = "*.*" ? "R" : "") {
+                Loop files TempDirFullPath "\" FinalDirName "\" Pattern, "DF" (InStr(Pattern, "*.*") ? "R" : "") {
                     FileName := StrReplace(A_LoopFileFullPath, TempDirFullPath "\" FinalDirName,,,,1)
                     FileName := Trim(StrReplace(FileName, "/", "\"), "\/")
 
@@ -815,6 +837,14 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
                 WriteStdOut "Starting install of dependency " DependencyName "@" DependencyVersion
                 DownloadPackageWithDependencies(DependencyName "@" DependencyVersion, TempDir, Includes)
             }
+        }
+    }
+
+    if PackageInfo.HasProp("Postinstall") {
+        Exec := ExecScript(PackageInfo.Postinstall, '"' TempDir '"')
+        if Exec.ExitCode {
+            WriteStdOut "Package postinstall script failed with ExitCode " Exec.ExitCode ", install aborted"
+            return 0
         }
     }
 
@@ -885,8 +915,22 @@ VerifyPackageIsDownloadable(PackageInfo) {
                 throw Error("No matching version found among GitHub releases")
 
             PackageInfo.Version := release["tag_name"]
-            PackageInfo.ZipName := Repo[1] "_" Repo[2] "_" PackageInfo.Version ".zip"
-            PackageInfo.SourceAddress := release["zipball_url"]
+            if release.Has("assets") && release["assets"].Length {
+                asset := release["assets"][1]
+                if asset["name"] ~= "\.ahk?\d?$" {
+                    PackageInfo.Main := PackageInfo.Main || asset["name"]
+                    PackageInfo.Files := [PackageInfo.Main]
+                    PackageInfo.RepositoryType := "ahk"
+                    PackageInfo.ZipName := PackageInfo.Main
+                    PackageInfo.SourceAddress := asset["browser_download_url"]
+                } else {
+                    PackageInfo.ZipName := Repo[1] "_" Repo[2] "_" asset["name"]
+                    PackageInfo.SourceAddress := asset["browser_download_url"]
+                }
+            } else {
+                PackageInfo.ZipName := Repo[1] "_" Repo[2] "_" PackageInfo.Version ".zip"
+                PackageInfo.SourceAddress := release["zipball_url"]
+            }
         }
     } else if PackageInfo.RepositoryType = "archive" {
         PackageInfo.Version := A_YYYY A_MM A_DD SubStr(MD5(PackageInfo.Repository), 1, 14)
@@ -1031,12 +1075,16 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
             Version := PackageInfo.DependencyVersion || PackageInfo.Version || PackageInfo.InstallVersion
             PackageInfo.DependencyEntry := "github:" PackageInfo.Repository "@" (IsSemVer(Version) && !(Version ~= "^[~^><=]") ? "^" Version : Version)
         }
+    } else if PackageInfo.RepositoryType = "ahk" {
+        PackageInfo.Main := StrSplit(StrReplace(PackageInfo.Main, "\", "/"), "/")[-1]
+        Download PackageInfo.SourceAddress, TempDir "\" TempDownloadDir "\" (PackageInfo.Main || StrSplit(PackageInfo.SourceAddress, "/")[-1])
+        goto AfterDownload
     }
 
     ZipName := PackageInfo.ZipName
     if !FileExist(g_CacheDir "\" ZipName) {
-        Download PackageInfo.SourceAddress, g_CacheDir "\" ZipName
         WriteStdOut('Downloading package "' PackageInfo.PackageName '"')
+        Download PackageInfo.SourceAddress, g_CacheDir "\" ZipName
     }
 
     if PackageInfo.RepositoryType = "archive"
@@ -1045,11 +1093,15 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
     WriteStdOut('Extracting package from "' ZipName '"')
     DirCopy g_CacheDir "\" ZipName, TempDir "\" TempDownloadDir, true
 
-    Loop Files TempDir "\" TempDownloadDir "\*.*", "D" {
-        if PackageInfo.RepositoryType = "archive"
-            PackageInfo.Name := PackageInfo.Name || A_LoopFileName, PackageInfo.Author := PackageInfo.Author || "Archive", PackageInfo.PackageName := PackageInfo.PackageName || PackageInfo.Author "/" PackageInfo.Name
-        DirMove(A_LoopFileFullPath, TempDir "\" TempDownloadDir, 2)
-        break
+    DirCount := 0, LastDir := ""
+    Loop Files TempDir "\" TempDownloadDir "\*.*", "DF"
+        DirCount++, LastDir := A_LoopFileFullPath, LastDirName := A_LoopFileName
+
+    if (DirCount = 1) && DirExist(LastDir) {
+        if PackageInfo.RepositoryType = "archive" {
+            PackageInfo.Name := PackageInfo.Name || LastDirName, PackageInfo.Author := PackageInfo.Author || "Archive", PackageInfo.PackageName := PackageInfo.PackageName || PackageInfo.Author "/" PackageInfo.Name
+        }
+        DirMove(LastDir, TempDir "\" TempDownloadDir, 2)
     }
 
     if !PackageInfo.IsMain && FileExist(TempDir "\" TempDownloadDir "\package.json") && !g_Index.Has(PackageInfo.PackageName) {
@@ -1451,13 +1503,11 @@ IsGithubMinimalInstallPossible(PackageInfo, IgnoreVersion := false) {
 FindMatchingGithubReleaseVersion(releases, target) {
     CompareFunc := GetVersionRangeCompareFunc(target)
 
-    last := "0", latest := ""
     for release in releases {
-        ver := release["tag_name"]
-        if CompareFunc(ver) && VerCompare(ver, ">=" last)
-            last := ver, latest := release
+        if CompareFunc(release["tag_name"])
+            return release
     }
-    return latest
+    return ""
 }
 
 FindMatchingGistVersion(gist_file, target) {
@@ -1525,12 +1575,20 @@ MergeJsonInfoToPackageInfo(JsonInfo, PackageInfo) {
     }
     if !PackageInfo.Files.Length {
         if JsonInfo.Has("files")
-            PackageInfo.Files := JsonInfo["files"]
+            PackageInfo.Files := JsonInfo["files"] is String ? [JsonInfo["files"]] : JsonInfo["files"]
         if JsonInfo.Has("main")
             MergeMainFileToFiles(PackageInfo, JsonInfo["main"])
     }
     if !PackageInfo.Main && JsonInfo.Has("main")
         PackageInfo.Main := JsonInfo["main"]
+    if JsonInfo.Has("scripts") {
+        if !PackageInfo.HasProp("Preinstall") && JsonInfo["scripts"].Has("preinstall")
+            PackageInfo.Preinstall := JsonInfo["scripts"]["preinstall"]
+        if !PackageInfo.HasProp("Postinstall") && JsonInfo["scripts"].Has("postinstall")
+            PackageInfo.Postinstall := JsonInfo["scripts"]["postinstall"]
+        if !PackageInfo.HasProp("Postdownload") && JsonInfo["scripts"].Has("postdownload")
+            PackageInfo.PostDownload := JsonInfo["scripts"]["postdownload"]
+    }
     return PackageInfo
 }
 
@@ -1663,6 +1721,8 @@ ExtractInfoFromRepositoryEntry(repo) {
         return Map("type", "github", "url", "")
     if repo ~= "(\.zip|\.tar\.gz|\.tar|\.7z)$"
         repo := Map("type", "archive", "url", repo)
+    else if repo ~= "\.ahk?\/d?$"
+        repo := Map("type", "ahk", "url", repo)
     else if InStr(repo, "github.com")
         repo := Map("type", "github", "url", RegExReplace(repo, ".*github\.com\/"))
     else if InStr(repo, "autohotkey.com")

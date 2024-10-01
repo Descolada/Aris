@@ -183,6 +183,12 @@ ExtractPackageDescription(Info) {
     if Info.Has("main") {
         if (Info["main"] is String) && Info["main"]
             Content .= "Main: " Info["main"] "`n"
+        else if Info.Has("files") {
+            if (Info["files"] is String) && Info["files"]
+                Content .= "Main: " StrSplit(StrReplace(Info["files"], "\", "/"), "/")[-1] "`n"
+            else if (Info["files"] is Array) && (Info["files"].Length = 1)
+                Content .= "Main: " StrSplit(StrReplace(Info["files"][1], "\", "/"), "/")[-1]  "`n"
+        }
     }
     if Info.Has("homepage")
         Content .= "Homepage: " Info["homepage"] "`n"

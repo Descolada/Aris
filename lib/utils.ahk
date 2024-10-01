@@ -328,3 +328,11 @@ RunCMD(P_CmdLine, P_WorkingDir := "", P_Codepage := "CP0", P_Func := 0, P_Slow :
 
     Return RTrim(sOutput, CRLF)
 }
+
+ExecScript(Script, args:="") {
+    shell := ComObject("WScript.Shell")
+    exec := shell.Exec('"' A_AhkPath '" /ErrorStdOut * ' args)
+    exec.StdIn.Write(Script)
+    exec.StdIn.Close()
+    return {Output:exec.StdOut.ReadAll(), ExitCode:exec.ExitCode}
+}

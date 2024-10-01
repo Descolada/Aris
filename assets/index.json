@@ -6,63 +6,49 @@
 	},
 	"Descolada/Acc": {
 		"description": "Acc library for AHK v2 (note: use of UIA is preferred over Acc)",
-		"files": [
-			"Lib/Acc.ahk"
-		],
+		"files": "Lib/Acc.ahk",
 		"license": "MIT",
 		"repository": "Descolada/Acc-v2/main",
 		"website": "https://github.com/Descolada/Acc-v2"
 	},
 	"Descolada/Array": {
 		"description": "Adds useful methods to arrays",
-		"files": [
-			"Lib/Array.ahk"
-		],
+		"files": "Lib/Array.ahk",
 		"license": "MIT",
 		"repository": "Descolada/AHK-v2-libraries/main",
 		"website": "https://github.com/Descolada/AHK-v2-libraries"
 	},
 	"Descolada/JAB": {
 		"description": "Java Access Bridge library to automate Java applications interfaces",
-		"files": [
-			"Lib/JAB.ahk"
-		],
+		"files": "Lib/JAB.ahk",
 		"license": "MIT",
 		"repository": "Descolada/AHK-v2-libraries/main",
 		"website": "https://github.com/Descolada/AHK-v2-libraries"
 	},
 	"Descolada/Map": {
 		"description": "Adds useful methods to maps",
-		"files": [
-			"Lib/Map.ahk"
-		],
+		"files": "Lib/Map.ahk",
 		"license": "MIT",
 		"repository": "Descolada/AHK-v2-libraries/main",
 		"website": "https://github.com/Descolada/AHK-v2-libraries"
 	},
 	"Descolada/Media": {
 		"description": "Implements UWP Media Control, allowing access and control of the playing media (but not any media, only UWP ones that are notified by a tray tip with the play-pause buttons and playing song title)",
-		"files": [
-			"Lib/Media.ahk"
-		],
+		"files": "Lib/Media.ahk",
 		"license": "MIT",
 		"repository": "Descolada/AHK-v2-libraries/main",
 		"website": "https://github.com/Descolada/AHK-v2-libraries"
 	},
 	"Descolada/Misc": {
 		"description": "Miscallaneous useful functions such as Range, RegExMatchAll, Highlight, WinGetInfo, GetCaretPos, ConvertWinPos, etc",
-		"files": [
-			"Lib/Misc.ahk"
-		],
+		"files": "Lib/Misc.ahk",
 		"license": "MIT",
 		"repository": "Descolada/AHK-v2-libraries/main",
 		"website": "https://github.com/Descolada/AHK-v2-libraries"
 	},
 	"Descolada/OCR": {
 		"description": "OCR library using Windows' built-in UWP OCR capabilities",
-		"files": [
-			"Lib/OCR.ahk"
-		],
+		"files": "Lib/OCR.ahk",
 		"license": "MIT",
 		"repository": "Descolada/OCR/main",
 		"tags": [
@@ -74,18 +60,14 @@
 	},
 	"Descolada/String": {
 		"description": "Adds useful methods to strings",
-		"files": [
-			"Lib/String.ahk"
-		],
+		"files": "Lib/String.ahk",
 		"license": "MIT",
 		"repository": "Descolada/AHK-v2-libraries/main",
 		"website": "https://github.com/Descolada/AHK-v2-libraries"
 	},
 	"Descolada/UIA": {
 		"description": "An AutoHotkey v2 wrapper for the UIAutomation framework, which can be used to automate windows that normally might be difficult or impossible to automate with AHK",
-		"files": [
-			"Lib/UIA.ahk"
-		],
+		"files": "Lib/UIA.ahk",
 		"license": "MIT",
 		"repository": "Descolada/UIA-v2/main",
 		"tags": [
@@ -99,25 +81,19 @@
 			"Descolada/UIA": "*"
 		},
 		"description": "An addon for Descolada/UIA library to simplify automating browsers via UIA",
-		"files": [
-			"Lib/UIA_Browser.ahk"
-		],
+		"files": "Lib/UIA_Browser.ahk",
 		"repository": "Descolada/UIA-v2/main"
 	},
 	"Descolada/WinEvent": {
 		"description": "Can be used to monitor for window events such as close, open, minimize etc",
-		"files": [
-			"Lib/WinEvent.ahk"
-		],
+		"files": "Lib/WinEvent.ahk",
 		"license": "MIT",
 		"repository": "Descolada/AHK-v2-libraries/main",
 		"website": "https://github.com/Descolada/AHK-v2-libraries"
 	},
 	"Descolada/XHotstring": {
 		"description": "Implements regular expression hotstrings",
-		"files": [
-			"Lib/XHotstring.ahk"
-		],
+		"files": "Lib/XHotstring.ahk",
 		"license": "MIT",
 		"repository": "Descolada/AHK-v2-libraries/main",
 		"tags": [
@@ -126,24 +102,45 @@
 		],
 		"website": "https://github.com/Descolada/AHK-v2-libraries"
 	},
-	"FanaticGuru/GuiReSizer": {
+	"Descolada/FileReadLine": {
+		"description": "Read a single line from a file",
+		"repository": "ahkscript/ScriptHub/main",
+		"files":"v2/Descolada/FileReadLine.ahk"
+	},
+	"evilC/AutoHotInterception": {
+		"description": "AutoHotInterception (AHI) allows you to execute AutoHotkey code in response to events from a specific keyboard or mouse, whilst (optionally) blocking the native functionality (i.e. stopping Windows from seeing that keyboard or mouse event).",
+		"files": [
+			"AHK v2/Lib/*.*"
+		],
+		"license": "MIT",
+		"main": "AHK v2/Lib/AutoHotInterception.ahk",
+		"repository": "evilC/AutoHotInterception/master",
+		"scripts": {
+			"postdownload": "A_WorkingDir := A_Args[1]\nDownload(\"https://github.com/oblitum/Interception/releases/latest/download/Interception.zip\", \"Interception.zip\")\nDirCopy \"Interception.zip\", \"Interception\", true\nFileCopy('Interception\\Interception\\library\\x64\\interception.dll', 'AHK v2\\Lib\\x64\\interception.dll', true)\nFileCopy('Interception\\Interception\\library\\x86\\interception.dll', 'AHK v2\\Lib\\x86\\interception.dll', true)\nFileMove('Common\\Lib\\AutoHotInterception.dll', 'AHK v2\\Lib\\AutoHotInterception.dll', true)\nif !(FileExist('C:\\Windows\\System32\\drivers\\mouse.sys') && FileExist('C:\\Windows\\System32\\drivers\\keyboard.sys')) {\nMsgBox('Preparing to run the Interception driver installer.`nReboot your computer after installation.`n`nPress OK to continue', 'Notice')\nRun '*RunAs \".\\Interception\\Interception\\command line installer\\install-interception.exe\" /install'\n}\nDirDelete('Interception', true)\nDirDelete('Common', true)\nRunWait 'powershell.exe -windowstyle hidden -ExecutionPolicy Bypass -File \"' A_WorkingDir '\\AHK v2\\Lib\\Unblocker.ps1\"',, 'Hide'\nExitApp",
+			"preinstall": "ExitApp(MsgBox('This package requires installing the Interception driver, which requires administrator access and must be used cautiously as not to disable certain key combinations such as Ctrl+Alt+Delete. Are you sure you want to continue?', 'Warning', 'YesNo') = 'Yes' ? 0 : 1)"
+		}
+	},
+	"FanaticGuru/GuiResizer": {
 		"description": "A class to simplify adjusting GUI controls to GUI resizing",
-		"main": "GuiReSizer.ahk",
-		"repository": "https://www.autohotkey.com/boards/viewtopic.php?t=113921"
+		"files": "v2/FanaticGuru/GuiResizer.ahk",
+		"repository": "ahkscript/ScriptHub/main"
+	},
+	"FanaticGuru/SpellCurrency": {
+		"description": "A function to convert a number to currency words",
+		"files": "v2/FanaticGuru/SpellCurrency.ahk",
+		"repository": "ahkscript/ScriptHub/main"
 	},
 	"feiyue/FindText": {
 		"description": "A high-performance image search library, which can use images in text form",
-		"main": "FindText.ahk",
-		"repository": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=116471",
+		"files": "v2/feiyue/FindText.ahk",
+		"repository": "ahkscript/ScriptHub/main",
 		"tags": [
 			"image"
 		]
 	},
 	"G33kDude/cJson": {
 		"description": "A high-performance JSON parsing library",
-		"files": [
-			"Dist/JSON.ahk"
-		],
+		"files": "Dist/JSON.ahk",
 		"license": "MIT",
 		"repository": "G33kDude/cJson.ahk/v2",
 		"tags": [
@@ -154,32 +151,82 @@
 	},
 	"G33kDude/HashMap": {
 		"description": "Provides a hash map based alternative implementation of AutoHotkey's Map class, with the goal of allowing drop-in replacement for situations where the native Map's performance limitations have been reached",
-		"files": [
-			"Dist/HashMap.ahk"
-		],
+		"files": "Dist/HashMap.ahk",
 		"license": "MIT",
 		"repository": "G33kDude/HashMap.ahk/main",
 		"website": "https://github.com/G33kDude/cJson.ahk"
 	},
 	"iseahound/ImagePut": {
 		"description": "A core library for images in AutoHotkey",
-		"files": [
-			"ImagePut.ahk"
-		],
+		"files": "ImagePut.ahk",
 		"license": "MIT",
 		"website": "https://github.com/iseahound/ImagePut"
 	},
+	"just me/GuiCtrlTips": {
+		"description": "Add tooltips to your Gui.Controls",
+		"files": "GuiCtrlTips.ahk",
+		"repository": "AHK-just-me/AHKv2_GuiCtrlTips/main",
+		"website": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=116218"
+	},
 	"just me/ListViewExtensions": {
 		"description": "Additional functions for GUI ListView controls",
-		"repository": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=95019&codebox=2"
+		"files":"v2/just me/ListViewExtensions.ahk",
+		"repository": "ahkscript/ScriptHub/main"
+	},
+	"just me/SQLiteDB": {
+		"description": "Class definitions as wrappers for SQLite3.dll to work with SQLite DBs",
+		"files":"v2/just me/SQLiteDB.ahk",
+		"repository": "ahkscript/ScriptHub/main"
 	},
 	"just me/ToolTipOptions": {
 		"description": "Can set font, color and title options for subsequent calls to the ToolTip command",
-		"repository": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=113308"
+		"files":"v2/just me/ToolTipOptions.ahk",
+		"repository": "ahkscript/ScriptHub/main"
+	},
+	"just me/WatchFolder": {
+		"description": "Notifies about changes within folders, a rewrite of HotKeyIt's WatchDirectory()",
+		"files":"v2/just me/WatchFolder.ahk",
+		"repository": "ahkscript/ScriptHub/main"
 	},
 	"SKAN/WiseGui": {
 		"description": "Create highly customizable notifications",
-		"repository": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=94044&p=416867"
+		"repository": "ahkscript/ScriptHub/main",
+		"files":"v2/SKAN/WiseGui.ahk"
+	},
+	"SKAN/InBuf": {
+		"description": "Find values from a buffer",
+		"repository": "ahkscript/ScriptHub/main",
+		"files":"v2/SKAN/InBuf.ahk"
+	},
+	"SKAN/ListBuffer": {
+		"description": "UI as a function to view/search binary content, up to few MB's",
+		"repository": "ahkscript/ScriptHub/main",
+		"files":"v2/SKAN/ListBuffer.ahk"
+	},
+	"SKAN/MapFile": {
+		"description": "Maps a view of a file object (Parameter FileObj) into the address space of AutoHotkey process",
+		"repository": "ahkscript/ScriptHub/main",
+		"files":"v2/SKAN/MapFile.ahk"
+	},
+	"SKAN/MonitorFind": {
+		"description": "Enumerates a list (database) of plugged-in monitors",
+		"repository": "ahkscript/ScriptHub/main",
+		"files":"v2/SKAN/MonitorFind.ahk"
+	},
+	"SKAN/PathX": {
+		"description": "PathX() is an alternative solution for SplitPath(). It breaks down a fullpath to individual parts and returns them as an object.",
+		"repository": "ahkscript/ScriptHub/main",
+		"files":"v2/SKAN/PathX.ahk"
+	},
+	"SKAN/RunAsTask": {
+		"description": "Auto-elevates script without UAC prompt",
+		"repository": "ahkscript/ScriptHub/main",
+		"files":"v2/SKAN/RunAsTask.ahk"
+	},
+	"SKAN/ToggleSound": {
+		"description": "Toggle between audio devices using their names or IDs",
+		"repository": "ahkscript/ScriptHub/main",
+		"files":"v2/SKAN/ToggleSound.ahk"
 	},
 	"The-CoDingman/WebViewToo": {
 		"description": "Allows for use of the WebView2 Framework within AHK to create Web-based GUIs",
@@ -188,6 +235,25 @@
 		],
 		"license": "MIT",
 		"main": "AHK Resources/WebViewToo.ahk"
+	},
+	"TheArkive/WinClip": {
+		"dependencies": {
+			"TheArkive/WinClipAPI": "*"
+		},
+		"description": "Manipulate clipboard contents",
+		"files": [
+			"WinClip.ahk"
+		],
+		"license": "MIT",
+		"repository": "TheArkive/WinClip_ahk2/master"
+	},
+	"TheArkive/WinClipAPI": {
+		"description": "Base class for the WinClip library",
+		"files": [
+			"WinClipAPI.ahk"
+		],
+		"license": "MIT",
+		"repository": "TheArkive/WinClip_ahk2/master"
 	},
 	"thqby/Audio": {
 		"description": "Core Audio APIs",
@@ -264,6 +330,55 @@
 		"license": "MIT",
 		"main": "WebView2.ahk",
 		"repository": "thqby/ahk2_lib/master"
+	},
+	"buliasz/Gdip": {
+		"description": "GDI+ library (Gdip_All.ahk) for graphics manipulation",
+		"repository": "buliasz/AHKv2-Gdip/master",
+		"files": "Gdip_All.ahk"
+	}, 
+	"Hellbent/PopupWindow": {
+		"description": "Simplifies the process of working with layered windows",
+		"repository": "ahkscript/ScriptHub/main",
+		"files":"v2/Hellbent/PopupWindow.ahk",
+		"dependencies": {
+			"buliasz/Gdip":"*"
+		}
+	},
+	"Hellbent/Vector": {
+		"description": "Vector math class",
+		"repository": "ahkscript/ScriptHub/main",
+		"files":"v2/Hellbent/Vector.ahk"
+	},
+	"MrDoge/MemoryModule": {
+		"description": "Include a .dll into a compiled .exe and then load the .dll and use it without having to extract the .dll",
+		"repository": "ahkscript/ScriptHub/main",
+		"files":"v2/MrDoge/MemoryModule.ahk"
+	},
+	"Tigerlily/MonitorFind": {
+		"description": "Wrapper for monitor configuration WinAPI functions, get and set monitor properties (brightness etc)",
+		"repository": "ahkscript/ScriptHub/main",
+		"files":"v2/Tigerlily/MonitorFind.ahk"
+	},
+	"lexikos/OnProcessClose": {
+		"description": "Monitor for process close event efficiently",
+		"repository": "ahkscript/ScriptHub/main",
+		"main": "v2/lexikos/OnProcessClose.ahk",
+		"files":["v2/lexikos/OnProcessClose.ahk", "v2/lexikos/RegisterWaitCallback.ahk"]
+	},
+	"lexikos/RegisterWaitCallback": {
+		"description": "Monitor for a handle signal event",
+		"repository": "ahkscript/ScriptHub/main",
+		"files":"v2/lexikos/RegisterWaitCallback.ahk"
+	},
+	"lexikos/CLR": {
+		"description": "Load the Common Language Runtime into the script's process, load .NET assemblies, instantiate objects and call instance methods or properties, compile C# or VB code on the fly or to file",
+		"repository": "Lexikos/CLR.ahk/v2.0",
+		"files":"CLR.ahk"
+	},
+	"Spawnova/ShinsImageScanClass": {
+		"description": "Search for images and pixels extremely fast and also with background window support",
+		"repository": "Spawnova/ShinsImageScanClass/main",
+		"files":"AHK V2/ShinsImageScanClass.ahk"
 	},
 	"version": "1.0.0"
 }
