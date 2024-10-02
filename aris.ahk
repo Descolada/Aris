@@ -898,10 +898,16 @@ VerifyPackageIsDownloadable(PackageInfo) {
         Repo := StrSplit(PackageInfo.Repository, "/")
         if !(releases := QueryGitHubReleases(PackageInfo.Repository)) || !(releases is Array) || !releases.Length {
             ; No releases found. Try to get commit hash instead.
-            if (commits := QueryGitHubCommits(PackageInfo.Repository)) && commits is Array && commits.Length
-                PackageInfo.Version := SubStr(commits[1]["sha"], 1, 7)
-            else
+            if !((commits := QueryGitHubCommits(PackageInfo.Repository)) && commits is Array && commits.Length)
                 throw Error("Unable to find releases or commits for the specified GitHub repository", -1, PackageInfo.PackageName)
+            
+            PackageInfo.Version := PackageInfo.Version || PackageInfo.InstallVersion || PackageInfo.DependencyVersion
+            if PackageInfo.Version ~= "\d{12,12}" {
+                if !(commit := FindMatchingGithubCommitDate(commits, PackageInfo.Version))
+                    throw Error("No matching commit date found among GitHub commits")
+                PackageInfo.Version := commit["date"] ; SubStr(commit["sha"], 1, 7)
+            } else
+                PackageInfo.Version := SubStr(commits[1]["sha"], 1, 7)
 
             WriteStdOut("No GitHub releases found, falling back to the default branch.")
             if IsGithubMinimalInstallPossible(PackageInfo)
@@ -911,7 +917,7 @@ VerifyPackageIsDownloadable(PackageInfo) {
             PackageInfo.SourceAddress := "https://github.com/" Repo[1] "/" Repo[2] "/archive/refs/heads/" ZipName
             PackageInfo.ZipName := Repo[1] "_" Repo[2] "_" PackageInfo.Version "-" ZipName
         } else {
-            if !(release := FindMatchingGithubReleaseVersion(releases, PackageInfo.Version))
+            if !(release := FindMatchingGithubReleaseVersion(releases, PackageInfo.Version || PackageInfo.InstallVersion || PackageInfo.DependencyVersion))
                 throw Error("No matching version found among GitHub releases")
 
             PackageInfo.Version := release["tag_name"]
@@ -1506,6 +1512,16 @@ FindMatchingGithubReleaseVersion(releases, target) {
     for release in releases {
         if CompareFunc(release["tag_name"])
             return release
+    }
+    return ""
+}
+
+FindMatchingGithubCommitDate(commits, target) {
+    CompareFunc := GetVersionRangeCompareFunc(target)
+
+    for commit in commits {
+        if CompareFunc(commit["date"] := RegExReplace(commit["commit"]["committer"]["date"], "[^\d]"))
+            return commit
     }
     return ""
 }

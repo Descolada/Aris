@@ -222,7 +222,7 @@ ExtractPackageDescription(Info) {
                 Content .= "GitHub repository: https://github.com/" Split[1] "/" Split[2]
             }
         } else if Info["repository"]["type"] = "gist"
-            Content .= "Gist URL: https://gist.github.com/" Split(Info["repository"]["url"], "/")[1]
+            Content .= "Gist URL: https://gist.github.com/" StrSplit(Info["repository"]["url"], "/")[1]
         else
             Content .= "Repository: " Info["repository"]["type"] ":" Info["repository"]["url"]
     }
