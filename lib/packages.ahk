@@ -1,2 +1,2 @@
 ﻿#include .\G33kDude_cJson_2.0.0\JSON.ahk
-#include .\FanaticGuru_GuiReSizer_20240927185858\GuiReSizer.ahk ; Source: forums:t=113921&codebox=1@20240927185858+e174cfada9ae
+#include .\FanaticGuru_GuiReSizer_2ba5b65\GuiResizer.ahk ; Source: github:ahkscript/ScriptHub/main@2ba5b65

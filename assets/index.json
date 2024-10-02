@@ -198,7 +198,8 @@
 		"description": "A core library for images in AutoHotkey",
 		"files": "ImagePut.ahk",
 		"license": "MIT",
-		"website": "https://github.com/iseahound/ImagePut"
+		"website": "https://github.com/iseahound/ImagePut",
+		"repository": "iseahound/ImagePut/master"
 	},
 	"jNizM/DNSQuery": {
 		"description": "Retrieves the Resource Record (RR) depends on DNS Record Type",
@@ -399,7 +400,8 @@
 			"AHK Resources/*.*"
 		],
 		"license": "MIT",
-		"main": "AHK Resources/WebViewToo.ahk"
+		"main": "AHK Resources/WebViewToo.ahk",
+		"repository":"The-CoDingman/WebViewToo/main"
 	},
 	"TheArkive/CliSAK": {
 		"description": "CLI class: easy one-time and streaming output that collects stdOut and stdErr, and allows writing to stdIn",

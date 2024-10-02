@@ -91,6 +91,14 @@ LaunchGui() {
 
     g_MainGui.Show("w640 h425")
     WinRedraw(g_MainGui) ; Prevents the edit box from sometimes being black
+
+    hIcon := DllCall("LoadImage", "ptr", 0, "str", A_ScriptDir "\assets\main.ico", "uint", 2, "int", 0, "int", 0, "uint", 0x10, "ptr")
+    CLSID_TaskbarList := "{56FDF344-FD6D-11d0-958A-006097C9A090}"
+    IID_ITaskbarList3 := "{EA1AFB91-9E28-4B86-90E9-9E9F8A5EEFAF}"
+    ITaskbarList3 := ComObject(CLSID_TaskbarList, IID_ITaskbarList3)
+    ComCall(3, ITaskbarList3)
+    ComCall(18, ITaskbarList3, "ptr", g_MainGui.hWnd, "ptr", hIcon, "str", "Aris")
+    DllCall("CloseHandle", "ptr", hIcon)
 }
 
 LVGetPackageInfo(LV) {
@@ -204,6 +212,19 @@ ExtractPackageDescription(Info) {
         Content .= "Dependencies:`n"
         for Dependency, Version in Info["dependencies"]
             Content .= "`t" Dependency "@" Version "`n"
+    }
+    if Info.Has("repository") {
+        if Info["repository"]["type"] = "github" {
+            if InStr(Info["repository"]["url"], ":") 
+                Content .= "GitHub repository: " Info["repository"]["url"]
+            else {
+                Split := StrSplit(Info["repository"]["url"], "/")
+                Content .= "GitHub repository: https://github.com/" Split[1] "/" Split[2]
+            }
+        } else if Info["repository"]["type"] = "gist"
+            Content .= "Gist URL: https://gist.github.com/" Split(Info["repository"]["url"], "/")[1]
+        else
+            Content .= "Repository: " Info["repository"]["type"] ":" Info["repository"]["url"]
     }
     return Content
 }
