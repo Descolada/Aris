@@ -152,6 +152,10 @@ if (!A_Args.Length) {
                 for target in Targets
                     InstallPackage(target, 1)
             } else {
+                if !g_PackageJson.Has("name") || !g_PackageJson["name"] {
+                    WriteStdOut "Missing package name from metadata, cannot update package!"
+                    ExitApp
+                }
                 ThisPackage := ParsePackageName(g_PackageJson["name"])
                 MergeJsonInfoToPackageInfo(g_PackageJson, ThisPackage)
                 ThisPackage.IsMain := 1
@@ -905,7 +909,7 @@ VerifyPackageIsDownloadable(PackageInfo) {
             if PackageInfo.Version ~= "\d{12,12}" {
                 if !(commit := FindMatchingGithubCommitDate(commits, PackageInfo.Version))
                     throw Error("No matching commit date found among GitHub commits")
-                PackageInfo.Version := commit["date"] ; SubStr(commit["sha"], 1, 7)
+                PackageInfo.Version := SubStr(commit["sha"], 1, 7)
             } else
                 PackageInfo.Version := SubStr(commits[1]["sha"], 1, 7)
 
@@ -961,6 +965,7 @@ VerifyPackageIsDownloadable(PackageInfo) {
         if !PackageInfo.ThreadId {
             ParseRepositoryData(PackageInfo)
         }
+        PackageInfo.Version := PackageInfo.Version || PackageInfo.InstallVersion || PackageInfo.DependencyVersion
         if PackageInfo.Version != "latest" && !PackageInfo.Hash {
             WriteStdOut('Querying versions from Wayback Machine snapshots of AutoHotkey forums thread with id ' PackageInfo.ThreadId)
             Matches := QueryForumsReleases(PackageInfo)
