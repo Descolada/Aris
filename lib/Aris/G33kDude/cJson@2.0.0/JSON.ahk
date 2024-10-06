@@ -1,5 +1,5 @@
 ;
-; cJson.ahk 2.0.0-git-built
+; cJson.ahk 2.0.0
 ; Copyright (c) 2023 Philip Taylor (known also as GeekDude, G33kDude)
 ; https://github.com/G33kDude/cJson.ahk
 ;
@@ -27,7 +27,7 @@
 
 class JSON
 {
-	static version := "2.0.0-git-built"
+	static version := "2.0.0"
 
 	static BoolsAsInts {
 		get => this.lib.bBoolsAsInts

@@ -1,3 +1,12 @@
+DirCreateEx(FullPath) {
+    Dir := ""
+    for Path in StrSplit(FullPath, "\") {
+        Dir := (Dir ? Dir "\" : "") Path
+        if !DirExist(Dir)
+            DirCreate(Dir)
+    }
+}
+
 WordWrap(str, column:=56, indentChar:="") {
     if !IsInteger(column)
         throw TypeError("WordWrap: argument 'column' must be an integer", -1)
@@ -336,3 +345,7 @@ ExecScript(Script, args:="") {
     exec.StdIn.Close()
     return {Output:exec.StdOut.ReadAll(), ExitCode:exec.ExitCode}
 }
+
+QuoteFile(name) => InStr(name, " ") ? '"' name '"' : name
+
+RemoveAhkSuffix(name) => RegExReplace(name, "\.ahk?\d?(?=$|@)")

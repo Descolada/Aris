@@ -13,7 +13,7 @@ For example, to install my (Descolada) OCR package:
 1. Run Aris.ahk, select your project folder, press "Add" and type "Descolada/OCR" (without quotes), press OK. 
 2. Open command prompt or Powershell, navigate to your project folder, run `aris i Descolada/OCR`. Note: the Aris GUI needs to be started at least once before this, otherwise Aris isn't added to PATH.
 
-Then either use the generated #include directive or include all installed packages with `#include <packages>`
+Then either use the generated #include directive (in this case `#include <Aris/Descolada/OCR>`) or include all installed packages with `#include <packages>`
 
 ## Aris command arguments
 ### Install

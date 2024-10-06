@@ -23,7 +23,7 @@ LaunchGui() {
     g_MainGui.Tabs.XP := 0.30, g_MainGui.Tabs.X := 15, g_MainGui.Tabs.W := -5, g_MainGui.Tabs.H := -25
 
     P := g_MainGui.Tabs.Package := {}
-    P.LV := g_MainGui.Add("ListView", "r10 w390 Section -Multi", ["Package name", "Version", "Allowed versions", "Installed", "In index"])
+    P.LV := g_MainGui.Add("ListView", "r10 w390 Section -Multi", ["Package name", "Version", "Allowed versions", "Installed", "Scope", "In index"])
     P.LV.W := -15
     P.LV.OnEvent("ItemSelect", PackageLVItemSelected)
     P.ReinstallBtn := g_MainGui.AddButton("w50", "Reinstall")
@@ -79,9 +79,10 @@ LaunchGui() {
 
     g_MainGui.Tabs.UseTab(3)
 
-    g_MainGui.AddText("Section", "Github private token:")
     S := g_MainGui.Tabs.Settings := {}
-    S.GithubToken := g_MainGui.AddEdit("x+5 yp-3 w280 r1", g_Config.Has("github_token") ? g_Config["github_token"] : "")
+    S.GlobalInstalls := g_MainGui.AddCheckbox("x+5 h30 " (g_Config["global_install"] ? "Checked" : ""), "Install all packages globally")
+    g_MainGui.AddText("Section", "Github private token:")
+    S.GithubToken := g_MainGui.AddEdit("x+5 yp-3 w280 r1", g_Config["github_token"])
     S.AddRemoveFromPATH := g_MainGui.AddButton("xs y+5 w150", (IsArisInPATH() ? "Remove Aris from PATH" : "Add Aris to PATH"))
     S.AddRemoveFromPATH.OnEvent("Click", (btnCtrl, *) => btnCtrl.Text = "Remove Aris from PATH" ? (RemoveArisFromPATH(), btnCtrl.Text := "Add Aris to PATH") : (AddArisToPATH(), btnCtrl.Text := "Remove Aris from PATH") )
     S.SaveSettings := g_MainGui.AddButton("xs y+5", "Save settings")
@@ -244,12 +245,13 @@ PopulatePackagesTab(Tab) {
         if Dependencies.Has(PackageName)
             VersionRange := Dependencies[PackageName].DependencyVersion
         IsInstalled := g_InstalledPackages.Has(PackageName)
-        Tab.LV.Add(, PackageName, IsInstalled ? PackageInfo.InstallVersion : "", VersionRange, IsInstalled ? "Yes" : "No", InIndex)
+        Tab.LV.Add(, PackageName, IsInstalled ? PackageInfo.InstallVersion : "", VersionRange, IsInstalled ? "Yes" : "No", PackageInfo.Global ? "global" : "local", InIndex)
     }
     Tab.LV.ModifyCol(1, g_InstalledPackages.Count ? unset : 100)
     Tab.LV.ModifyCol(2, 50)
     Tab.LV.ModifyCol(4, 50)
     Tab.LV.ModifyCol(5, 50)
+    Tab.LV.ModifyCol(6, 50)
     Tab.LV.Opt("+Redraw")
 }
 
@@ -280,7 +282,7 @@ LoadPackageFolder(FullPath) {
     SetWorkingDir(FullPath)
     RefreshWorkingDirGlobals()
     g_MainGui.CurrentFolder := FullPath
-    g_MainGui.CurrentLibDir := g_LibDir "\"
+    g_MainGui.CurrentLibDir := g_LocalLibDir "\"
 
     FolderTV := g_MainGui.FolderTV
     FolderTV.Opt("-Redraw")
@@ -331,6 +333,7 @@ OnIndexSearch(Search, *) {
 ApplyGuiConfigChanges() {
     S := g_MainGui.Tabs.Settings
     g_Config["github_token"] := S.GithubToken.Value
+    g_Switches["global_install"] := g_Config["global_install"] := S.GlobalInstalls.Value
 }
 
 SaveSettings(ShowToolTip := false) {
