@@ -476,6 +476,7 @@ ParseRepositoryData(PackageInfo) {
 
 InstallInfoToPackageInfo(PackageName, Version := "", Main := "", DependencyEntry:="") {
     PackageName := StrReplace(PackageName, "\", "/")
+    SplitName := StrSplit(PackageName, "/")
     StrReplace(PackageName, "/",,, &Count:=0)
     if Count != 1
         throw Error("Invalid package name", -1, PackageName)
@@ -485,6 +486,8 @@ InstallInfoToPackageInfo(PackageName, Version := "", Main := "", DependencyEntry
     } else {
         PackageInfo := InputToPackageInfo(DependencyEntry, 1)
     }
+
+    PackageInfo.Name := SplitName[2], PackageInfo.Author := SplitName[1], PackageInfo.PackageName := PackageName
 
     PackageInfo.DependencyEntry := DependencyEntry
     if Main
@@ -1161,7 +1164,8 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
         FileAppend(Code, TempDir "\" TempDownloadDir "\" PackageInfo.Name ".ahk")
 
         PackageInfo.DependencyEntry := "forums:t=" PackageInfo.ThreadId (PackageInfo.Start ? "&start=" PackageInfo.Start : "") (PackageInfo.Post ? "&p=" PackageInfo.Post : "") "&codebox=" PackageInfo.CodeBox "@" PackageInfo.Version
-        PackageInfo.Version := RegExReplace(PackageInfo.Version, "\+.*$")
+        ;PackageInfo.Version := RegExReplace(PackageInfo.Version, "\+.*$")
+        PackageInfo.PackageName := PackageInfo.Author "/" PackageInfo.Name
         ;FileAppend(JSON.Dump(Map("repository", Map("type", "forums", "url", "https://www.autohotkey.com/boards/viewtopic.php?t=" PackageInfo.ThreadId "&codebox=" PackageInfo.CodeBox), "author", PackageInfo.Author, "name", PackageInfo.PackageName, "version", PackageInfo.Version), true), TempDir "\" TempDownloadDir "\package.json")
         goto AfterDownload
     } else if PackageInfo.RepositoryType = "github" {
@@ -1221,14 +1225,14 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
     if PackageInfo.RepositoryType = "forums" && PackageInfo.Hash != "" {
         Loop files LibDir "\" PackageInfo.Author "\*.*", "D" {
             if RegExMatch(A_LoopFileName, "^\Q" PackageInfo.Name "@\E.*\+\Q" PackageInfo.Hash "\E$") {
-                FinalDirName := A_LoopFileName
+                FinalDirName := PackageInfo.Author "\" A_LoopFileName
                 break
             }
         }
     }
 
     if DirExist(TempDir "\" FinalDirName) || DirExist(LibDir "\" FinalDirName) {
-        WriteStdOut 'Package "' FinalDirName '" already installed or up-to-date, skipping...'
+        WriteStdOut 'Package "' StrReplace(FinalDirName, "\", "/") '" already installed or up-to-date, skipping...'
         DirDelete(TempDir "\" TempDownloadDir, true)
         return 1
     }
