@@ -1,4 +1,4 @@
 ﻿; Avoid modifying this file manually
 
-#include <Aris/G33kDude/cJson>
-#include <Aris/FanaticGuru/GuiReSizer>
+#include ./G33kDude/cJson.ahk
+#include ./FanaticGuru/GuiReSizer.ahk

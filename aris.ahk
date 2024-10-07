@@ -545,7 +545,7 @@ DependencyInfoToPackageInfo(PackageName, DependencyInfo) {
 }
 
 PackageInfoToCommandLine(PackageInfo) {
-    vargs := RegExReplace(PackageInfo.DependencyEntry, "@.*$", "@" PackageInfo.InstallVersion)
+    vargs := RegExReplace(PackageInfo.DependencyEntry, "@.*$", "@" PackageInfo.InstallVersion (PackageInfo.Hash ? "+" PackageInfo.Hash : ""))
     if PackageInfo.Main
         vargs .= " --main " QuoteFile(PackageInfo.Main)
     if PackageInfo.Files.Length {
@@ -728,9 +728,10 @@ InstallPackage(Package, Update:=0) {
             if !DirExist(g_LocalLibDir "\" Include.Author)
                 DirCreate(g_LocalLibDir "\" Include.Author)
             FileOpen(g_LocalLibDir "\" Include.Author "\" Include.Name ".ahk", "w").Write("#include " (g_Switches["global_install"] ? g_GlobalLibDir "\" Include.Author : ".\") StrSplit(Include.InstallName, "/",,2)[-1] "\" StrReplace(Include.Main, "/", "\"))
-            Addition := "#include <Aris/" Include.PackageName ">" (Include.DependencyEntry && !g_Index.Has(IncludePackageName) ? " `; " PackageInfoToCommandLine(Include) : "") "`n"
+            DependencyEntry := (g_Index.Has(IncludePackageName) ? IncludePackageName "@" Include.InstallVersion : PackageInfoToCommandLine(Include))
+            Addition := (g_Switches["global_install"] ? "#include <Aris/" Include.PackageName ">" : "#include ./" Include.PackageName ".ahk") " `; " DependencyEntry "`n"
             if !InStr(IncludeFileContent, Addition)
-                IncludeFileContent .= Addition, g_AddedIncludesString .= Addition
+                IncludeFileContent .= Addition, g_AddedIncludesString .= "#include <Aris/" Include.PackageName "> `; " DependencyEntry
         }
     }
 
@@ -1156,15 +1157,17 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
         Code := UnHTM(CodeMatches[PackageInfo.CodeBox][1])
 
         if !PackageInfo.Version || PackageInfo.Version = "latest" || PackageInfo.Hash {
-            PackageInfo.Version := A_YYYY A_MM A_DD A_Hour A_Min A_Sec "+" (Hash := SubStr(MD5(Code), 1, 14))
+            Hash := SubStr(MD5(Code), 1, 14)
             if PackageInfo.Hash && Hash != PackageInfo.Hash
                 throw Error("Download from forums succeeded, but there was a package hash mismatch", -1, "Found " Hash " but expected " PackageInfo.Hash)
+            PackageInfo.Hash := Hash
+            PackageInfo.Version := (PackageInfo.InstallVersion || PackageInfo.DependencyVersion || A_YYYY A_MM A_DD A_Hour A_Min A_Sec) "+" PackageInfo.Hash
         }
 
         FileAppend(Code, TempDir "\" TempDownloadDir "\" PackageInfo.Name ".ahk")
 
         PackageInfo.DependencyEntry := "forums:t=" PackageInfo.ThreadId (PackageInfo.Start ? "&start=" PackageInfo.Start : "") (PackageInfo.Post ? "&p=" PackageInfo.Post : "") "&codebox=" PackageInfo.CodeBox "@" PackageInfo.Version
-        ;PackageInfo.Version := RegExReplace(PackageInfo.Version, "\+.*$")
+        PackageInfo.Version := RegExReplace(PackageInfo.Version, "\+.*$")
         PackageInfo.PackageName := PackageInfo.Author "/" PackageInfo.Name
         ;FileAppend(JSON.Dump(Map("repository", Map("type", "forums", "url", "https://www.autohotkey.com/boards/viewtopic.php?t=" PackageInfo.ThreadId "&codebox=" PackageInfo.CodeBox), "author", PackageInfo.Author, "name", PackageInfo.PackageName, "version", PackageInfo.Version), true), TempDir "\" TempDownloadDir "\package.json")
         goto AfterDownload
@@ -1290,7 +1293,7 @@ ForceRemovePackage(PackageInfo, LibDir, RemoveDependencyEntry:=true) {
         try DirDelete(g_LocalLibDir "\" PackageInfo.Author)
     if FileExist(g_LocalLibDir "\packages.ahk") {
         OldPackages := FileRead(g_LocalLibDir "\packages.ahk")
-        NewPackages := RegExReplace(OldPackages, ".*<Aris/\Q" PackageInfo.PackageName "\E>.*\n\r?",,, 1)
+        NewPackages := RegExReplace(OldPackages, "#include (<Aris|\.)\/\Q" PackageInfo.PackageName "\E(>|\.ahk)( `; .*|$)\n\r?",,, 1)
         if OldPackages != NewPackages
             FileOpen(g_LocalLibDir "\packages.ahk", "w").Write(NewPackages)
     }
@@ -1472,7 +1475,7 @@ ListInstalledPackages() {
 QueryInstalledPackages(path := ".\") {
     PackageJson := path = ".\" ? g_PackageJson : LoadPackageJson(path)
     path := Trim(path, "\/") "\"
-    LibDir := path "\Lib\Aris"
+    LibDir := path "Lib\Aris"
     Packages := Mapi()
     if !FileExist(LibDir "\packages.ahk")
         return Packages
@@ -1481,7 +1484,7 @@ QueryInstalledPackages(path := ".\") {
         if !(A_LoopField ~= "^\s*#include")
             continue
 
-        if !RegExMatch(A_LoopField, "^#include <Aris(?:\\|/)([^>]+)>(?: `; )?(.*)?", &IncludeInfo := "")
+        if !RegExMatch(A_LoopField, "^#include (?:<Aris|\.)(?:\\|\/)([^>]+)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
             continue
         Path := StrReplace(IncludeInfo[1], "/", "\")
 
@@ -1494,7 +1497,7 @@ QueryInstalledPackages(path := ".\") {
         PackageInfo := InstallInfoToPackageInfo(Path, StrSplit(ExtraInfoSplit[1], "@",, 2)[2], ExtraInfoSplit[-1], IncludeInfo.Count = 2 ? IncludeInfo[2] : "")
         if !PackageJson["dependencies"].Has(PackageInfo.PackageName)
             continue
-        PackageInfo.Global := !DirExist(LibDir "\" Path "@" PackageInfo.Version)
+        PackageInfo.Global := !DirExist(LibDir "\" Path "@" PackageInfo.InstallVersion)
         Packages[PackageInfo.PackageName] := PackageInfo
     }
 
@@ -1537,7 +1540,7 @@ ReadIncludesFromFile(path) {
     Loop parse FileRead(path), "`n", "`r" {
         if !(A_LoopField ~= "^\s*#include")
             continue
-        if !RegExMatch(A_LoopField, "^#include <Aris(?:\\|/)([^>]+)>(?: `; )?(.*)?", &IncludeInfo := "")
+        if !RegExMatch(A_LoopField, "^#include (?:<Aris|\.)(?:\\|\/)([^>]+)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
             continue
 
         Packages.Push(InstallInfoToPackageInfo(IncludeInfo[1],,, IncludeInfo.Count = 2 ? IncludeInfo[2] : ""))
