@@ -1,4 +1,4 @@
-LaunchGui() {
+LaunchGui(FileOrDir?) {
     WriteStdOut.DefineProp("call", {call:(this, msg) => g_MainGui.Tabs.Value = 1 ? g_MainGui.Tabs.Package.Metadata.Value .= msg "`n" : g_MainGui.Tabs.Index.Metadata.Value .= msg "`n"})
 
     g_MainGui.OnEvent("Size", GuiReSizer)
@@ -7,7 +7,12 @@ LaunchGui() {
     g_MainGui.FolderTV := g_MainGui.Add("TreeView", "r25 w200", "Package files")
     g_MainGui.FolderTV.X := 10, g_MainGui.FolderTV.Height := -50, g_MainGui.FolderTV.WidthP := 0.3
     g_MainGui.FolderTV.OnEvent("ContextMenu", ShowFolderTVContextMenu)
-    LoadPackageFolder(g_Config.Has("last_project_directory") && DirExist(g_Config["last_project_directory"]) ? g_Config["last_project_directory"] : A_WorkingDir)
+
+    if IsSet(FileOrDir) {
+        SplitPath(FileOrDir, &OutFileName:="", &OutDir:="")
+        LoadPackageFolder(OutDir)
+    } else
+        LoadPackageFolder(g_Config.Has("last_project_directory") && DirExist(g_Config["last_project_directory"]) ? g_Config["last_project_directory"] : A_WorkingDir)
 
     g_MainGui.PackageJson := LoadPackageJson()
     g_MainGui.AddStatusBar(, g_MainGui.PackageJson["name"] ? (g_MainGui.PackageJson["name"] "@" (g_MainGui.PackageJson["version"] || "undefined-version")) : "Undefined package: add package name and version in metadata.")
@@ -32,11 +37,13 @@ LaunchGui() {
     P.RemoveBtn.OnEvent("Click", PackageAction.Bind(P, "remove"))
     P.UpdateBtn := g_MainGui.AddButton("x+10 yp+0 w50", "Update")
     P.UpdateBtn.OnEvent("Click", PackageAction.Bind(P, "update"))
+    P.UpdateLatestBtn := g_MainGui.AddButton("x+10 yp+0", "Force update")
+    P.UpdateLatestBtn.OnEvent("Click", PackageAction.Bind(P, "update-latest"))
     P.AddBtn := g_MainGui.AddButton("x+10 yp+0 w50", "Add")
     P.AddBtn.OnEvent("Click", PackageAction.Bind(P, "install-external"))
-    P.UpdateLatestBtn := g_MainGui.AddButton("x+10 yp+0", "Force update to latest")
-    P.UpdateLatestBtn.OnEvent("Click", PackageAction.Bind(P, "update-latest"))
-    P.Metadata := g_MainGui.Add("Edit", "xs y+10 w390 h140 ReadOnly")
+    P.ModifyRangeBtn := g_MainGui.AddButton("x+10 yp+0 w80", "Modify range")
+    P.ModifyRangeBtn.OnEvent("Click", ModifyPackageVersionRange.Bind(P.LV))
+    P.Metadata := g_MainGui.Add("Edit", "xs y+10 w390 h140")
     P.Metadata.W := -15, P.Metadata.H := -35
 
     PopulatePackagesTab(P)
@@ -85,14 +92,20 @@ LaunchGui() {
     S.GithubToken := g_MainGui.AddEdit("x+5 yp-3 w280 r1", g_Config["github_token"])
     S.AddRemoveFromPATH := g_MainGui.AddButton("xs y+5 w150", (IsArisInPATH() ? "Remove Aris from PATH" : "Add Aris to PATH"))
     S.AddRemoveFromPATH.OnEvent("Click", (btnCtrl, *) => btnCtrl.Text = "Remove Aris from PATH" ? (RemoveArisFromPATH(), btnCtrl.Text := "Add Aris to PATH") : (AddArisToPATH(), btnCtrl.Text := "Remove Aris from PATH") )
+    S.AddRemoveShellMenuItem := g_MainGui.AddButton("x+10 w150", (IsArisShellMenuItemPresent() ? "Remove Aris from shell" : "Add Aris to shell"))
+    S.AddRemoveShellMenuItem.OnEvent("Click", (btnCtrl, *) => btnCtrl.Text = "Remove Aris from shell" ? (RemoveArisShellMenuItem(), btnCtrl.Text := "Add Aris to shell") : (AddArisShellMenuItem(), btnCtrl.Text := "Remove Aris from shell") )
     S.SaveSettings := g_MainGui.AddButton("xs y+5", "Save settings")
     S.SaveSettings.OnEvent("Click", (*) => (ApplyGuiConfigChanges(), SaveSettings(true)))
 
     g_MainGui.Tabs.UseTab(0)
 
     g_MainGui.Show("w640 h425")
-    WinRedraw(g_MainGui) ; Prevents the edit box from sometimes being black
+    P.Metadata.Opt("+ReadOnly") ; If this isn't done after showing the GUI, the Edit may display black if the cursor was located inside of it
 
+
+    /*
+    ; This can be used to set a small identifying icon to the tray menu large icon, because by
+    ; default the AHK icon is shown. However, if Aris is ran from cmd.exe then that issue isn't present.
     hIcon := DllCall("LoadImage", "ptr", 0, "str", A_ScriptDir "\assets\main.ico", "uint", 2, "int", 0, "int", 0, "uint", 0x10, "ptr")
     CLSID_TaskbarList := "{56FDF344-FD6D-11d0-958A-006097C9A090}"
     IID_ITaskbarList3 := "{EA1AFB91-9E28-4B86-90E9-9E9F8A5EEFAF}"
@@ -100,6 +113,10 @@ LaunchGui() {
     ComCall(3, ITaskbarList3)
     ComCall(18, ITaskbarList3, "ptr", g_MainGui.hWnd, "ptr", hIcon, "str", "Aris")
     DllCall("CloseHandle", "ptr", hIcon)
+    */
+
+    if IsSet(OutFileName) && OutFileName
+        PackageAction(P, "install-external", FileOrDir)
 }
 
 LVGetPackageInfo(LV) {
@@ -109,7 +126,7 @@ LVGetPackageInfo(LV) {
     return {PackageName: LV.GetText(Selected, 1), Version: LV.GetText(Selected, 2)}
 }
 
-PackageAction(Tab, Action, Btn, *) {
+PackageAction(Tab, Action, Input?, *) {
     if Action != "install-external" {
         PackageInfo := LVGetPackageInfo(Tab.LV)
         if !PackageInfo {
@@ -136,13 +153,37 @@ PackageAction(Tab, Action, Btn, *) {
                 InstallPackage(PackageInfo.PackageName "@latest")
             }
         case "install-external":
-            IB := InputBox('Install a package from a non-index source.`n`nInsert a source (GitHub repo, Gist, archive file URL) from where to install the package.`n`nIf installing from a GitHub repo, this can be "Username/Repo" or "Username/Repo@Version" (queries from releases) or "Username/Repo@commit" (without quotes).', "Add package", "h240")
-        if IB.Result != "Cancel"
-            InstallPackage(IB.Value)
+            if Input is String {
+                InstallPackageDependencies(Input)
+            } else {
+                IB := InputBox('Install a package from a non-index source.`n`nInsert a source (GitHub repo, Gist, archive file URL) from where to install the package.`n`nIf installing from a GitHub repo, this can be "Username/Repo" or "Username/Repo@Version" (queries from releases) or "Username/Repo@commit" (without quotes).', "Add package", "h240")
+                if IB.Result != "Cancel"
+                    InstallPackage(IB.Value)
+            }
     }
     OutputAddedIncludesString(!!InStr(Action, "update"))
     LoadPackageFolder(A_WorkingDir)
     PopulateTabs()
+}
+
+ModifyPackageVersionRange(LV, *) {
+    Selected := LV.GetNext(0)
+    if !Selected {
+        ToolTip "Select a package first!"
+        SetTimer ToolTip, -3000
+        return
+    }
+    IB := InputBox('Insert a new allowed version range for the package.`n`nPossible options:`nlatest`n* : allow any version`n^x.y.z : allow minor version update (y)`n~x.y.z : allow patch update (z)', "Modify version range", "h240", PreviousVersion := LV.GetText(Selected, 3))
+    if IB.Result != "Cancel" {
+        PackageJson := LoadPackageJson()
+        PackageName := LV.GetText(Selected, 1)
+        PreviousValue := PackageJson["dependencies"][PackageName]
+        PackageJson["dependencies"][PackageName] := InStr(PreviousValue, "@") ? StrReplace(PreviousValue, "@" PreviousVersion, "@" IB.Value) : IB.Value
+        FileOpen("package.json", 0x1).Write(JSON.Dump(PackageJson, true))
+
+        LoadPackageFolder(A_WorkingDir)
+        PopulateTabs()
+    }
 }
 
 PackageLVItemSelected(LV, Item, Selected) {
@@ -156,8 +197,8 @@ PackageLVItemSelected(LV, Item, Selected) {
 
     Tab := g_MainGui.Tabs.Package
 
-    if FileExist(g_MainGui.CurrentFolder g_MainGui.CurrentLibDir SelectedPackage.InstallName "\package.json") {
-        Info := LoadPackageJson(g_MainGui.CurrentFolder g_MainGui.CurrentLibDir SelectedPackage.InstallName)
+    if FileExist(g_MainGui.CurrentLibDir SelectedPackage.InstallName "\package.json") {
+        Info := LoadPackageJson(g_MainGui.CurrentLibDir SelectedPackage.InstallName)
         Info["main"] := SelectedPackage.Main
     } else if g_Index.Has(SelectedPackage.PackageName)
         Info := g_Index[SelectedPackage.PackageName]
