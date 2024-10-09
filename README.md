@@ -2,16 +2,18 @@
 AutoHotkey Repository Install System
 
 ## Why use Aris
-Compared to other package managers Aris is able to install from more sources. Package.json isn't necessary to install a package, instead just a GitHub repo can be specified. Aris is also able to install Gists, archives (zip, tar files), and AutoHotkey forums posts. There is also a central index of packages which helps to find and install useful packages.
+Compared to other package managers Aris is able to install from more sources: GitHub repositories,  Gists, archives (zip, tar files), and AutoHotkey forums posts. There is also a central index of packages which helps to find and install useful packages. 
 
-Additionally, Aris doesn't require admin access nor does it use any other executables than AutoHotkey. For command line use there needs to be privileges to execute .bat files, this requirement might be removed in the future if it turns out to be an issue.
+Additionally, package.json isn't required to install a package, which greatly increases the number of places from where packages may be installed.
+
+Furthermore, Aris doesn't require admin access nor does it use any other executables than AutoHotkey. For command line use there needs to be privileges to execute .bat files, this requirement might be removed in the future if it turns out to be an issue.
 
 Most of the following examples will use the command line interface, but most packages can be installed via the GUI as well. Run Aris.ahk, select your project folder by pressing "Load package", then press "Add" in the "Current package" tab to install from a custom source.
 
 ## Introductory example
 For example, to install my (Descolada) OCR package:
-1. Run Aris.ahk, select your project folder, press "Add" and type "Descolada/OCR" (without quotes), press OK. 
-2. Open command prompt or Powershell, navigate to your project folder, run `aris i Descolada/OCR`. Note: the Aris GUI needs to be started at least once before this, otherwise Aris isn't added to PATH.
+1. Run Aris.ahk, select your project folder, choose the Index tab, and double-click "Descolada/OCR"
+2. Alternatively open command prompt or Powershell, navigate to your project folder, run `aris i Descolada/OCR`. Note: the Aris GUI needs to be started at least once before this, otherwise Aris isn't added to PATH.
 
 Then either use the generated #include directive (in this case `#include <Aris/Descolada/OCR>`) or include all installed packages with `#include <packages>`
 
@@ -26,6 +28,8 @@ Command aliases: `i`
 Command aliases: `uninstall`, `r`, `rm`
 ### Update
 `aris update package` updates to the latest allowed version specified in the package.json file. If the version is a hash then update to the latest version with `aris install package@latest`
+
+`aris update` without specifying a package tries to update the package in the working directory. For example, this could be used to update Aris itself.
 ### List
 `aris list` lists all installed packages.
 ### Clean
@@ -34,7 +38,7 @@ Command aliases: `uninstall`, `r`, `rm`
 # Examples
 
 ## Index install
-Open the Aris GUI, then in the Index tab select a package and press "Install". Specific versions of packages can be installed by pressing the "Query versions" button.
+Open the Aris GUI, then in the Index tab select a package and press "Install" (or double-click the package). Specific versions of packages can be installed by pressing the "Query versions" button.
 
 Install via the command line by specifying the full package name, or if there is only one package with the package name then only that may be used.
 
@@ -73,13 +77,13 @@ If the package isn't in the package index, then by default it's assumed a GitHub
 ```
 aris i Descolada/OCR
 ```
-It's also possible to create separate packages for specific files in a repository by using `-m`/`--main` and `--files` flags. To install a single file (creates a package named "thqby/MCode.ahk"):
+It's also possible to create separate packages for specific files in a repository by using `-m`/`--main` and `--files` flags. The following example installs a single file and creates a package named "thqby/MCode":
 ```
-aris i thqby/ahk2_lib -m MCode.ahk
+aris i thqby/ahk2_lib as MCode --files MCode.ahk
 ```
 Or include a folder (creates a package named "thqby/RapidOcr.ahk"):
 ```
-aris i thqby/ahk2_lib -m RapidOcr/RapidOcr.ahk --files RapidOcr/*.*
+aris i thqby/ahk2_lib as RapidOcr -m RapidOcr/RapidOcr.ahk --files RapidOcr/*.*
 ```
 ## Gist install
 Install a specific file from a Gist:
