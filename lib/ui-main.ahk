@@ -52,8 +52,9 @@ LaunchGui(FileOrDir?) {
 
     I := g_MainGui.Tabs.Index := {}
     I.LV := g_MainGui.Add("ListView", "r10 w390 Section -Multi", ["Package name", "Installed version", "Allowed versions", "Source"])
-    I.LV.W := -15, I.LV.HP := 0.4
+    I.LV.W := -15, I.LV.H := -215
     I.LV.OnEvent("ItemSelect", IndexLVItemSelected)
+    I.LV.OnEvent("DoubleClick", PackageAction.Bind(I, "install"))
     I.SearchText := g_MainGui.Add("Text",, "Search:")
 
     AnchorUnder := (o, to, X, Y) => (o.Anchor := to, o.AnchorIn := false, o.YP := 1.0, o.Y := Y, o.X := X)
@@ -80,21 +81,33 @@ LaunchGui(FileOrDir?) {
     AnchorAfter(I.UpdateIndexBtn, I.QueryVersionBtn, 5, 0)
     I.UpdateIndexBtn.OnEvent("Click", (*) => (UpdatePackageIndex(), PopulateIndexTab(I)))
     I.Metadata := g_MainGui.Add("Edit", "xs y+10 w390 h120 ReadOnly")
-    I.Metadata.YP := 0.4, I.Metadata.Y := 90, I.Metadata.H := -30, I.Metadata.W := -15
+    AnchorUnder(I.Metadata, I.LV, 0, 60)
+    I.Metadata.W := 0
 
     PopulateIndexTab(I)
 
     g_MainGui.Tabs.UseTab(3)
 
     S := g_MainGui.Tabs.Settings := {}
-    S.GlobalInstalls := g_MainGui.AddCheckbox("x+5 h30 " (g_Config["global_install"] ? "Checked" : ""), "Install all packages globally")
-    g_MainGui.AddText("Section", "Github private token:")
-    S.GithubToken := g_MainGui.AddEdit("x+5 yp-3 w280 r1", g_Config["github_token"])
-    S.AddRemoveFromPATH := g_MainGui.AddButton("xs y+5 w150", (IsArisInPATH() ? "Remove Aris from PATH" : "Add Aris to PATH"))
+    g_MainGui.AddGroupBox("w200 h45 Section", "Package settings")
+
+    g_MainGui.AddGroupBox("w195 x+10 yp+0 h90", "Path and shell")
+    S.AddRemoveFromPATH := g_MainGui.AddButton("xp+20 yp+20 w150", (IsArisInPATH() ? "Remove Aris from PATH" : "Add Aris to PATH"))
     S.AddRemoveFromPATH.OnEvent("Click", (btnCtrl, *) => btnCtrl.Text = "Remove Aris from PATH" ? (RemoveArisFromPATH(), btnCtrl.Text := "Add Aris to PATH") : (AddArisToPATH(), btnCtrl.Text := "Remove Aris from PATH") )
-    S.AddRemoveShellMenuItem := g_MainGui.AddButton("x+10 w150", (IsArisShellMenuItemPresent() ? "Remove Aris from shell" : "Add Aris to shell"))
+    S.AddRemoveShellMenuItem := g_MainGui.AddButton("xp y+10 w150", (IsArisShellMenuItemPresent() ? "Remove Aris from shell" : "Add Aris to shell"))
     S.AddRemoveShellMenuItem.OnEvent("Click", (btnCtrl, *) => btnCtrl.Text = "Remove Aris from shell" ? (RemoveArisShellMenuItem(), btnCtrl.Text := "Add Aris to shell") : (AddArisShellMenuItem(), btnCtrl.Text := "Remove Aris from shell") )
-    S.SaveSettings := g_MainGui.AddButton("xs y+5", "Save settings")
+
+    S.GlobalInstalls := g_MainGui.AddCheckbox("xs+10 ys+20 " (g_Config["global_install"] ? "Checked" : ""), "Install all packages globally")
+    g_MainGui.AddGroupBox("xs ys+50 w200 h65", "Updates")
+    S.AutoUpdateIndex := g_MainGui.AddCheckbox("xp+10 yp+20 " (g_Config["auto_update_index_daily"] ? "Checked" : ""), "Auto-update index once daily")
+    S.CheckArisUpdates := g_MainGui.AddCheckbox((g_Config["check_aris_updates_daily"] ? "Checked" : ""), "Check for Aris updates daily")
+   
+    g_MainGui.AddGroupBox("xs w405 h50", "GitHub")
+    g_MainGui.AddText("xp+10 yp+20", "Github private token:")
+    S.GithubToken := g_MainGui.AddEdit("x+5 yp-3 w280 r1", g_Config["github_token"])
+
+    S.SaveSettings := g_MainGui.AddButton("xs+150 y+20 w100", "Save settings")
+    S.SaveSettings.SetFont("bold")
     S.SaveSettings.OnEvent("Click", (*) => (ApplyGuiConfigChanges(), SaveSettings(true)))
 
     g_MainGui.Tabs.UseTab(0)
@@ -117,6 +130,32 @@ LaunchGui(FileOrDir?) {
 
     if IsSet(OutFileName) && OutFileName
         PackageAction(P, "install-external", FileOrDir)
+
+    if !g_Config.Has("check_aris_updates_daily") || (g_Config["check_aris_updates_daily"] && (Abs(DateDiff(A_NowUTC, g_Config["check_aris_updates_daily"], "Days")) >= 1)) {
+        CheckArisUpdate()
+        g_Config["check_aris_updates_daily"] := A_NowUTC
+        SaveSettings()
+    }
+}
+
+CheckArisUpdate() {
+    WriteStdOut "Checking for Aris updates..."
+    if !(releases := QueryGitHubReleases("Descolada/ARIS/main")) || !(releases is Array) || !releases.Length {
+        WriteStdOut "Couldn't find any Aris releases"
+        return
+    }
+    PackageJson := LoadPackageJson(A_ScriptDir)
+    if VerCompare(releases[1]["tag_name"], PackageJson["version"]) <= 0 {
+        WriteStdOut "Aris is already up-to-date"
+        return
+    }
+    
+    if MsgBox("Aris update found. Do you wish to update to " releases[1]["tag_name"] "?", "Aris update", 0x4) != "Yes"
+        return
+
+    LoadPackageFolder(A_ScriptDir)
+    UpdateWorkingDirPackage() ; This should exit the application if successful
+    MsgBox "Failed to update Aris!"
 }
 
 LVGetPackageInfo(LV) {
@@ -375,6 +414,8 @@ ApplyGuiConfigChanges() {
     S := g_MainGui.Tabs.Settings
     g_Config["github_token"] := S.GithubToken.Value
     g_Switches["global_install"] := g_Config["global_install"] := S.GlobalInstalls.Value
+    g_Config["auto_update_index_daily"] := S.AutoUpdateIndex.Value ? g_Config["auto_update_index_daily"] || 20240101000000 : 0
+    g_Config["check_aris_updates_daily"] := S.CheckArisUpdates.Value ? g_Config["check_aris_updates_daily"] || 20240101000000 : 0
 }
 
 SaveSettings(ShowToolTip := false) {
