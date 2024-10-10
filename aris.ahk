@@ -154,8 +154,12 @@ if (!A_Args.Length || (A_Args.Length = 1 && FileExist(A_Args[1]) && A_Args[1] ~=
     switch Command, 0 {
         case "install":
             if Targets.Length {
-                for target in Targets
-                    InstallPackage(target,, Switches)
+                for target in Targets {
+                    if target ~= "\.ahk?\d?$" && FileExist(target)
+                        InstallPackageDependencies(target)
+                    else
+                        InstallPackage(target,, Switches)
+                }
             } else {
                 InstallPackageDependencies()
             }
@@ -461,6 +465,8 @@ InputToPackageInfo(Input, Skip:=0, Switches?) {
 StandardizePackageInfo(PackageInfo) {
     local i
     PackageInfo.Main := Trim(StrReplace(PackageInfo.Main, "\", "/"), "/ ")
+    if !(PackageInfo.Main ~= "\.ahk?\d?$")
+        PackageInfo.Main .= ".ahk"
     for i, PackageFile in PackageInfo.Files {
         PackageInfo.Files[i] := Trim(StrReplace(PackageFile, "\", "/"), "/ ")
     }
@@ -1254,7 +1260,7 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
                 throw Error("No matching file found in gist", -1, '"' PackageInfo.Main '" not found among Gist filenames [' Trim(MainNames, ", ") "]")
         } else {
             for MainName, Info in gist["files"] {
-                PackageInfo.Main := PackageInfo.Name := RemoveAhkSuffix(Info["filename"])
+                PackageInfo.Main := (PackageInfo.Name := RemoveAhkSuffix(Info["filename"])) ".ahk"
                 break
             }
         }

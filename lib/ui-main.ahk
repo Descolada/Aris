@@ -10,7 +10,12 @@ LaunchGui(FileOrDir?) {
 
     if IsSet(FileOrDir) {
         SplitPath(FileOrDir, &OutFileName:="", &OutDir:="")
-        LoadPackageFolder(OutDir)
+        FullDirPath := OutDir
+        Loop files OutDir, "D" {
+            FullDirPath := A_LoopFileFullPath
+            break
+        }
+        LoadPackageFolder(FullDirPath)
     } else
         LoadPackageFolder(g_Config.Has("last_project_directory") && DirExist(g_Config["last_project_directory"]) ? g_Config["last_project_directory"] : A_WorkingDir)
 
