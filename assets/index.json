@@ -140,6 +140,22 @@
 			"preinstall": "ExitApp(MsgBox('This package requires installing the Interception driver, which requires administrator access and must be used cautiously as not to disable certain key combinations such as Ctrl+Alt+Delete. Are you sure you want to continue?', 'Warning', 'YesNo') = 'Yes' ? 0 : 1)"
 		}
 	},
+	"evilC/TapHoldManager": {
+		"description": "An AutoHotkey library that allows you to map multiple actions to one key using a tap-and hold system. Long press / Tap / Multi Tap / Tap and Hold / Multi Tap and Hold etc are all supported.",
+		"files": "AHK v2/Lib/TapHoldManager.ahk",
+		"license": "MIT",
+		"repository": "evilC/TapHoldManager/master"
+	},
+	"evilC/InterceptionTapHoldManager": {
+		"description": "A patch for TapHoldManager that allows it to be used with the Interception driver. See main description under evilC/TapHoldManager",
+		"files": "AHK v2/Lib/InterceptionTapHold.ahk",
+		"license": "MIT",
+		"repository": "evilC/TapHoldManager/master",
+		"dependencies": {
+			"evilC/TapHoldManager": "*",
+			"evilC/AutoHotInterception": "*"
+		}
+	},
 	"FanaticGuru/GuiResizer": {
 		"description": "A class to simplify adjusting GUI controls to GUI resizing",
 		"files": "v2/FanaticGuru/GuiResizer.ahk",
