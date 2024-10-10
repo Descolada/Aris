@@ -826,9 +826,9 @@ InstallPackage(Package, Update:=0, Switches?) {
             PackageJson["dependencies"][IncludePackageName] := g_Index.Has(Include.PackageName) ? SemVerVersion : ConstructInstallCommand(Include, SemVerVersion)
         }
         if Update
-            WriteStdOut 'Package successfully updated to "' IncludePackageName "@" Include.InstallVersion '".'
+            WriteStdOut 'Package successfully updated to "' IncludePackageName "@" Include.InstallVersion '".`n'
         else
-            WriteStdOut 'Package "' IncludePackageName "@" Include.InstallVersion '" successfully installed.'
+            WriteStdOut 'Package "' IncludePackageName "@" Include.InstallVersion '" successfully installed.`n'
 
         if Include.HasProp("Main") && Include.Main {
             if !DirExist(g_LocalLibDir "\" Include.Author)
@@ -883,7 +883,7 @@ UpdatePackage(PackageName) {
     } else {
         try {
             if InstallPackage(Matches[1].PackageName "@" g_PackageJson[Matches[1].PackageName], 1)
-                WriteStdOut "Package successfully updated!"
+                WriteStdOut "Package successfully updated!`n"
         }
     }
 }
@@ -1068,13 +1068,13 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
             for InstallDir, Projects in g_GlobalInstalledPackages[PackageInfo.PackageName] {
                 Split := StrSplit(InstallDir, "@",, 2)
                 if IsVersionCompatible(Split[2], PackageInfo.Version) {
-                    WriteStdOut("Found matching globally installed package " InstallDir ", skipping install")
+                    WriteStdOut("Found matching globally installed package " InstallDir ", skipping install`n")
                     return Split[3]
                 }
             }
         }
         if Includes.Has(PackageInfo.PackageName) && (Include := Includes[PackageInfo.PackageName]) && (DirExist(TempDir "\" Include.InstallName) || (!g_Switches["global_install"] && DirExist(g_LocalLibDir "\" Include.InstallName)) || (!g_Switches["local_install"] && DirExist(g_GlobalLibDir "\" Include.InstallName))) {
-            WriteStdOut 'Package "' Include.InstallName '" already installed, skipping...'
+            WriteStdOut 'Package "' Include.InstallName '" already installed, skipping...`n'
             PackageInfo.InstallName := Include.InstallName
             return Include
         }
@@ -1382,7 +1382,7 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
     }
 
     if DirExist(TempDir "\" FinalDirName) || DirExist(LibDir "\" FinalDirName) {
-        WriteStdOut 'Package "' StrReplace(FinalDirName, "\", "/") '" already installed or up-to-date, skipping...'
+        WriteStdOut 'Package "' StrReplace(FinalDirName, "\", "/") '" already installed or up-to-date, skipping...`n'
         DirDelete(TempDir "\" TempDownloadDir, true)
         return 1
     }
@@ -1523,10 +1523,10 @@ VerifyPackageIsDownloadable(PackageInfo) {
                     PackageInfo.Main := PackageInfo.Main || asset["name"]
                     PackageInfo.Files := [PackageInfo.Main]
                     PackageInfo.RepositoryType := "ahk"
-                    PackageInfo.ZipName := PackageInfo.Main
+                    PackageInfo.ZipName := Repo[1] "_" Repo[2] "_" PackageInfo.Version "-" PackageInfo.Main
                     PackageInfo.SourceAddress := asset["browser_download_url"]
                 } else {
-                    PackageInfo.ZipName := Repo[1] "_" Repo[2] "_" asset["name"]
+                    PackageInfo.ZipName := Repo[1] "_" Repo[2] "_" PackageInfo.Version "-" asset["name"]
                     PackageInfo.SourceAddress := asset["browser_download_url"]
                 }
             } else {
