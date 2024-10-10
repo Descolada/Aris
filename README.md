@@ -144,11 +144,8 @@ Example multiple files minimal entry, which downloads the assets folder, include
 # Roadmap
 Not in order of priority:
 1. Updating a main package (eg Aris itself) is currently untested, most likely needs fixing.
-2. Add global install support (currently only local installs)
-3. Add package name aliases support
-4. Improve GUI experience (beautify, make GUI resizable, search packages by tags etc)
-5. Create automated tests
-6. Support GitHub installs by tags
-7. Support installs from local files/folders
-8. Add shell context menu item to install script dependencies
-9. Set up automatic updates mechanism for index.json and Aris
+2. Improve GUI experience (beautify, search packages by tags etc)
+3. Create automated tests
+4. Support GitHub installs by tags
+5. Support installs from local files/folders
+6. Fix nested dependency installs in the case where specific versions are required
