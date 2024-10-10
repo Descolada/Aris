@@ -471,7 +471,7 @@ InputToPackageInfo(Input, Skip:=0, Switches?) {
 StandardizePackageInfo(PackageInfo) {
     local i
     PackageInfo.Main := Trim(StrReplace(PackageInfo.Main, "\", "/"), "/ ")
-    if !(PackageInfo.Main ~= "\.ahk?\d?$")
+    if PackageInfo.Main && !(PackageInfo.Main ~= "\.ahk?\d?$")
         PackageInfo.Main .= ".ahk"
     for i, PackageFile in PackageInfo.Files {
         PackageInfo.Files[i] := Trim(StrReplace(PackageFile, "\", "/"), "/ ")
@@ -1130,7 +1130,7 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
             PackageInfo.Files[1] := "*.*", WildcardFilesSet := true
         if NoMainName {
             if PackageInfo.Files.Length = 1
-                PackageInfo.Main := StrSplit(StrReplace(PackageInfo.Files[1], "\", "/"), "/")[-1]
+                PackageInfo.Main := PackageInfo.Files[1]
             else
                 SetPackageInfoMainFile(PackageInfo, TempDir, FinalDirName)
         } 
