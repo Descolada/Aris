@@ -1306,7 +1306,7 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
         Code := UnHTM(CodeMatches[PackageInfo.CodeBox][1])
 
         if !PackageInfo.Version || PackageInfo.Version = "latest" || PackageInfo.BuildMetadata {
-            Hash := SubStr(MD5(Code), 1, 14)
+            Hash := SubStr(MD5(Code), 1, 10)
             if PackageInfo.BuildMetadata && Hash != PackageInfo.BuildMetadata
                 throw Error("Download from forums succeeded, but there was a package hash mismatch", -1, "Found " Hash " but expected " PackageInfo.BuildMetadata)
             PackageInfo.BuildMetadata := Hash
@@ -1498,7 +1498,7 @@ VerifyPackageIsDownloadable(PackageInfo) {
                 throw Error("Unable to find releases or commits for the specified GitHub repository", -1, PackageInfo.PackageName)
             
             PackageInfo.Version := PackageInfo.Version || PackageInfo.InstallVersion || PackageInfo.DependencyVersion
-            if PackageInfo.Version ~= "\d{12,12}" {
+            if RegExMatch(PackageInfo.Version, "\d+", &NumMatch) && (StrLen(NumMatch[0]) = 14) {
                 if !(commit := FindMatchingGithubCommitDate(commits, PackageInfo.Version))
                     throw Error("No matching commit date found among GitHub commits")
                 PackageInfo.Version := SubStr(commit["sha"], 1, 7)
@@ -1535,7 +1535,7 @@ VerifyPackageIsDownloadable(PackageInfo) {
             }
         }
     } else if PackageInfo.RepositoryType = "archive" {
-        PackageInfo.Version := A_YYYY A_MM A_DD SubStr(MD5(PackageInfo.Repository), 1, 14)
+        PackageInfo.Version := A_YYYY A_MM A_DD "+" SubStr(MD5(PackageInfo.Repository), 1, 10)
         PackageInfo.ZipName := "archive_" PackageInfo.Version (RegExMatch(PackageInfo.Repository, "\.tar\.gz$") ? ".tar.gz" : "." StrSplit(PackageInfo.Repository, ".")[-1])
         PackageInfo.SourceAddress := PackageInfo.Repository
     } else if PackageInfo.RepositoryType = "gist" {
@@ -1981,8 +1981,8 @@ GetVersionRangeCompareFunc(Range) {
 }
 
 IsVersionSha(version) => StrLen(version) = 7 && RegExMatch(version, "^\w+$")
-IsVersionMD5(version) => StrLen(version) = 14 && RegExMatch(version, "^\w{14}$")
-IsSemVer(input) => !RegExMatch(input, "(^\w{7}$)|^\w{14}$") && RegExMatch(input, "^[><=^~]*v?(?:((0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)|\d+|\d+\.\d+|latest|\*)$")
+IsVersionMD5(version) => StrLen(version) = 10 && RegExMatch(version, "^\w{10}$")
+IsSemVer(input) => !RegExMatch(input, "(^\w{7}$)|^\w{10}$") && RegExMatch(input, "^[><=^~]*v?(?:((0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)|\d+|\d+\.\d+|latest|\*)$")
 IsVersionCompatible(version, range) => GetVersionRangeCompareFunc(range).Call(version)
 
 MergeJsonInfoToPackageInfo(JsonInfo, PackageInfo) {
