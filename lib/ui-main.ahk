@@ -217,7 +217,7 @@ ModifyPackageVersionRange(LV, *) {
         SetTimer ToolTip, -3000
         return
     }
-    IB := InputBox('Insert a new allowed version range for the package.`n`nPossible options:`nlatest`n* : allow any version`n^x.y.z : allow minor version update (y)`n~x.y.z : allow patch update (z)', "Modify version range", "h240", PreviousVersion := LV.GetText(Selected, 3))
+    IB := InputBox('Insert a new allowed version range for the package.`n`nPossible options:`nlatest : latest release or commit (includes major releases)`n^x.y.z : allow minor version update (y)`n~x.y.z : allow patch update (z)`n>x.y.z : greater than x.y.z`n<x.y.z : less than x.y.z`n>=x.y.z <=a.b.c : range between x.y.z and a.b.c', "Modify version range", "h240", PreviousVersion := LV.GetText(Selected, 3))
     if IB.Result != "Cancel" {
         PackageJson := LoadPackageJson()
         PackageName := LV.GetText(Selected, 1)
