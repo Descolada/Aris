@@ -1799,38 +1799,76 @@ CleanPackages() {
         InstalledMap[PackageInfo.PackageName] := PackageInfo
     }
 
+    WriteStdOut "Removing unused entries from package.json"
     if FileExist("package.json") {
         for Dependency, Version in g_PackageJson["dependencies"] {
             if InstalledMap.Has(Dependency)
                 Dependencies[Dependency] := Version
+            else
+                WriteStdOut "Removing unused dependency " Dependency ": " Version
         }
         g_PackageJson["dependencies"] := Dependencies
-        FileOpen("package.json", "w").Write(JSON.Dump(g_PackageJson, true))
+        if (NewContent := JSON.Dump(g_PackageJson, true)) && (NewContent != FileRead("package.json"))
+            FileOpen("package.json", "w").Write(NewContent)
     }
 
-    Loop files g_LocalLibDir, "D" {
-        if RegExMatch(A_LoopFileName, "^.+_.+_.+$") && !InstalledMap.Has(A_LoopFileName)
-            DirDelete(A_LoopFileFullPath, true)
+    WriteStdOut "Removing unused global package entries"
+    for PackageName, InstallInfo in g_GlobalInstalledPackages.Clone() {
+        for InstallName, ProjectArray in InstallInfo.Clone() {
+            Loop ArrLen := ProjectArray.Length {
+                if !DirExist(ProjectArray[ArrLen-A_Index+1]) {
+                    WriteStdOut "Project folder `"" ProjectArray[ArrLen-A_Index+1] "`" not found, deleting entry for " PackageName
+                    ProjectArray.RemoveAt(ArrLen-A_Index+1)
+                }
+            }
+            if !ProjectArray.Length
+                InstallInfo.Delete(InstallName)
+        }
+        if !InstallInfo.Count
+            g_GlobalInstalledPackages.Delete(PackageName)
+    }
+
+    for LibDir in [g_LocalLibDir, g_GlobalLibDir] {
+        WriteStdOut "Cleaning " (LibDir = g_LocalLibDir ? "local" : "global") " library directory"
+        InstalledPackageMap := LibDir = g_LocalLibDir ? InstalledMap : g_GlobalInstalledPackages
+        Loop files LibDir "\*.*", "D" {
+            Author := A_LoopFileName
+            Loop files A_LoopFileFullPath "\*.*", "DF" {
+                if DirExist(A_LoopFileFullPath)
+                    Name := A_LoopFileName, DeleteFunc := DirDelete.Bind(,true)
+                else
+                    Name := StrSplitLast(A_LoopFileName, ".")[1], DeleteFunc := FileDelete
+                if !InstalledPackageMap.Has(Author "/" Name) {
+                    WriteStdOut "Deleting unused " (DeleteFunc = FileDelete ? "file" : "directory") " Author\" A_LoopFileName
+                    DeleteFunc(A_LoopFileFullPath)
+                }
+            }
+            try DirDelete(A_LoopFileFullPath)
+        }
     }
 
     if !FileExist(g_LocalLibDir "\packages.ahk")
         return
 
-    NewContent := FileRead(g_LocalLibDir "\packages.ahk")
+    WriteStdOut "Removing unused entries from packages.ahk"
+    OldContent := NewContent := FileRead(g_LocalLibDir "\packages.ahk")
     Loop parse NewContent, "`n", "`r" {
         if !(A_LoopField ~= "^\s*#include")
             continue
 
-        Found := false
-        for PackageName, PackageInfo in g_InstalledPackages
-            if InStr(A_LoopField, PackageInfo.InstallName) {
-                Found := true
-                break
-            }
-        if !Found
-            StrReplace(NewContent, A_LoopField "`n")
+        if !RegExMatch(A_LoopField, "^#include (?:<Aris|\.)(?:\\|\/)([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
+            continue
+
+        if InstalledMap.Has(IncludeInfo[1])
+            continue
+
+        WriteStdOut "Removing unused include: " A_LoopField
+        NewContent := StrReplace(NewContent, A_LoopField "`n")
     }
-    FileOpen(g_LocalLibDir "\packages.ahk", "w").Write(NewContent)
+    if OldContent != NewContent
+        FileOpen(g_LocalLibDir "\packages.ahk", "w").Write(NewContent)
+
+    WriteStdOut "Cleaning packages complete"
 }
 
 RemovePackageFromGlobalInstallEntries(PackageInfo) {
