@@ -194,13 +194,19 @@ if (!A_Args.Length || (A_Args.Length = 1 && FileExist(A_Args[1]) && A_Args[1] ~=
 }
 
 ClearCache(Force := false) {
-    if Force || (g_Config.Has("last_cache_clear") && g_Config["last_cache_clear"] && DateDiff(A_Now, g_Config["last_cache_clear"], "Days") > 30) {
-        if DirExist(g_CacheDir)
+    if DirExist(g_CacheDir) {
+        if Force {
             DirDelete(g_CacheDir, true)
+            DirCreate(g_CacheDir)
+        } else {
+            loop files g_CacheDir "\*.*", "F" {
+                AccessTime := FileGetTime(A_LoopFileFullPath, "A")
+                if DateDiff(A_Now, AccessTime, "Days") > 30
+                    FileDelete(A_LoopFileFullPath)
+            }
+        }
+    } else
         DirCreate(g_CacheDir)
-        g_Config["last_cache_clear"] := A_Now
-        SaveSettings()
-    }
 }
 
 AddArisToPATH() {
