@@ -647,11 +647,11 @@ ParseRepositoryData(PackageInfo) {
             Split := StrSplit(PackageInfo.Repository, "/")
             PackageInfo.Author := PackageInfo.Author || Split[1], PackageInfo.Name := RemoveAhkSuffix(PackageInfo.Name || Split[2]), PackageInfo.Branch := Split.Length = 3 ? Split[3] : ""
         case "forums":
-            if !RegExMatch(Input, "t=(\d+).*?((?<=code=|codebox=)\d+)?$", &match:="")
+            if !RegExMatch(Input, "i)t=(\d+).*?((?<=code=|codebox=)\d+)?$", &match:="")
                 throw Error("Detected AutoHotkey forums link, but couldn't find thread id", -1, Input)
             PackageInfo.ThreadId := match[1], PackageInfo.CodeBox := (match.Count = 2 && match[2] ? Integer(match[2]) : 1)
-            PackageInfo.Start := RegExMatch(Input, "&start=(\d+)", &match:="") ? match[1] : ""
-            PackageInfo.Post := RegExMatch(Input, "&p=(\d+)", &match:="") ? match[1] : ""
+            PackageInfo.Start := RegExMatch(Input, "i)&start=(\d+)", &match:="") ? match[1] : ""
+            PackageInfo.Post := RegExMatch(Input, "i)&p=(\d+)", &match:="") ? match[1] : ""
             if PackageInfo.Version = "latest" || PackageInfo.BuildMetadata
                 PackageInfo.Repository := "https://www.autohotkey.com/boards/viewtopic.php?t=" PackageInfo.ThreadId (PackageInfo.Start ? "&start=" PackageInfo.Start : "") (PackageInfo.Post ? "&p=" PackageInfo.Post : "") "&codenum=" PackageInfo.CodeBox
             if RegExMatch(PackageInfo.Version, "^([><=]*)(\d+)$", &match:="") && (len := StrLen(match[2])) != 14
@@ -1374,7 +1374,7 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
 
     if PackageInfo.RepositoryType = "forums" && PackageInfo.BuildMetadata != "" {
         Loop files LibDir "\" PackageInfo.Author "\*.*", "D" {
-            if RegExMatch(A_LoopFileName, "^\Q" PackageInfo.Name "@\E.*\+\Q" PackageInfo.BuildMetadata "\E$") {
+            if RegExMatch(A_LoopFileName, "i)^\Q" PackageInfo.Name "@\E.*\+\Q" PackageInfo.BuildMetadata "\E$") {
                 FinalDirName := PackageInfo.Author "\" A_LoopFileName
                 break
             }
@@ -1536,7 +1536,7 @@ VerifyPackageIsDownloadable(PackageInfo) {
         }
     } else if PackageInfo.RepositoryType = "archive" {
         PackageInfo.Version := A_YYYY A_MM A_DD "+" SubStr(MD5(PackageInfo.Repository), 1, 10)
-        PackageInfo.ZipName := "archive_" PackageInfo.Version (RegExMatch(PackageInfo.Repository, "\.tar\.gz$") ? ".tar.gz" : "." StrSplit(PackageInfo.Repository, ".")[-1])
+        PackageInfo.ZipName := "archive_" PackageInfo.Version (RegExMatch(PackageInfo.Repository, "i)\.tar\.gz$") ? ".tar.gz" : "." StrSplit(PackageInfo.Repository, ".")[-1])
         PackageInfo.SourceAddress := PackageInfo.Repository
     } else if PackageInfo.RepositoryType = "gist" {
         if !(PackageInfo.Gist := QueryGitHubGist(PackageInfo.Repository)) || !(PackageInfo.Gist is Map) || !PackageInfo.Gist.Has("files")
@@ -1728,7 +1728,7 @@ QueryInstalledPackages(path := ".\") {
         if !(A_LoopField ~= "^\s*#include")
             continue
 
-        if !RegExMatch(A_LoopField, "^#include (?:<Aris|\.)(?:\\|\/)([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
+        if !RegExMatch(A_LoopField, "i)^#include (?:<Aris|\.)(?:\\|\/)([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
             continue
         Path := StrReplace(IncludeInfo[1], "/", "\")
 
@@ -1784,7 +1784,7 @@ ReadIncludesFromFile(path) {
     Loop parse FileRead(path), "`n", "`r" {
         if !(A_LoopField ~= "^\s*#include")
             continue
-        if !RegExMatch(A_LoopField, "^#include (?:<Aris|\.)(?:\\|\/)([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
+        if !RegExMatch(A_LoopField, "i)^#include (?:<Aris|\.)(?:\\|\/)([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
             continue
 
         Packages.Push(InstallInfoToPackageInfo(IncludeInfo[1],,, IncludeInfo.Count = 2 ? IncludeInfo[2] : ""))
@@ -1856,7 +1856,7 @@ CleanPackages() {
         if !(A_LoopField ~= "^\s*#include")
             continue
 
-        if !RegExMatch(A_LoopField, "^#include (?:<Aris|\.)(?:\\|\/)([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
+        if !RegExMatch(A_LoopField, "i)^#include (?:<Aris|\.)(?:\\|\/)([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
             continue
 
         if InstalledMap.Has(IncludeInfo[1])
@@ -1965,7 +1965,7 @@ QueryForumsReleases(PackageInfo) {
     Matches := []
     for Entry in CdxJson {
         if PackageInfo.Start
-            if !(RegExMatch(Entry[3], "start=(\d+)", &match:="") && match[1] = PackageInfo.Start)
+            if !(RegExMatch(Entry[3], "i)start=(\d+)", &match:="") && match[1] = PackageInfo.Start)
                 continue
         ; Although the following could perhaps get extra matches from Wayback, it's more useful to
         ; use the post id to extract a specific post from a thread page.
