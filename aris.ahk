@@ -62,6 +62,9 @@ TraySetIcon A_ScriptDir "\assets\main.ico"
 #include <Aris/packages>
 #include <ui-main>
 #include <utils>
+#include <version>
+#include <hash>
+#include <web>
 
 global g_GitHubRawBase := "https://raw.githubusercontent.com/Descolada/ARIS/main/"
 global g_Index, g_Config := Map(), g_PackageJson, g_LocalLibDir := A_WorkingDir "\Lib\Aris", g_GlobalLibDir := A_MyDocuments "\AutoHotkey\Lib\Aris", g_InstalledPackages, g_GlobalInstalledPackages
@@ -582,13 +585,13 @@ SearchPackageByName(Input, Skip := 0) {
         if found.Length > 1
             return found
         else if g_Index.Has(found[1].PackageName)
-            MergeJsonInfoToPackageInfo(g_Index[found[1].PackageName], found[1])
+            found[1] := found[1].Clone(), MergeJsonInfoToPackageInfo(g_Index[found[1].PackageName], found[1])
         return found[1]
     } else if Skip != 1 {
         for Name, Info in QueryPackageDependencies() {
             if Name = InputAuthor "/" InputName {
                 if g_Index.Has(Info.PackageName)
-                    MergeJsonInfoToPackageInfo(g_Index[Info.PackageName], Info)
+                    Info := Info.Clone(), MergeJsonInfoToPackageInfo(g_Index[Info.PackageName], Info)
                 return Info
             }
         }
@@ -817,10 +820,9 @@ InstallPackage(Package, Update:=0, Switches?) {
         }
         if Include.DependencyEntry { ; Package was already installed
             if !IsVersionCompatible(Include.Version, Include.DependencyVersion) {
-                PackageJson["dependencies"][IncludePackageName] := ReplaceInstallCommandVersion(PackageJson["dependencies"][IncludePackageName], Include.Version)
+                PackageJson["dependencies"][IncludePackageName] := ReplaceInstallCommandVersion(Include.DependencyEntry, Include.Version)
             } else if !PackageJson["dependencies"].Has(IncludePackageName)
                 PackageJson["dependencies"][IncludePackageName] := Include.DependencyEntry
-
         } else { ; Package was not installed
             SemVerVersion := IsSemVer(Include.Version) && !(Include.Version ~= "^[~^><=]") ? "^" Include.Version : Include.Version
             PackageJson["dependencies"][IncludePackageName] := g_Index.Has(Include.PackageName) ? SemVerVersion : ConstructInstallCommand(Include, SemVerVersion)
@@ -1112,8 +1114,6 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
             if !g_Switches["global_install"]
                 ForceRemovePackageWithDependencies(Include, InstalledPackages, g_LocalLibDir)
             Includes.Delete(PackageInfo.PackageName)
-            if !IsVersionCompatible(PackageInfo.Version, PackageInfo.DependencyVersion)
-                PackageInfo.DependencyEntry := RegExReplace(PackageInfo.DependencyEntry, "\Q@" PackageInfo.DependencyVersion "\E", "@" PackageInfo.Version,,1), PackageInfo.DependencyVersion := PackageInfo.Version
         }
     } else if CanUpdate {
         if Includes.Has(PackageInfo.PackageName) && (Include := Includes[PackageInfo.PackageName]) && (DirExist(g_LocalLibDir "\" Include.InstallName) || DirExist(g_GlobalLibDir "\" Include.InstallName)) && IsVersionCompatible(PackageInfo.Version, "^" Include.DependencyVersion) {
@@ -1196,12 +1196,6 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
 
     PackageInfo.InstallVersion := PackageInfo.Version
     PackageInfo.InstallBuildMetadata := PackageInfo.BuildMetadata
-    if !PackageInfo.DependencyVersion || (PackageInfo.DependencyVersion && !IsVersionCompatible(PackageInfo.Version, PackageInfo.DependencyVersion)) {
-        if IsSemVer(PackageInfo.Version)
-            PackageInfo.DependencyVersion := ((PackageInfo.Version ~= "^[~^><=]") ? "" : "^") PackageInfo.Version
-        else
-            PackageInfo.DependencyVersion := PackageInfo.Version
-    }
 
     if !PackageInfo.IsMain {
         PackageInfo.Main := Trim(StrReplace(PackageInfo.Main, "/", "\"), "\/")
@@ -1980,50 +1974,6 @@ QueryForumsReleases(PackageInfo) {
     }
     return Matches
 }
-
-GetVersionRangeCompareFunc(Range) {
-    Range := StrLower(Range), OtherRange := ""
-    Split := StrSplit(Range := Trim(Range), " ",, 2)
-    if Split.Length > 1 {
-        OtherRange := Split[2], Range := Split[1]
-    }
-    if Range = "*"
-        Range := "latest"
-    if Range && Range != "latest" {
-        Plain := RegExReplace(Range, "[^\w-.]")
-        if SubStr(Plain, 1, 1) = "v"
-            Plain := SubStr(Plain, 2)
-        if IsVersionSha(Plain) || IsVersionMD5(Plain)
-            return (v) => v == Plain
-
-        split := StrSplit(Plain, ".")
-        if split.Length = 3 && split[3] = "x"
-            split[3] := "0", Range := "~" Range, Plain := StrReplace(Plain, ".x", ".0")
-        if split.Length = 2 && split[2] = "x"
-            split[2] := "0", Range := "^" Range, Plain := StrReplace(Plain, ".x", ".0")
-        CropLength := RegExReplace.Bind(,"^([~^><=]*\d{10,10})\d+", "$1")
-        Plain := CropLength(Plain), Range := CropLength(Range)
-        switch SubStr(Range, 1, 1) {
-            case "~": ; Only accept patch versions
-                CompareFunc := (v) => (v:=CropLength(v), VerCompare(v, ">=" Plain) && VerCompare(v, (split.Length > 1) ? "<" split[1] "." (Integer(split[2])+1) : "=" split[1]))
-            case "^": ; Only accept minor and patch versions
-                CompareFunc := (v) => (v:=CropLength(v), VerCompare(v, ">=" Plain) && VerCompare(v, "<" (Integer(split[1])+1)))
-            case ">", "<":
-                CompareFunc := (v) => VerCompare(CropLength(v), Range)
-            default:
-                CompareFunc := (v) => VerCompare(CropLength(v), "=" Plain)
-        }
-    } else
-        CompareFunc := (v) => true
-    if OtherRange
-        return (v) => CompareFunc(v) && GetVersionRangeCompareFunc(OtherRange).Call(v)
-    return CompareFunc
-}
-
-IsVersionSha(version) => StrLen(version) = 7 && RegExMatch(version, "^\w+$")
-IsVersionMD5(version) => StrLen(version) = 10 && RegExMatch(version, "^\w{10}$")
-IsSemVer(input) => !RegExMatch(input, "(^\w{7}$)|^\w{10}$") && RegExMatch(input, "^[><=^~]*v?(?:((0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)|\d+|\d+\.\d+|latest|\*)$")
-IsVersionCompatible(version, range) => GetVersionRangeCompareFunc(range).Call(version)
 
 MergeJsonInfoToPackageInfo(JsonInfo, PackageInfo) {
     if !PackageInfo.Dependencies.Count && JsonInfo.Has("dependencies")
