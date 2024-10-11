@@ -86,6 +86,8 @@ if !A_Args.Length && !DllCall("GetStdHandle", "int", -11, "ptr") { ; Hack to det
 
 try g_IsComSpecAvailable := !RunWait(A_ComSpec " /c echo 1",, "Hide")
 
+OnError(WriteErrorStdOut)
+
 for i, Arg in A_Args {
     if Arg = "--working-dir" {
         if A_Args.Length > i && DirExist(A_Args[i+1]) {
@@ -121,7 +123,7 @@ if !g_Config.Has("first_run") || g_Config["first_run"] {
 }
 
 
-if (!A_Args.Length || (A_Args.Length = 1 && FileExist(A_Args[1]) && A_Args[1] ~= "\.ahk?\d?$")) {
+if (!A_Args.Length || (A_Args.Length = 1 && FileExist(A_Args[1]) && A_Args[1] ~= "i)\.ahk?\d?$")) {
     Persistent()
     LaunchGui(A_Args.Length ? A_Args[1] : unset)
 } else {
@@ -158,7 +160,7 @@ if (!A_Args.Length || (A_Args.Length = 1 && FileExist(A_Args[1]) && A_Args[1] ~=
         case "install":
             if Targets.Length {
                 for target in Targets {
-                    if target ~= "\.ahk?\d?$" && FileExist(target)
+                    if target ~= "i)\.ahk?\d?$" && FileExist(target)
                         InstallPackageDependencies(target)
                     else
                         InstallPackage(target,, Switches)
@@ -474,7 +476,7 @@ InputToPackageInfo(Input, Skip:=0, Switches?) {
 StandardizePackageInfo(PackageInfo) {
     local i
     PackageInfo.Main := Trim(StrReplace(PackageInfo.Main, "\", "/"), "/ ")
-    if PackageInfo.Main && !(PackageInfo.Main ~= "\.ahk?\d?$")
+    if PackageInfo.Main && !(PackageInfo.Main ~= "i)\.ahk?\d?$")
         PackageInfo.Main .= ".ahk"
     for i, PackageFile in PackageInfo.Files {
         PackageInfo.Files[i] := Trim(StrReplace(PackageFile, "\", "/"), "/ ")
@@ -618,18 +620,18 @@ SearchPackageByName(Input, Skip := 0) {
 ParseRepositoryData(PackageInfo) {
     Input := PackageInfo.Repository
     if !PackageInfo.RepositoryType {
-        if Input ~= "(\.zip|\.tar\.gz|\.tar|\.7z)$" {
+        if Input ~= "i)(\.zip|\.tar\.gz|\.tar|\.7z)$" {
             PackageInfo.RepositoryType := "archive"
-        } else if InStr(Input, "gist.github.com") || Input ~= "^(gist:)" {
+        } else if InStr(Input, "gist.github.com") || Input ~= "i)^(gist:)" {
             PackageInfo.RepositoryType := "gist"
-        } else if InStr(Input, "github.com") || Input ~= "^(github|gh):" {
+        } else if InStr(Input, "github.com") || Input ~= "i)^(github|gh):" {
             PackageInfo.RepositoryType := "github"
-        } else if InStr(Input, "autohotkey.com") || Input ~= "^(forums:)" {
+        } else if InStr(Input, "autohotkey.com") || Input ~= "i)^(forums:)" {
             PackageInfo.RepositoryType := "forums"
         } else {
             Split := StrSplit(Input, "/")
             if Split.Length > 3 {
-                if Input ~= "\.ahk?\d?$"
+                if Input ~= "i)\.ahk?\d?$"
                     PackageInfo.RepositoryType := "ahk"
                 else
                     PackageInfo.RepositoryType := "archive", PackageInfo.Repository := Input
@@ -690,22 +692,22 @@ ExtractInfoFromRepositoryEntry(repo) {
     
     if !repo
         return Map("type", "github", "url", "")
-    if repo ~= "(\.zip|\.tar\.gz|\.tar|\.7z)$"
+    if repo ~= "i)(\.zip|\.tar\.gz|\.tar|\.7z)$"
         repo := Map("type", "archive", "url", repo)
     else if InStr(repo, "github.com")
         repo := Map("type", "github", "url", RegExReplace(repo, ".*github\.com\/"))
     else if InStr(repo, "autohotkey.com")
         repo := Map("type", "forums", "url", repo)
-    else if repo ~= "^(forums:)"
+    else if repo ~= "i)^(forums:)"
         repo := Map("type", "forums", "url", StrSplit(repo, ":",,2)[2])
     else if repo ~= "^(http|ftp|www\.):" {
-        if repo ~= "\.ahk?\/d?$"
+        if repo ~= "i)\.ahk?\/d?$"
             repo := Map("type", "ahk", "url", repo)
         else
             repo := Map("type", "archive", "url", repo)
-    } else if repo ~= "^(github|gh):"
+    } else if repo ~= "i)^(github|gh):"
         repo := Map("type", "github", "url", StrSplit(repo, ":",,2)[2])
-    else if repo ~= "^(gist:)"
+    else if repo ~= "i)^(gist:)"
         repo := Map("type", "gist", "url", StrSplit(repo, ":",,2)[2])
     else {
         repo := Map("type", "github", "url", repo)
@@ -1143,7 +1145,7 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
                 }
             }
         }
-        if NoMainName && PackageInfo.Files.Length = 1 && PackageInfo.Files[1] ~= "(?<!\*)\.ahk?\d?$" {
+        if NoMainName && PackageInfo.Files.Length = 1 && PackageInfo.Files[1] ~= "i)(?<!\*)\.ahk?\d?$" {
             PackageInfo.Main := StrSplit(MainFile, "\")[-1]
             FileMove(TempDir "\" FinalDirName "\" MainFile, TempDir "\" FinalDirName "~\" PackageInfo.Main)
         } else {
@@ -1394,7 +1396,7 @@ IsGithubMinimalInstallPossible(PackageInfo, IgnoreVersion := false) {
     if PackageInfo.Files.Length = 1 {
         if PackageInfo.Main != "" ; Files started out empty and Main was pushed into Files, so also ignore this one
             return false
-        if PackageInfo.Main = "" && PackageInfo.Files[1] ~= "(?<!\*)\.ahk?\d?$"
+        if PackageInfo.Main = "" && PackageInfo.Files[1] ~= "i)(?<!\*)\.ahk?\d?$"
             return true
     } 
     for FileName in PackageInfo.Files {
@@ -1444,14 +1446,14 @@ GithubDownloadMinimalInstall(PackageInfo, Path) {
 SetPackageInfoMainFile(PackageInfo, TempDir, FinalDirName) {
     if !PackageInfo.Main {
         Loop Files TempDir "\" FinalDirName "\*.ah*" {
-            if (A_LoopFileName = (PackageInfo.Name "." A_LoopFileExt)) || (A_LoopFileName ~= "^(main|export)\.ah") || (PackageInfo.Name ~= "\.ahk?\d?$" && StrSplitLast(A_LoopFileName, ".")[1] = StrSplitLast(PackageInfo.Name, ".")[1]) {
+            if (A_LoopFileName = (PackageInfo.Name "." A_LoopFileExt)) || (A_LoopFileName ~= "i)^(main|export)\.ahk?\d?") || (PackageInfo.Name ~= "\.ahk?\d?$" && StrSplitLast(A_LoopFileName, ".")[1] = StrSplitLast(PackageInfo.Name, ".")[1]) {
                 PackageInfo.Main := A_LoopFileFullPath
                 break
             }
         }
         if !PackageInfo.Main && DirExist(TempDir "\" FinalDirName "\Lib") {
             Loop Files TempDir "\" FinalDirName "\Lib\*.ah*" {
-                if (A_LoopFileName = (PackageInfo.Name "." A_LoopFileExt)) || (A_LoopFileName ~= "^(main|export)\.ah") || (PackageInfo.Name ~= "\.ahk?\d?$" && StrSplitLast(A_LoopFileName, ".")[1] = StrSplitLast(PackageInfo.Name, ".")[1]) {
+                if (A_LoopFileName = (PackageInfo.Name "." A_LoopFileExt)) || (A_LoopFileName ~= "i)^(main|export)\.ahk?\d?") || (PackageInfo.Name ~= "\.ahk?\d?$" && StrSplitLast(A_LoopFileName, ".")[1] = StrSplitLast(PackageInfo.Name, ".")[1]) {
                     PackageInfo.Main := A_LoopFileFullPath
                     break
                 }
@@ -1513,7 +1515,7 @@ VerifyPackageIsDownloadable(PackageInfo) {
             PackageInfo.Version := release["tag_name"]
             if release.Has("assets") && release["assets"].Length {
                 asset := release["assets"][1]
-                if asset["name"] ~= "\.ahk?\d?$" {
+                if asset["name"] ~= "i)\.ahk?\d?$" {
                     PackageInfo.Main := PackageInfo.Main || asset["name"]
                     PackageInfo.Files := [PackageInfo.Main]
                     PackageInfo.RepositoryType := "ahk"
@@ -1719,7 +1721,7 @@ QueryInstalledPackages(path := ".\") {
         return Packages
 
     Loop parse FileRead(LibDir "\packages.ahk"), "`n", "`r" {
-        if !(A_LoopField ~= "^\s*#include")
+        if !(A_LoopField ~= "i)^\s*#include")
             continue
 
         if !RegExMatch(A_LoopField, "i)^#include (?:<Aris|\.)(?:\\|\/)([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
@@ -1776,12 +1778,15 @@ ReadIncludesFromFile(path) {
     if !FileExist(path)
         return Packages
     Loop parse FileRead(path), "`n", "`r" {
-        if !(A_LoopField ~= "^\s*#include")
+        if !(A_LoopField ~= "i)^\s*#include")
             continue
         if !RegExMatch(A_LoopField, "i)^#include (?:<Aris|\.)(?:\\|\/)([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
             continue
 
-        Packages.Push(InstallInfoToPackageInfo(IncludeInfo[1],,, IncludeInfo.Count = 2 ? IncludeInfo[2] : ""))
+        try Packages.Push(InstallInfoToPackageInfo(IncludeInfo[1],,, IncludeInfo.Count = 2 ? IncludeInfo[2] : ""))
+        catch as err {
+            WriteStdOut err.Message (err.Extra ? ": " err.Extra : "") 
+        }
     }
     return Packages
 }
@@ -1847,7 +1852,7 @@ CleanPackages() {
     WriteStdOut "Removing unused entries from packages.ahk"
     OldContent := NewContent := FileRead(g_LocalLibDir "\packages.ahk")
     Loop parse NewContent, "`n", "`r" {
-        if !(A_LoopField ~= "^\s*#include")
+        if !(A_LoopField ~= "i)^\s*#include")
             continue
 
         if !RegExMatch(A_LoopField, "i)^#include (?:<Aris|\.)(?:\\|\/)([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
@@ -2051,3 +2056,4 @@ LoadPackageJson(path:=".\", &RawContent:="") {
 LoadJson(fileName, &RawContent:="") => JSON.Load(RawContent := FileRead(fileName))
 
 WriteStdOut(msg) => FileAppend(msg "`n", "*")
+WriteErrorStdOut(exception, mode) => (WriteStdOut("Uncaught error on line " exception.Line ": " exception.Message "`n" (exception.Extra ? "`tSpecifically: " exception.Extra "`n" : "")), 1)
