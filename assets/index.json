@@ -38,6 +38,13 @@
 		"repository": "Descolada/AHK-v2-libraries/main",
 		"website": "https://github.com/Descolada/AHK-v2-libraries"
 	},
+	"Descolada/DUnit": {
+		"description": "Alternative unit testing framework to YUnit",
+		"files": "Lib/DUnit.ahk",
+		"license": "MIT",
+		"repository": "Descolada/AHK-v2-libraries/main",
+		"website": "https://github.com/Descolada/AHK-v2-libraries"
+	},
 	"Descolada/FileReadLine": {
 		"description": "Read a single line from a file",
 		"files": "v2/Descolada/FileReadLine.ahk",
@@ -537,6 +544,15 @@
 		"description": "Wrapper for monitor configuration WinAPI functions, get and set monitor properties (brightness etc)",
 		"files": "v2/Tigerlily/MonitorFind.ahk",
 		"repository": "ahkscript/ScriptHub/main"
+	},
+	"Uberi/Yunit": {
+		"description": "Super simple unit testing framework",
+		"main": "Yunit.ahk",
+		"repository": "Uberi/Yunit/v2",
+		"scripts": {
+			"postdownload": "A_WorkingDir := A_Args[1]\nFileAppend('`n#include JUnit.ahk`n#include OutputDebug.ahk`n#include Stdout.ahk`n#include Window.ahk', 'Yunit.ahk')"
+		},
+		"website": "https://github.com/Uberi/Yunit/tree/v2"
 	},
 	"version": "1.0.0"
 }
