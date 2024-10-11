@@ -343,7 +343,7 @@ OutputAddedIncludesString(InstallType:=0, PackageType:=0) {
         return
     }
     Plural := InStr(g_AddedIncludesString := Trim(g_AddedIncludesString), "`n")
-    WriteStdOut "`n" (InstallType = 0 ? "Installed" : "Updated") " " (PackageType = 0 ? "package" (Plural ? "s" : "") : "dependenc" (Plural ? "ies" : "y")) " include directive" (Plural ? "s" : "") ":"
+    WriteStdOut (InstallType = 0 ? "Installed" : "Updated") " " (PackageType = 0 ? "package" (Plural ? "s" : "") : "dependenc" (Plural ? "ies" : "y")) " include directive" (Plural ? "s" : "") ":"
     WriteStdOut g_AddedIncludesString
     g_AddedIncludesString := ""
 }
@@ -1945,8 +1945,10 @@ QueryGitHubRepo(repo, subrequest := "", data := "", token := "") {
 
     whr.Open("GET", "https://api.github.com/repos/" repo[1] "/" repo[2] subrequest (data ? ObjToQuery(data) : ""), true)
     whr.SetRequestHeader("Accept", "application/vnd.github+json")
-    if g_Config.Has("github_token")
-        whr.SetRequestHeader("Authorization", "Bearer " g_Config["github_token"])
+    if !token && g_Config.Has("github_token")
+        token := g_Config["github_token"]
+    if token
+        whr.SetRequestHeader("Authorization", "Bearer " token)
     whr.Send()
     whr.WaitForResponse()
     return JSON.Load(whr.ResponseText)
@@ -2033,8 +2035,6 @@ MergeJsonInfoToPackageInfo(JsonInfo, PackageInfo) {
     if !PackageInfo.Files.Length {
         if JsonInfo.Has("files")
             PackageInfo.Files := JsonInfo["files"] is String ? [JsonInfo["files"]] : JsonInfo["files"]
-        if JsonInfo.Has("main")
-            MergeMainFileToFiles(PackageInfo, JsonInfo["main"])
     }
     if !PackageInfo.Main && JsonInfo.Has("main")
         PackageInfo.Main := JsonInfo["main"]
