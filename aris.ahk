@@ -70,7 +70,7 @@ global g_GitHubRawBase := "https://raw.githubusercontent.com/Descolada/ARIS/main
 global g_Index, g_Config := Map(), g_PackageJson, g_LocalLibDir := A_WorkingDir "\Lib\Aris", g_GlobalLibDir := A_MyDocuments "\AutoHotkey\Lib\Aris", g_InstalledPackages, g_GlobalInstalledPackages
 global g_Switches := Mapi("local_install", false, "global_install", false, "force", false), g_CacheDir := A_ScriptDir "\cache"
 global g_CommandAliases := Mapi("install", "install", "i", "install", "remove", "remove", "r", "remove", "rm", "remove", "uninstall", "remove", "update", "update", "update-index", "update-index", "list", "list", "clean", "clean")
-global g_SwitchAliases := Mapi("--global-install", "global_install", "-g", "global_install", "--local-install", "local_install", "-l", "local_install", "-f", "force", "--force", "force", "--main", "main", "-m", "main", "--files", "files", "--alias", "alias", "as", "alias")
+global g_SwitchAliases := Mapi("--global", "global_install", "--global-install", "global_install", "-g", "global_install", "--local", "local_install", "--local-install", "local_install", "-l", "local_install", "-f", "force", "--force", "force", "--main", "main", "-m", "main", "--files", "files", "--alias", "alias", "as", "alias")
 global g_MainGui := Gui("+MinSize640x400 +Resize", "Aris")
 global g_AddedIncludesString := ""
 global g_IsComSpecAvailable := false
@@ -322,8 +322,8 @@ RefreshWorkingDirGlobals() {
 
 LoadGlobalInstalledPackages() {
     global g_GlobalInstalledPackages := Mapi(), GlobalInstalledPackages := Map()
-    if FileExist(g_GlobalLibDir "\aris-dependencies.json") {
-        GlobalInstalledPackages := JSON.Load(FileRead(g_GlobalLibDir "\aris-dependencies.json"))
+    if FileExist(g_GlobalLibDir "\global-dependencies.json") {
+        GlobalInstalledPackages := JSON.Load(FileRead(g_GlobalLibDir "\global-dependencies.json"))
     }
     for PackageName, Info in GlobalInstalledPackages {
         NewInfo := Mapi()
@@ -336,7 +336,7 @@ LoadGlobalInstalledPackages() {
 SaveGlobalInstalledPackages() {
     DirCreateEx(g_GlobalLibDir)
     if Content := JSON.Dump(g_GlobalInstalledPackages, true) {
-        FileOpen(g_GlobalLibDir "\aris-dependencies.json", "w").Write(Content)
+        FileOpen(g_GlobalLibDir "\global-dependencies.json", "w").Write(Content)
     }
 }
 
@@ -489,6 +489,7 @@ StandardizePackageInfo(PackageInfo) {
     MergeMainFileToFiles(PackageInfo, PackageInfo.Main)
     if !PackageInfo.PackageName
         PackageInfo.PackageName := PackageInfo.Author "/" PackageInfo.Name
+    PackageInfo.Global := PackageInfo.Global || g_Switches["global_install"]
     return PackageInfo
 }
 
@@ -739,7 +740,7 @@ InstallPackage(Package, Update:=0, Switches?) {
     ReadablePackageName := Trim(RemoveAhkSuffix(Package is Object ? Package.PackageName : PackageInfo.PackageName ? PackageInfo.PackageName : Package), "/")
     if !InStr(ReadablePackageName, "/")
         ReadablePackageName := (Package is Object) ? PackageInfo.RepositoryType ":" PackageInfo.Repository : Package
-    WriteStdOut 'Starting ' (g_Switches["global_install"] ? "global " : "") (Update ? "update" : "install") ' of package "' ReadablePackageName '"'
+    WriteStdOut 'Starting ' (PackageInfo.Global ? "global " : "") (Update ? "update" : "install") ' of package "' ReadablePackageName '"'
     Result := 0, DownloadResult := 0
     TempDir := A_ScriptDir "\~temp-" Random(100000000, 1000000000)
     if DirExist(TempDir)
@@ -807,7 +808,13 @@ InstallPackage(Package, Update:=0, Switches?) {
     if PackageInfo.IsMain {
         DirMove(TempDir "\" FinalDirName, A_WorkingDir, 2)
     } else {
-        DirMove(TempDir, g_Switches["global_install"] ? g_GlobalLibDir : g_LocalLibDir, 2)
+        if DownloadResult.Global {
+            if !DirExist(g_GlobalLibDir "\" FinalDirName)
+                DirMove(TempDir, g_GlobalLibDir, 2)
+            if !DirExist(g_LocalLibDir)
+                DirCreateEx(g_LocalLibDir)
+        } else
+            DirMove(TempDir, g_LocalLibDir, 2)
     }
 
     PackageJson := LoadPackageJson()
@@ -821,7 +828,7 @@ InstallPackage(Package, Update:=0, Switches?) {
     for IncludePackageName, Include in g_InstalledPackages {
         if CurrentlyInstalled.Has(IncludePackageName "@" Include.InstallVersion)
             continue
-        if g_Switches["global_install"] {
+        if g_Switches["global_install"] || Include.Global {
             if !g_GlobalInstalledPackages.Has(IncludePackageName)
                 g_GlobalInstalledPackages[IncludePackageName] := Mapi()
             if !g_GlobalInstalledPackages[IncludePackageName].Has(DownloadResult.InstallName)
@@ -829,25 +836,30 @@ InstallPackage(Package, Update:=0, Switches?) {
             g_GlobalInstalledPackages[IncludePackageName][DownloadResult.InstallName].Push(A_WorkingDir)
         }
         if Include.DependencyEntry { ; Package was already installed
-            if !IsVersionCompatible(Include.Version, Include.DependencyVersion) {
-                PackageJson["dependencies"][IncludePackageName] := ReplaceInstallCommandVersion(Include.DependencyEntry, Include.Version (Include.BuildMetadata ? "+" Include.BuildMetadata : ""))
+            if !IsVersionCompatible(Include.InstallVersion, Include.DependencyVersion) {
+                PackageJson["dependencies"][IncludePackageName] := ReplaceInstallCommandVersion(Include.DependencyEntry, Include.InstallVersion (Include.InstallBuildMetadata ? "+" Include.InstallBuildMetadata : ""))
             } else if !PackageJson["dependencies"].Has(IncludePackageName)
                 PackageJson["dependencies"][IncludePackageName] := Include.DependencyEntry
         } else { ; Package was not installed
-            SemVerVersion := IsSemVer(Include.Version) && !(Include.Version ~= "^[~^><=]") ? "^" Include.Version : Include.Version
-            PackageJson["dependencies"][IncludePackageName] := g_Index.Has(Include.PackageName) ? SemVerVersion : ConstructInstallCommand(Include, SemVerVersion (Include.BuildMetadata ? "+" Include.BuildMetadata : ""))
+            SemVerVersion := IsSemVer(Include.InstallVersion) && !(Include.InstallVersion ~= "^[~^><=]") ? "^" Include.InstallVersion : Include.InstallVersion
+            PackageJson["dependencies"][IncludePackageName] := g_Index.Has(Include.PackageName) ? SemVerVersion : ConstructInstallCommand(Include, SemVerVersion (Include.InstallBuildMetadata ? "+" Include.InstallBuildMetadata : ""))
         }
         if Update
             WriteStdOut 'Package successfully updated to "' IncludePackageName "@" Include.InstallVersion '".`n'
         else
             WriteStdOut 'Package "' IncludePackageName "@" Include.InstallVersion '" successfully installed.`n'
 
-        if Include.HasProp("Main") && Include.Main {
+        if !Include.Main {
+            if Include.Files.Length = 1
+                Include.Main := StrSplitLast(Include.Files[1], "/")[-1]
+        }
+
+        if Include.Main {
             if !DirExist(g_LocalLibDir "\" Include.Author)
                 DirCreate(g_LocalLibDir "\" Include.Author)
-            FileOpen(g_LocalLibDir "\" Include.Author "\" Include.Name ".ahk", "w").Write("#include " (g_Switches["global_install"] ? g_GlobalLibDir "\" Include.Author : ".\") StrSplit(Include.InstallName, "/",,2)[-1] "\" StrReplace(Include.Main, "/", "\"))
+            FileOpen(g_LocalLibDir "\" Include.Author "\" Include.Name ".ahk", "w").Write("#include " (Include.Global ? "%A_MyDocuments%\AutoHotkey\Lib\Aris\" Include.Author "\" : ".\") StrSplit(Include.InstallName, "/",,2)[-1] "\" StrReplace(Include.Main, "/", "\"))
             InstallEntry := ConstructInstallCommand(Include, Include.InstallVersion (Include.BuildMetadata ? "+" Include.BuildMetadata : ""))
-            Addition := (g_Switches["global_install"] ? "#include <Aris/" Include.PackageName ">" : "#include ./" Include.PackageName ".ahk") " `; " InstallEntry "`n"
+            Addition := (Include.Global ? "#include <Aris/" Include.PackageName ">" : "#include ./" Include.PackageName ".ahk") " `; " InstallEntry "`n"
             if !InStr(IncludeFileContent, Addition)
                 IncludeFileContent .= Addition, g_AddedIncludesString .= "#include <Aris/" Include.PackageName "> `; " InstallEntry
         }
@@ -945,7 +957,7 @@ RemovePackage(PackageName, RemoveDependencyEntry:=true) {
             }
         }
 
-        ForceRemovePackage(Match, g_Switches["global_install"] ? g_GlobalLibDir : g_LocalLibDir, RemoveDependencyEntry)
+        ForceRemovePackage(Match, Match.Global ? g_GlobalLibDir : g_LocalLibDir, RemoveDependencyEntry)
         WriteStdOut 'Package "' Match.PackageName "@" Match.InstallVersion '" removed!'
     } else {
         WriteStdOut "Multiple matches found:"
@@ -956,8 +968,10 @@ RemovePackage(PackageName, RemoveDependencyEntry:=true) {
 
 ForceRemovePackage(PackageInfo, LibDir, RemoveDependencyEntry:=true) {
     global g_PackageJson
-    if DirExist(LibDir "\" PackageInfo.InstallName)
-        DirDelete(LibDir "\" PackageInfo.InstallName, true)
+    if RemovePackageFromGlobalInstallEntries(PackageInfo) {
+        if DirExist(LibDir "\" PackageInfo.InstallName)
+            DirDelete(LibDir "\" PackageInfo.InstallName, true)
+    }
     if FileExist(g_LocalLibDir "\" PackageInfo.PackageName ".ahk")
         FileDelete(g_LocalLibDir "\" PackageInfo.PackageName ".ahk")
     try DirDelete(LibDir "\" PackageInfo.Author)
@@ -965,7 +979,7 @@ ForceRemovePackage(PackageInfo, LibDir, RemoveDependencyEntry:=true) {
         try DirDelete(g_LocalLibDir "\" PackageInfo.Author)
     if FileExist(g_LocalLibDir "\packages.ahk") {
         OldPackages := FileRead(g_LocalLibDir "\packages.ahk")
-        NewPackages := RegExReplace(OldPackages, "i)#include (<Aris|\.)\/\Q" PackageInfo.PackageName "\E(>|\.ahk)( `; .*|$)\n\r?",,, 1)
+        NewPackages := RegExReplace(OldPackages, "i)#include (<Aris|\.|%A_MyDocuments%)\/\Q" PackageInfo.PackageName "\E(>|\.ahk)( `; .*|$)\n\r?",,, 1)
         if OldPackages != NewPackages
             FileOpen(g_LocalLibDir "\packages.ahk", "w").Write(NewPackages)
     }
@@ -980,7 +994,6 @@ ForceRemovePackage(PackageInfo, LibDir, RemoveDependencyEntry:=true) {
             }
         }
     }
-    RemovePackageFromGlobalInstallEntries(PackageInfo)
 }
 
 ForceRemovePackageWithDependencies(PackageInfo, InstalledPackages, LibDir, RemoveDependencyEntry:=true) {
@@ -1075,17 +1088,20 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
         }
     }
 
-    if !IsVersioned && !CanUpdate && (PackageInfo.Version || PackageInfo.DependencyVersion) {
+    if (!IsVersioned || PackageInfo.Global) && !CanUpdate && (PackageInfo.Version || PackageInfo.DependencyVersion) {
         if !g_Switches["local_install"] && g_GlobalInstalledPackages.Has(PackageInfo.PackageName) {
             for InstallDir, Projects in g_GlobalInstalledPackages[PackageInfo.PackageName] {
                 Split := StrSplit(InstallDir, "@",, 2)
                 if IsVersionCompatible(Split[2], PackageInfo.Version || PackageInfo.DependencyVersion) {
                     WriteStdOut("Found matching globally installed package " InstallDir ", skipping install`n")
-                    return Split[3]
+                    PackageInfo.InstallName := InstallDir, PackageInfo.InstallVersion := Split[2]
+                    if !Includes.Has(PackageInfo.PackageName)
+                        Includes[PackageInfo.PackageName] := PackageInfo
+                    return PackageInfo
                 }
             }
         }
-        if Includes.Has(PackageInfo.PackageName) && (Include := Includes[PackageInfo.PackageName]) && (DirExist(TempDir "\" Include.InstallName) || (!g_Switches["global_install"] && DirExist(g_LocalLibDir "\" Include.InstallName)) || (!g_Switches["local_install"] && DirExist(g_GlobalLibDir "\" Include.InstallName))) {
+        if Includes.Has(PackageInfo.PackageName) && (Include := Includes[PackageInfo.PackageName]) && (DirExist(TempDir "\" Include.InstallName) || (!Include.Global && DirExist(g_LocalLibDir "\" Include.InstallName)) || (!g_Switches["local_install"] && DirExist(g_GlobalLibDir "\" Include.InstallName))) {
             WriteStdOut 'Package "' Include.InstallName '" already installed, skipping...`n'
             PackageInfo.InstallName := StrReplace(Include.InstallName, "\", "/")
             return Include
@@ -1188,14 +1204,12 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
     if IsVersioned { ; A specific version was requested, in which case force the install
         if Includes.Has(PackageInfo.PackageName) && (Include := Includes[PackageInfo.PackageName]) && (DirExist(g_LocalLibDir "\" Include.InstallName) || DirExist(g_GlobalLibDir "\" Include.InstallName)) {
             InstalledPackages := QueryInstalledPackages()
-            if !g_Switches["global_install"]
-                ForceRemovePackageWithDependencies(Include, InstalledPackages, g_LocalLibDir)
+            ForceRemovePackageWithDependencies(Include, InstalledPackages, Include.Global ? g_GlobalLibDir : g_LocalLibDir)
             Includes.Delete(PackageInfo.PackageName)
         }
     } else if CanUpdate {
         if Includes.Has(PackageInfo.PackageName) && (Include := Includes[PackageInfo.PackageName]) && (DirExist(g_LocalLibDir "\" Include.InstallName) || DirExist(g_GlobalLibDir "\" Include.InstallName)) && IsVersionCompatible(PackageInfo.Version, "^" Include.DependencyVersion) {
-            if !g_Switches["global_install"]
-                ForceRemovePackage(Include, g_LocalLibDir, false)
+            ForceRemovePackage(Include, Include.Global ? g_GlobalLibDir : g_LocalLibDir, false)
             Includes.Delete(PackageInfo.PackageName)
         }
     }
@@ -1734,14 +1748,14 @@ QueryInstalledPackages(path := ".\") {
         if !(A_LoopField ~= "i)^\s*#include")
             continue
 
-        if !RegExMatch(A_LoopField, "i)^#include (?:<Aris|\.)(?:\\|\/)([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
+        if !RegExMatch(A_LoopField, "i)^#include (?:<Aris|\.|%A_MyDocuments%)(?:\\|\/)([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
             continue
         Path := StrReplace(IncludeInfo[1], "/", "\")
 
         if !FileExist(LibDir "\" Path ".ahk")
             continue
 
-        ExtraInfo := RegExReplace(FileRead(LibDir "\" Path ".ahk"), "i)^#include \.\\(([^@]+\\))*")
+        ExtraInfo := RegExReplace(FileRead(LibDir "\" Path ".ahk"), "i)^#include (\.|%A_MyDocuments%)\\(([^@]+\\))*")
         ExtraInfoSplit := StrSplit(ExtraInfo, "\")
 
         PackageInfo := InstallInfoToPackageInfo(Path, StrSplit(ExtraInfoSplit[1], "@",, 2)[2], ExtraInfoSplit[-1], IncludeInfo.Count = 2 ? IncludeInfo[2] : "")
@@ -1865,7 +1879,7 @@ CleanPackages() {
         if !(A_LoopField ~= "i)^\s*#include")
             continue
 
-        if !RegExMatch(A_LoopField, "i)^#include (?:<Aris|\.)(?:\\|\/)([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
+        if !RegExMatch(A_LoopField, "i)^#include (?:<Aris|\.|%A_MyDocuments%)(?:\\|\/)([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
             continue
 
         if InstalledMap.Has(IncludeInfo[1])
@@ -1882,7 +1896,7 @@ CleanPackages() {
 
 RemovePackageFromGlobalInstallEntries(PackageInfo) {
     global g_GlobalInstalledPackages
-    ChangesMade := false
+    ChangesMade := false, NoOtherDependencies := true
     if g_GlobalInstalledPackages.Has(PackageInfo.PackageName) && g_GlobalInstalledPackages[PackageInfo.PackageName].Has(PackageInfo.InstallName) {
         for j, Project in g_GlobalInstalledPackages[PackageInfo.PackageName][PackageInfo.InstallName] {
             if Project = A_WorkingDir {
@@ -1892,11 +1906,14 @@ RemovePackageFromGlobalInstallEntries(PackageInfo) {
         }
         if !g_GlobalInstalledPackages[PackageInfo.PackageName][PackageInfo.InstallName].Length
             g_GlobalInstalledPackages[PackageInfo.PackageName].Delete(PackageInfo.InstallName), ChangesMade := true
+        else
+            NoOtherDependencies := false
     }
     if g_GlobalInstalledPackages.Has(PackageInfo.PackageName) && !g_GlobalInstalledPackages[PackageInfo.PackageName].Count
         g_GlobalInstalledPackages.Delete(PackageInfo.PackageName), ChangesMade := true
     if ChangesMade
         SaveGlobalInstalledPackages()
+    return NoOtherDependencies
 }
 
 FindMatchingGithubReleaseVersion(releases, target) {
