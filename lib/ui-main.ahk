@@ -136,8 +136,11 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
     DllCall("CloseHandle", "ptr", hIcon)
     */
 
-    if IsSet(OutFileName) && OutFileName
+    if IsSet(OutFileName) && OutFileName {
         PackageAction(P, "install-external", FileOrDir)
+        if FileExist("package.json")
+            PackageAction(P, "install-external", "package.json")
+    }
 
     if !g_Config.Has("check_aris_updates_daily") || (g_Config["check_aris_updates_daily"] && (Abs(DateDiff(A_NowUTC, g_Config["check_aris_updates_daily"], "Days")) >= 1)) {
         CheckArisUpdate()

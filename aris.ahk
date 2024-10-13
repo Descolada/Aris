@@ -890,7 +890,8 @@ InstallPackageDependencies(From := "", Update := 2) {
         return
     }
     for PackageName, PackageInfo in Dependencies
-        InstallPackage(PackageInfo, Update) ; InStr(PackageInfo.DependencyEntry, ":") ? PackageInfo.DependencyEntry : PackageName "@" PackageInfo.Version)
+        if Update != 0 || (Update = 0 && !g_InstalledPackages.Has(PackageName))
+            InstallPackage(PackageInfo, Update) ; InStr(PackageInfo.DependencyEntry, ":") ? PackageInfo.DependencyEntry : PackageName "@" PackageInfo.Version)
 }
 
 UpdatePackage(PackageName) {
