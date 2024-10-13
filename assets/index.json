@@ -382,6 +382,12 @@
 		"license": "MIT",
 		"repository": "nperovic/GuiEnhancerKit/main"
 	},
+	"nperovic/ToolTipEx": {
+		"description": "Creates a pop-up tooltip that follows the mouse movement, can be switched between dark and light themes, and be clicked and dragged",
+		"files": "ToolTipEx (for v2.0+).ahk",
+		"license": "MIT",
+		"repository": "nperovic/ToolTipEx/main"
+	},
 	"RaptorX/SQLite": {
 		"description": "Wrapper for SQLite, which implements a small, fast, self-contained, high-reliability, full-featured, SQL database engine",
 		"files": [
@@ -573,5 +579,11 @@
 		},
 		"website": "https://github.com/Uberi/Yunit/tree/v2"
 	},
-	"version": "1.0.0"
+	"version": "1.0.0",
+	"XMCQCX/Notify": {
+		"description": "Create and display notification GUIs",
+		"files": "Notify.ahk",
+		"license": "MIT",
+		"repository": "XMCQCX/Notify/main"
+	}
 }
