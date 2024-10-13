@@ -1,4 +1,4 @@
-LaunchGui(FileOrDir?) {
+LaunchGui(FileOrDir?, SelectedTab := 1) {
     WriteStdOut.DefineProp("call", {call:(this, msg) => g_MainGui.Tabs.Value = 1 ? g_MainGui.Tabs.Package.Metadata.Value .= msg "`n" : g_MainGui.Tabs.Index.Metadata.Value .= msg "`n"})
 
     g_MainGui.OnEvent("Size", GuiReSizer)
@@ -116,6 +116,8 @@ LaunchGui(FileOrDir?) {
     S.SaveSettings.OnEvent("Click", (*) => (ApplyGuiConfigChanges(), SaveSettings(true)))
 
     g_MainGui.Tabs.UseTab(0)
+    if SelectedTab != 1
+        g_MainGui.Tabs.Choose(SelectedTab)
 
     g_MainGui.Show("w640 h425")
     P.Metadata.Opt("+ReadOnly") ; If this isn't done after showing the GUI, the Edit may display black if the cursor was located inside of it

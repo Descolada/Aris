@@ -122,12 +122,13 @@ if !g_Config.Has("first_run") || g_Config["first_run"] {
         WriteStdOut "Failed to add Aris shell menu item (missing rights to write to registry?)"
     g_Config["first_run"] := false
     FileOpen("assets/config.json", "w").Write(JSON.Dump(g_Config, true))
+    SelectedTab := 3
 }
 
 
 if (!A_Args.Length || (A_Args.Length = 1 && FileExist(A_Args[1]) && A_Args[1] ~= "i)\.ahk?\d?$")) {
     Persistent()
-    LaunchGui(A_Args.Length ? A_Args[1] : unset)
+    LaunchGui(A_Args.Length ? A_Args[1] : unset, SelectedTab?)
 } else {
     Command := "", Targets := [], Files := [], LastSwitch := "", Switches := Mapi("main", "", "files", [], "alias", "")
     for i, Arg in A_Args {
