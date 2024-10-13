@@ -573,18 +573,18 @@ SearchPackageByName(Input, Skip := 0) {
     if InputAuthor = "" {
         found := []
         for Name, Info in g_InstalledPackages {
-            if Name ~= "i)\/\Q" InputName "\E$"
+            if Name ~= "i)[\\\/]\Q" InputName "\E$"
                 found.Push(Info)
         }
         if !found.Length && Skip != 1 {
             for Name, Info in QueryPackageDependencies() {
-                if Name ~= "i)\/\Q" InputName "\E$"
+                if Name ~= "i)[\\\/]\Q" InputName "\E$"
                     found.Push(Info)
             }
         }
         if !found.Length {
             for Name, Info in g_Index {
-                if Name ~= "i)\/\Q" InputName "\E$"
+                if Name ~= "i)[\\\/]\Q" InputName "\E$"
                     Split := StrSplit(Name, "/",,2), found.Push(MergeJsonInfoToPackageInfo(Info, PackageInfoBase(Split[1], Split[2])))
             }
         }
@@ -707,7 +707,7 @@ ExtractInfoFromRepositoryEntry(repo) {
     else if repo ~= "i)^(forums:)"
         repo := Map("type", "forums", "url", StrSplit(repo, ":",,2)[2])
     else if repo ~= "^(http|ftp|www\.):" {
-        if repo ~= "i)\.ahk?\/d?$"
+        if repo ~= "i)\.ahk?\d?$"
             repo := Map("type", "ahk", "url", repo)
         else
             repo := Map("type", "archive", "url", repo)
@@ -859,7 +859,7 @@ InstallPackage(Package, Update:=0, Switches?) {
                 DirCreate(g_LocalLibDir "\" Include.Author)
             FileOpen(g_LocalLibDir "\" Include.Author "\" Include.Name ".ahk", "w").Write("#include " (Include.Global ? "%A_MyDocuments%\AutoHotkey\Lib\Aris\" Include.Author "\" : ".\") StrSplit(Include.InstallName, "/",,2)[-1] "\" StrReplace(Include.Main, "/", "\"))
             InstallEntry := ConstructInstallCommand(Include, Include.InstallVersion (Include.BuildMetadata ? "+" Include.BuildMetadata : ""))
-            Addition := (Include.Global ? "#include <Aris/" Include.PackageName ">" : "#include ./" Include.PackageName ".ahk") " `; " InstallEntry "`n"
+            Addition := "#include .\" StrReplace(Include.PackageName, "/", "\") ".ahk `; " InstallEntry "`n"
             if !InStr(IncludeFileContent, Addition)
                 IncludeFileContent .= Addition, g_AddedIncludesString .= "#include <Aris/" Include.PackageName "> `; " InstallEntry
         }
@@ -979,7 +979,7 @@ ForceRemovePackage(PackageInfo, LibDir, RemoveDependencyEntry:=true) {
         try DirDelete(g_LocalLibDir "\" PackageInfo.Author)
     if FileExist(g_LocalLibDir "\packages.ahk") {
         OldPackages := FileRead(g_LocalLibDir "\packages.ahk")
-        NewPackages := RegExReplace(OldPackages, "i)#include (<Aris|\.|%A_MyDocuments%)\/\Q" PackageInfo.PackageName "\E(>|\.ahk)( `; .*|$)\n\r?",,, 1)
+        NewPackages := RegExReplace(OldPackages, "i)#include (<Aris|\.|%A_MyDocuments%)[\\\/]\Q" StrReplace(PackageInfo.PackageName, "/", "\E[\\\/]\Q") "\E(>|\.ahk)( `; .*|$)\n\r?",,, 1)
         if OldPackages != NewPackages
             FileOpen(g_LocalLibDir "\packages.ahk", "w").Write(NewPackages)
     }
@@ -1310,7 +1310,7 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
             if RegExMatch(Page, 'topic-title"><a[^>]*>(.+?)</a>', &title:="") {
                 if RegExMatch(MainName := title[1], "(?:\[[^]]+\])?\s*(((?:\w\S*)\s*)+)(?=\s|\W|$)", &cleantitle:="")
                     MainName := cleantitle[1]
-                MainName := Trim(RegExReplace(MainName, '[<>:"\/\|?*\s]', "-"), "- ")
+                MainName := Trim(RegExReplace(MainName, '[<>:"\/\\|?*\s]', "-"), "- ")
                 MainName := RegExReplace(MainName, "i)(^class-)|(\-class$)")
                 PackageInfo.Name := MainName
             } else
@@ -1321,7 +1321,7 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
             Page := Post[1]
         }
         if PackageInfo.Author = "" && RegExMatch(Page, 'class="username(?:-coloured)?">(.+?)<\/a>', &author:="")
-            PackageInfo.Author := RegExReplace(author[1], '[<>:"\/\|?*]')
+            PackageInfo.Author := RegExReplace(author[1], '[<>:"\/\\|?*]')
         else if PackageInfo.Author = ""
             PackageInfo.Author := "Unknown"
         CodeMatches := RegExMatchAll(Page, "<code [^>]*>([\w\W]+?)<\/code>")
@@ -1748,14 +1748,14 @@ QueryInstalledPackages(path := ".\") {
         if !(A_LoopField ~= "i)^\s*#include")
             continue
 
-        if !RegExMatch(A_LoopField, "i)^#include (?:<Aris|\.|%A_MyDocuments%)(?:\\|\/)([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
+        if !RegExMatch(A_LoopField, "i)^#include (?:<Aris|\.|%A_MyDocuments%)[\\\/]([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
             continue
         Path := StrReplace(IncludeInfo[1], "/", "\")
 
         if !FileExist(LibDir "\" Path ".ahk")
             continue
 
-        ExtraInfo := RegExReplace(FileRead(LibDir "\" Path ".ahk"), "i)^#include (\.|%A_MyDocuments%)\\(([^@]+\\))*")
+        ExtraInfo := RegExReplace(FileRead(LibDir "\" Path ".ahk"), "i)^#include (\.|%A_MyDocuments%)[\\\/](([^@]+[\\\/]))*")
         ExtraInfoSplit := StrSplit(ExtraInfo, "\")
 
         PackageInfo := InstallInfoToPackageInfo(Path, StrSplit(ExtraInfoSplit[1], "@",, 2)[2], ExtraInfoSplit[-1], IncludeInfo.Count = 2 ? IncludeInfo[2] : "")
@@ -1804,7 +1804,7 @@ ReadIncludesFromFile(path) {
     Loop parse FileRead(path), "`n", "`r" {
         if !(A_LoopField ~= "i)^\s*#include")
             continue
-        if !RegExMatch(A_LoopField, "i)^#include (?:<Aris|\.)(?:\\|\/)([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
+        if !RegExMatch(A_LoopField, "i)^#include (?:<Aris|\.)[\\\/]([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
             continue
 
         try Packages.Push(InstallInfoToPackageInfo(IncludeInfo[1],,, IncludeInfo.Count = 2 ? IncludeInfo[2] : ""))
@@ -1879,7 +1879,7 @@ CleanPackages() {
         if !(A_LoopField ~= "i)^\s*#include")
             continue
 
-        if !RegExMatch(A_LoopField, "i)^#include (?:<Aris|\.|%A_MyDocuments%)(?:\\|\/)([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
+        if !RegExMatch(A_LoopField, "i)^#include (?:<Aris|\.|%A_MyDocuments%)[\\\/]([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
             continue
 
         if InstalledMap.Has(IncludeInfo[1])
