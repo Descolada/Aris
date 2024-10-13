@@ -58,6 +58,8 @@
 #Requires AutoHotkey v2
 
 TraySetIcon A_ScriptDir "\assets\main.ico"
+Print.Buffer := ""
+OnError(PrintError)
 
 #include <Aris/packages>
 #include <ui-main>
@@ -88,8 +90,6 @@ try g_IsComSpecAvailable := !RunWait(A_ComSpec " /c echo 1",, "Hide")
 
 Console := DllCall("AttachConsole", "UInt", 0x0ffffffff, "ptr")
 
-OnError(WriteErrorStdOut)
-
 for i, Arg in A_Args {
     if Arg = "--working-dir" {
         if A_Args.Length > i && DirExist(A_Args[i+1]) {
@@ -116,10 +116,10 @@ ClearCache()
 if !g_Config.Has("first_run") || g_Config["first_run"] {
     try AddArisToPATH()
     catch
-        WriteStdOut "Failed to add Aris to PATH (missing rights to write to registry?)"
+        Print "Failed to add Aris to PATH (missing rights to write to registry?)"
     try AddArisShellMenuItem()
     catch
-        WriteStdOut "Failed to add Aris shell menu item (missing rights to write to registry?)"
+        Print "Failed to add Aris shell menu item (missing rights to write to registry?)"
     g_Config["first_run"] := false
     FileOpen("assets/config.json", "w").Write(JSON.Dump(g_Config, true))
     SelectedTab := 3
@@ -132,6 +132,7 @@ if (!A_Args.Length || (A_Args.Length = 1 && FileExist(A_Args[1]) && A_Args[1] ~=
 } else {
     Command := "", Targets := [], Files := [], LastSwitch := "", Switches := Mapi("main", "", "files", [], "alias", "")
     for i, Arg in A_Args {
+        Arg := Trim(Arg, "`"'")
         if LastSwitch = "main" {
             LastSwitch := "", Switches["main"] := StrReplace(Arg, "\", "/")
             continue
@@ -148,7 +149,7 @@ if (!A_Args.Length || (A_Args.Length = 1 && FileExist(A_Args[1]) && A_Args[1] ~=
             }
             g_Switches[g_SwitchAliases[Arg]] := true
         } else if !Command && !LastSwitch
-            WriteStdOut("Unknown command. Use install, remove, update, or list."), ExitApp()
+            Print("Unknown command. Use install, remove, update, or list."), ExitApp()
         else {
             if LastSwitch = "files" {
                 Switches["files"].Push(StrReplace(Arg, "\", "/"))
@@ -176,11 +177,11 @@ if (!A_Args.Length || (A_Args.Length = 1 && FileExist(A_Args[1]) && A_Args[1] ~=
                 for target in Targets
                     RemovePackage(target)
             } else
-                WriteStdOut("Specify a package to remove.")
+                Print("Specify a package to remove.")
         case "update":
             if !FileExist(A_WorkingDir "\package.json") {
-                WriteStdOut "Missing package.json, cannot update package!"
-                WriteStdOut '`tInformation: Use "aris install" if you want to install missing dependecies from the projects scripts.'
+                Print "Missing package.json, cannot update package!"
+                Print '`tInformation: Use "aris install" if you want to install missing dependecies from the projects scripts.'
                 ExitApp
             }
             if Targets.Length {
@@ -346,12 +347,12 @@ SaveGlobalInstalledPackages() {
 OutputAddedIncludesString(InstallType:=0, PackageType:=0) {
     global g_AddedIncludesString
     if !g_AddedIncludesString {
-        WriteStdOut "No new packages installed"
+        Print "No new packages installed"
         return
     }
     Plural := InStr(g_AddedIncludesString := Trim(g_AddedIncludesString), "`n")
-    WriteStdOut (InstallType = 0 ? "Installed" : "Updated") " " (PackageType = 0 ? "package" (Plural ? "s" : "") : "dependenc" (Plural ? "ies" : "y")) " include directive" (Plural ? "s" : "") ":"
-    WriteStdOut g_AddedIncludesString
+    Print (InstallType = 0 ? "Installed" : "Updated") " " (PackageType = 0 ? "package" (Plural ? "s" : "") : "dependenc" (Plural ? "ies" : "y")) " include directive" (Plural ? "s" : "") ":"
+    Print g_AddedIncludesString
     g_AddedIncludesString := ""
 }
 
@@ -387,11 +388,11 @@ class PackageInfoBase {
 InputToPackageInfo(Input, Skip:=0, Switches?) {
     static DefaultSwitches := Mapi("main", "", "files", [], "alias", "")
     if !IsSet(Switches)
-        Switches := DefaultSwitches
+        Switches := DefaultSwitches.Clone(), Switches["files"] := DefaultSwitches["files"].Clone()
     else {
         for k, v in DefaultSwitches
             if !Switches.Has(k)
-                Switches[k] := v
+                Switches[k] := IsObject(v) ? v.Clone() : v
     }
     if InStr(Input, " -") {
         argv := DllCall("shell32.dll\CommandLineToArgv", "str", Input, "int*", &numArgs:=0, "ptr")
@@ -409,7 +410,7 @@ InputToPackageInfo(Input, Skip:=0, Switches?) {
                 continue
             }
             if g_SwitchAliases.Has(Arg) {
-                if g_SwitchAliases[Arg] = "main" || g_SwitchAliases[Arg] = "files" {
+                if g_SwitchAliases[Arg] = "main" || g_SwitchAliases[Arg] = "files" || g_SwitchAliases[Arg] = "alias" {
                     LastSwitch := g_SwitchAliases[Arg]
                     continue
                 }
@@ -417,7 +418,7 @@ InputToPackageInfo(Input, Skip:=0, Switches?) {
                 if IsSemVer(Arg)
                     InstallCommand .= " " Arg
                 else
-                    throw Error("Unknown command when reading input", -1, Arg)
+                    throw Error("Unknown command when reading input `"" Input "`"", -1, Arg)
             } else {
                 if LastSwitch = "files" {
                     Arg := StrReplace(Arg, "\", "/")
@@ -731,7 +732,7 @@ InstallPackage(Package, Update:=0, Switches?) {
     if !(Package is Object) {
         try PackageInfo := InputToPackageInfo(Package,, Switches?)
         catch as err {
-            WriteStdOut err.Message (err.Extra ? ": " err.Extra : "")
+            Print err.Message (err.Extra ? ": " err.Extra : "")
             return
         }
     } else
@@ -741,7 +742,7 @@ InstallPackage(Package, Update:=0, Switches?) {
     ReadablePackageName := Trim(RemoveAhkSuffix(Package is Object ? Package.PackageName : PackageInfo.PackageName ? PackageInfo.PackageName : Package), "/")
     if !InStr(ReadablePackageName, "/")
         ReadablePackageName := (Package is Object) ? PackageInfo.RepositoryType ":" PackageInfo.Repository : Package
-    WriteStdOut 'Starting ' (PackageInfo.Global ? "global " : "") (Update ? "update" : "install") ' of package "' ReadablePackageName '"'
+    Print 'Starting ' (PackageInfo.Global ? "global " : "") (Update ? "update" : "install") ' of package "' ReadablePackageName '"'
     Result := 0, DownloadResult := 0
     TempDir := A_ScriptDir "\~temp-" Random(100000000, 1000000000)
     if DirExist(TempDir)
@@ -752,7 +753,7 @@ InstallPackage(Package, Update:=0, Switches?) {
         CurrentlyInstalled[PackageName "@" PackageInfo.InstallVersion] := 1
 
     if (Update = 1) && !g_InstalledPackages.Has(PackageInfo.PackageName) && !PackageInfo.IsMain {
-        WriteStdOut 'Cannot update package "' PackageInfo.PackageName '" as it is not installed.'
+        Print 'Cannot update package "' PackageInfo.PackageName '" as it is not installed.'
         goto Cleanup
     }
 
@@ -787,16 +788,16 @@ InstallPackage(Package, Update:=0, Switches?) {
             DownloadResult := true
             A_WorkingDir := PrevWorkingDir
         } catch as err {
-            WriteStdOut "Failed to download package"
-            WriteStdOut "`t" err.Message (err.Extra ? ": " err.Extra : "")
+            Print "Failed to download package"
+            Print "`t" err.Message (err.Extra ? ": " err.Extra : "")
             A_WorkingDir := PrevWorkingDir
             goto Cleanup
         }
     } else {
         try DownloadResult := DownloadPackageWithDependencies(PackageInfo, TempDir, g_InstalledPackages, Update)
         catch as err {
-            WriteStdOut "Failed to download package with dependencies"
-            WriteStdOut "`t" err.Message (err.Extra ? ": " err.Extra : "")
+            Print "Failed to download package with dependencies"
+            Print "`t" err.Message (err.Extra ? ": " err.Extra : "")
             goto Cleanup
         }
     }
@@ -846,9 +847,9 @@ InstallPackage(Package, Update:=0, Switches?) {
             PackageJson["dependencies"][IncludePackageName] := g_Index.Has(Include.PackageName) ? SemVerVersion : ConstructInstallCommand(Include, SemVerVersion (Include.InstallBuildMetadata ? "+" Include.InstallBuildMetadata : ""))
         }
         if Update
-            WriteStdOut 'Package successfully updated to "' IncludePackageName "@" Include.InstallVersion '".`n'
+            Print 'Package successfully updated to "' IncludePackageName "@" Include.InstallVersion '".`n'
         else
-            WriteStdOut 'Package "' IncludePackageName "@" Include.InstallVersion '" successfully installed.`n'
+            Print 'Package "' IncludePackageName "@" Include.InstallVersion '" successfully installed.`n'
 
         if !Include.Main {
             if Include.Files.Length = 1
@@ -882,14 +883,14 @@ InstallPackage(Package, Update:=0, Switches?) {
     return Result
 }
 
-InstallPackageDependencies(From := "") {
+InstallPackageDependencies(From := "", Update := 2) {
     Dependencies := QueryPackageDependencies(, From)
     if !Dependencies.Count {
-        WriteStdOut "No dependencies found"
+        Print "No dependencies found"
         return
     }
     for PackageName, PackageInfo in Dependencies
-        InstallPackage(PackageInfo, 2) ; InStr(PackageInfo.DependencyEntry, ":") ? PackageInfo.DependencyEntry : PackageName "@" PackageInfo.Version)
+        InstallPackage(PackageInfo, Update) ; InStr(PackageInfo.DependencyEntry, ":") ? PackageInfo.DependencyEntry : PackageName "@" PackageInfo.Version)
 }
 
 UpdatePackage(PackageName) {
@@ -899,23 +900,23 @@ UpdatePackage(PackageName) {
         return
 
     if !Matches.Length
-        return WriteStdOut("No matching installed packages found: `"" PackageName "`"")
+        return Print("No matching installed packages found: `"" PackageName "`"")
 
     if Matches.Length > 1 {
-        WriteStdOut "Multiple matches found:"
+        Print "Multiple matches found:"
         for Match in Matches
-            WriteStdOut "`t" Match.PackageName "@" Match.InstallVersion
+            Print "`t" Match.PackageName "@" Match.InstallVersion
     } else {
         try {
             if InstallPackage(Matches[1].PackageName "@" g_PackageJson[Matches[1].PackageName], 1)
-                WriteStdOut "Package successfully updated!`n"
+                Print "Package successfully updated!`n"
         }
     }
 }
 
 UpdateWorkingDirPackage() {
     if !g_PackageJson.Has("name") || !g_PackageJson["name"] {
-        WriteStdOut "Missing package name from metadata, cannot update package!"
+        Print "Missing package name from metadata, cannot update package!"
         ExitApp
     }
     ThisPackage := ParsePackageName(g_PackageJson["name"])
@@ -928,7 +929,7 @@ UpdateWorkingDirPackage() {
             MsgBox "Aris successfully updated, press OK to restart"
             Run(A_AhkPath ' "' A_ScriptFullPath '"')
         } else {
-            WriteStdOut "Aris successfully updated"
+            Print "Aris successfully updated"
         }
         ExitApp
     }
@@ -942,7 +943,7 @@ RemovePackage(PackageName, RemoveDependencyEntry:=true) {
         return
 
     if !Matches.Length {
-        WriteStdOut "No such package installed"
+        Print "No such package installed"
     } else if Matches.Length = 1 {
         Match := Matches[1]
 
@@ -953,17 +954,17 @@ RemovePackage(PackageName, RemoveDependencyEntry:=true) {
                 for Dependency in Dependencies
                     DepString .= "`n`t" Dependency.PackageName "@" Dependency.DependencyVersion
 
-                WriteStdOut DepString
+                Print DepString
                 return
             }
         }
 
         ForceRemovePackage(Match, Match.Global ? g_GlobalLibDir : g_LocalLibDir, RemoveDependencyEntry)
-        WriteStdOut 'Package "' Match.PackageName "@" Match.InstallVersion '" removed!'
+        Print 'Package "' Match.PackageName "@" Match.InstallVersion '" removed!'
     } else {
-        WriteStdOut "Multiple matches found:"
+        Print "Multiple matches found:"
         for Match in Matches
-            WriteStdOut "`t" Match.PackageName "@" Match.InstallVersion
+            Print "`t" Match.PackageName "@" Match.InstallVersion
     }
 }
 
@@ -1063,7 +1064,7 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
     if PackageInfo.HasProp("Preinstall") {
         Exec := ExecScript(PackageInfo.Preinstall, '"' TempDir '"')
         if Exec.ExitCode {
-            WriteStdOut "Package preinstall script failed with ExitCode " Exec.ExitCode ", install aborted"
+            Print "Package preinstall script failed with ExitCode " Exec.ExitCode ", install aborted"
             return 0
         }
     }
@@ -1083,7 +1084,7 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
     ; First download dependencies listed in index.json, except if we are updating our package
     if !CanUpdate && PackageInfo.Dependencies.Count {
         for DependencyName, DependencyVersion in PackageInfo.Dependencies {
-            WriteStdOut "Starting install of dependency " DependencyName "@" DependencyVersion
+            Print "Starting install of dependency " DependencyName "@" DependencyVersion
             if !DownloadPackageWithDependencies(DependencyEntryToPackageInfo(DependencyName, DependencyVersion), TempDir, Includes)
                 throw Error("Failed to install dependency", -1, DependencyName "@" DependencyVersion)
         }
@@ -1094,7 +1095,7 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
             for InstallDir, Projects in g_GlobalInstalledPackages[PackageInfo.PackageName] {
                 Split := StrSplit(InstallDir, "@",, 2)
                 if IsVersionCompatible(Split[2], PackageInfo.Version || PackageInfo.DependencyVersion) {
-                    WriteStdOut("Found matching globally installed package " InstallDir ", skipping install`n")
+                    Print("Found matching globally installed package " InstallDir ", skipping install`n")
                     PackageInfo.InstallName := InstallDir, PackageInfo.InstallVersion := Split[2]
                     if !Includes.Has(PackageInfo.PackageName)
                         Includes[PackageInfo.PackageName] := PackageInfo
@@ -1103,7 +1104,7 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
             }
         }
         if Includes.Has(PackageInfo.PackageName) && (Include := Includes[PackageInfo.PackageName]) && (DirExist(TempDir "\" Include.InstallName) || (!Include.Global && DirExist(g_LocalLibDir "\" Include.InstallName)) || (!g_Switches["local_install"] && DirExist(g_GlobalLibDir "\" Include.InstallName))) {
-            WriteStdOut 'Package "' Include.InstallName '" already installed, skipping...`n'
+            Print 'Package "' Include.InstallName '" already installed, skipping...`n'
             PackageInfo.InstallName := StrReplace(Include.InstallName, "\", "/")
             return Include
         }
@@ -1114,9 +1115,9 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
     VerifyPackageIsDownloadable(PackageInfo)
     if !IsVersioned && IsPackageInstalled(PackageInfo, Includes, [TempDir, g_LocalLibDir, g_GlobalLibDir]) && IsVersionCompatible(PackageInfo.Version, "=" PackageInfo.InstallVersion) {
         if CanUpdate
-            WriteStdOut 'Package "' PackageInfo.PackageName "@" PackageInfo.Version '" has no matching updates available'
+            Print 'Package "' PackageInfo.PackageName "@" PackageInfo.Version '" has no matching updates available'
         else
-            WriteStdOut 'Package "' PackageInfo.PackageName "@" PackageInfo.Version '" is already installed'
+            Print 'Package "' PackageInfo.PackageName "@" PackageInfo.Version '" is already installed'
         return 0
     }
 
@@ -1129,7 +1130,7 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
         A_Clipboard := PackageInfo.Postdownload
         Exec := ExecScript(PackageInfo.Postdownload, '"' TempDir "\" FinalDirName '"')
         if Exec.ExitCode {
-            WriteStdOut "Package postdownload script failed with ExitCode " Exec.ExitCode ", install aborted"
+            Print "Package postdownload script failed with ExitCode " Exec.ExitCode ", install aborted"
             DirDelete('"' TempDir "\" FinalDirName '"')
             return 0
         }
@@ -1235,9 +1236,9 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
 
         PackageJson := LoadJson(TempDir "\" FinalDirName "\package.json")
         if PackageJson.Has("dependencies") {
-            WriteStdOut "Found dependencies in extracted package manifest"
+            Print "Found dependencies in extracted package manifest"
             for DependencyName, DependencyVersion in PackageJson["dependencies"] {
-                WriteStdOut "Starting install of dependency " DependencyName "@" DependencyVersion
+                Print "Starting install of dependency " DependencyName "@" DependencyVersion
                 DownloadPackageWithDependencies(DependencyName "@" DependencyVersion, TempDir, Includes)
             }
         }
@@ -1246,7 +1247,7 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
     if PackageInfo.HasProp("Postinstall") {
         Exec := ExecScript(PackageInfo.Postinstall, '"' TempDir '"')
         if Exec.ExitCode {
-            WriteStdOut "Package postinstall script failed with ExitCode " Exec.ExitCode ", install aborted"
+            Print "Package postinstall script failed with ExitCode " Exec.ExitCode ", install aborted"
             return 0
         }
     }
@@ -1295,15 +1296,15 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
         PackageInfo.PackageName := PackageInfo.Author "/" RemoveAhkSuffix(PackageInfo.Name)
         PackageInfo.SourceAddress := "https://gist.github.com/raw/" PackageInfo.Repository "/" PackageInfo.FullVersion "/" PackageInfo.Main
 
-        WriteStdOut('Downloading gist as package "' PackageInfo.PackageName '@' PackageInfo.Version '"')
+        Print('Downloading gist as package "' PackageInfo.PackageName '@' PackageInfo.Version '"')
         Download PackageInfo.SourceAddress, TempDir "\" TempDownloadDir "\" PackageInfo.Main
         goto AfterDownload
     } else if PackageInfo.RepositoryType = "forums" {
         if PackageInfo.Version = "latest" || PackageInfo.BuildMetadata {
-            WriteStdOut('Downloading from AutoHotkey forums thread ' PackageInfo.ThreadId ' code box ' PackageInfo.CodeBox)
+            Print('Downloading from AutoHotkey forums thread ' PackageInfo.ThreadId ' code box ' PackageInfo.CodeBox)
             PackageInfo.Repository := "https://www.autohotkey.com/boards/viewtopic.php?t=" PackageInfo.ThreadId (PackageInfo.Start ? "&start=" PackageInfo.Start : "") (PackageInfo.Post ? "&p=" PackageInfo.Post : "")
         } else {
-            WriteStdOut('Downloading from Wayback Machine snapshot ' PackageInfo.Version ' of AutoHotkey forums thread ' PackageInfo.ThreadId (PackageInfo.Post ? ' post id ' PackageInfo.Post : "") ' code box ' PackageInfo.CodeBox)
+            Print('Downloading from Wayback Machine snapshot ' PackageInfo.Version ' of AutoHotkey forums thread ' PackageInfo.ThreadId (PackageInfo.Post ? ' post id ' PackageInfo.Post : "") ' code box ' PackageInfo.CodeBox)
         }
 
         Page := DownloadURL(PackageInfo.Repository)
@@ -1353,14 +1354,14 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
 
     ZipName := PackageInfo.ZipName
     if !FileExist(g_CacheDir "\" ZipName) {
-        WriteStdOut('Downloading package "' PackageInfo.PackageName '"')
+        Print('Downloading package "' PackageInfo.PackageName '"')
         Download PackageInfo.SourceAddress, g_CacheDir "\" ZipName
     }
 
     if PackageInfo.RepositoryType = "archive"
         PackageInfo.Version := SubStr(HashFile(g_CacheDir "\" ZipName, 3), 1, 7)
 
-    WriteStdOut('Extracting package from "' ZipName '"')
+    Print('Extracting package from "' ZipName '"')
     DirCopy g_CacheDir "\" ZipName, TempDir "\" TempDownloadDir, true
 
     DirCount := 0, LastDir := ""
@@ -1403,7 +1404,7 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
     }
 
     if DirExist(TempDir "\" FinalDirName) || DirExist(LibDir "\" FinalDirName) {
-        WriteStdOut 'Package "' StrReplace(FinalDirName, "\", "/") '" already installed or up-to-date, skipping...`n'
+        Print 'Package "' StrReplace(FinalDirName, "\", "/") '" already installed or up-to-date, skipping...`n'
         DirDelete(TempDir "\" TempDownloadDir, true)
         return 1
     }
@@ -1434,7 +1435,7 @@ IsGithubMinimalInstallPossible(PackageInfo, IgnoreVersion := false) {
 }
 
 GithubDownloadMinimalInstall(PackageInfo, Path) {
-    WriteStdOut('Downloading minimal install for package "' PackageInfo.PackageName '"')
+    Print('Downloading minimal install for package "' PackageInfo.PackageName '"')
 
     Path := Trim(Path, "\/")
     Repo := StrSplit(PackageInfo.Repository, "/")
@@ -1526,7 +1527,7 @@ VerifyPackageIsDownloadable(PackageInfo) {
             } else
                 PackageInfo.Version := SubStr(commits[1]["sha"], 1, 7)
 
-            WriteStdOut("No GitHub releases found, falling back to the default branch.")
+            Print("No GitHub releases found, falling back to the default branch.")
             if IsGithubMinimalInstallPossible(PackageInfo)
                 return
 
@@ -1580,7 +1581,7 @@ VerifyPackageIsDownloadable(PackageInfo) {
         }
         PackageInfo.Version := PackageInfo.Version || PackageInfo.InstallVersion || PackageInfo.DependencyVersion
         if PackageInfo.Version != "latest" && !PackageInfo.BuildMetadata {
-            WriteStdOut('Querying versions from Wayback Machine snapshots of AutoHotkey forums thread with id ' PackageInfo.ThreadId)
+            Print('Querying versions from Wayback Machine snapshots of AutoHotkey forums thread with id ' PackageInfo.ThreadId)
             Matches := QueryForumsReleases(PackageInfo)
             if !Matches.Length
                 throw Error("No Wayback Machine snapshots found for the forums thread with id " PackageInfo.ThreadId (PackageInfo.Post ? ", post id " PackageInfo.Post : "") (PackageInfo.Start ? ", start number " PackageInfo.Start : ""), -1)
@@ -1609,11 +1610,11 @@ IsPackageInstalled(PackageInfo, Includes, Dirs) {
 
 FindMatchingInstalledPackages(PackageInfo, InstalledPackages) {
     if !FileExist("package.json")
-        return WriteStdOut("No package.json found")
+        return Print("No package.json found")
 
     ; Validate that the removed package is a dependency of the project
     if !(g_PackageJson["dependencies"].Count)
-        return WriteStdOut("No dependencies found in package.json, cannot remove package")
+        return Print("No dependencies found in package.json, cannot remove package")
 
     if InstalledPackages.Has(PackageInfo.PackageName) && VerCompare(InstalledPackages[PackageInfo.PackageName].InstallVersion, PackageInfo.Version)
         return [InstalledPackages[PackageInfo.PackageName]]
@@ -1700,7 +1701,7 @@ LoadConfig() {
 }
 
 DownloadPackageIndex() {
-    WriteStdOut "Checking for index updates..."
+    Print "Checking for index updates..."
     try {
         Download(g_GitHubRawBase "assets/index.json", A_ScriptDir "\assets\~index.json")
         if (DownloadedIndexContent := FileRead(A_ScriptDir "\assets\~index.json")) != FileRead(A_ScriptDir "\assets\index.json") {
@@ -1712,14 +1713,14 @@ DownloadPackageIndex() {
                     SaveSettings()
                 }
                 SaveSettings()
-                WriteStdOut "Index successfully updated to latest version"
+                Print "Index successfully updated to latest version"
             } else {
-                WriteStdOut "Incompatible index.json version, ARIS update is recommended"
+                Print "Incompatible index.json version, ARIS update is recommended"
             }
         } else
-            WriteStdOut "Index is already up-to-date"
+            Print "Index is already up-to-date"
     } catch {
-        WriteStdOut "Failed to download index.json"
+        Print "Failed to download index.json"
     }
     try FileDelete(A_ScriptDir "\assets\~index.json")
 }
@@ -1732,9 +1733,9 @@ UpdatePackageIndex() {
 ListInstalledPackages() {
     Packages := QueryInstalledPackages()
     for _, Package in Packages
-        WriteStdOut Package.PackageName "@" Package.InstallVersion
+        Print Package.PackageName "@" Package.InstallVersion
     else
-        WriteStdOut "No packages installed"
+        Print "No packages installed"
 }
 
 QueryInstalledPackages(path := ".\") {
@@ -1759,7 +1760,11 @@ QueryInstalledPackages(path := ".\") {
         ExtraInfo := RegExReplace(FileRead(LibDir "\" Path ".ahk"), "i)^#include (\.|%A_MyDocuments%)[\\\/](([^@]+[\\\/]))*")
         ExtraInfoSplit := StrSplit(ExtraInfo, "\")
 
-        PackageInfo := InstallInfoToPackageInfo(Path, StrSplit(ExtraInfoSplit[1], "@",, 2)[2], ExtraInfoSplit[-1], IncludeInfo.Count = 2 ? IncludeInfo[2] : "")
+        try PackageInfo := InstallInfoToPackageInfo(Path, StrSplit(ExtraInfoSplit[1], "@",, 2)[2], ExtraInfoSplit[-1], IncludeInfo.Count = 2 ? IncludeInfo[2] : "")
+        catch as err {
+            Print err.Message (err.Extra ? ": " err.Extra : "")
+            continue
+        }
         if !PackageJson["dependencies"].Has(PackageInfo.PackageName)
             continue
         PackageInfo.Global := !DirExist(LibDir "\" Path "@" PackageInfo.InstallVersion)
@@ -1776,7 +1781,9 @@ QueryPackageDependencies(path := ".\", From := "") {
     if !From || From = "package.json" {
         PackageJson := path = ".\" ? g_PackageJson : LoadPackageJson(path)
         for PackageName, VersionRange in PackageJson["dependencies"] {
-            Packages[PackageName] := DependencyEntryToPackageInfo(PackageName, VersionRange)
+            try Packages[PackageName] := DependencyEntryToPackageInfo(PackageName, VersionRange)
+            catch as err
+                Print "Invalid dependency! " err.Message (err.Extra ? ": " err.Extra : "")
         }
     }
     if (!From || From = "packages.ahk") && FileExist(LibDir "\packages.ahk") {
@@ -1810,7 +1817,7 @@ ReadIncludesFromFile(path) {
 
         try Packages.Push(InstallInfoToPackageInfo(IncludeInfo[1],,, IncludeInfo.Count = 2 ? IncludeInfo[2] : ""))
         catch as err {
-            WriteStdOut err.Message (err.Extra ? ": " err.Extra : "") 
+            Print err.Message (err.Extra ? ": " err.Extra : "") 
         }
     }
     return Packages
@@ -1823,25 +1830,25 @@ CleanPackages() {
         InstalledMap[PackageInfo.PackageName] := PackageInfo
     }
 
-    WriteStdOut "Removing unused entries from package.json"
+    Print "Removing unused entries from package.json"
     if FileExist("package.json") {
         for Dependency, Version in g_PackageJson["dependencies"] {
             if InstalledMap.Has(Dependency)
                 Dependencies[Dependency] := Version
             else
-                WriteStdOut "Removing unused dependency " Dependency ": " Version
+                Print "Removing unused dependency " Dependency ": " Version
         }
         g_PackageJson["dependencies"] := Dependencies
         if (NewContent := JSON.Dump(g_PackageJson, true)) && (NewContent != FileRead("package.json"))
             FileOpen("package.json", "w").Write(NewContent)
     }
 
-    WriteStdOut "Removing unused global package entries"
+    Print "Removing unused global package entries"
     for PackageName, InstallInfo in g_GlobalInstalledPackages.Clone() {
         for InstallName, ProjectArray in InstallInfo.Clone() {
             Loop ArrLen := ProjectArray.Length {
                 if !DirExist(ProjectArray[ArrLen-A_Index+1]) {
-                    WriteStdOut "Project folder `"" ProjectArray[ArrLen-A_Index+1] "`" not found, deleting entry for " PackageName
+                    Print "Project folder `"" ProjectArray[ArrLen-A_Index+1] "`" not found, deleting entry for " PackageName
                     ProjectArray.RemoveAt(ArrLen-A_Index+1)
                 }
             }
@@ -1853,7 +1860,7 @@ CleanPackages() {
     }
 
     for LibDir in [g_LocalLibDir, g_GlobalLibDir] {
-        WriteStdOut "Cleaning " (LibDir = g_LocalLibDir ? "local" : "global") " library directory"
+        Print "Cleaning " (LibDir = g_LocalLibDir ? "local" : "global") " library directory"
         InstalledPackageMap := LibDir = g_LocalLibDir ? InstalledMap : g_GlobalInstalledPackages
         Loop files LibDir "\*.*", "D" {
             Author := A_LoopFileName
@@ -1863,7 +1870,7 @@ CleanPackages() {
                 else
                     Name := StrSplitLast(A_LoopFileName, ".")[1], DeleteFunc := FileDelete
                 if !InstalledPackageMap.Has(Author "/" Name) {
-                    WriteStdOut "Deleting unused " (DeleteFunc = FileDelete ? "file" : "directory") " Author\" A_LoopFileName
+                    Print "Deleting unused " (DeleteFunc = FileDelete ? "file" : "directory") " Author\" A_LoopFileName
                     DeleteFunc(A_LoopFileFullPath)
                 }
             }
@@ -1874,7 +1881,7 @@ CleanPackages() {
     if !FileExist(g_LocalLibDir "\packages.ahk")
         return
 
-    WriteStdOut "Removing unused entries from packages.ahk"
+    Print "Removing unused entries from packages.ahk"
     OldContent := NewContent := FileRead(g_LocalLibDir "\packages.ahk")
     Loop parse NewContent, "`n", "`r" {
         if !(A_LoopField ~= "i)^\s*#include")
@@ -1886,13 +1893,13 @@ CleanPackages() {
         if InstalledMap.Has(IncludeInfo[1])
             continue
 
-        WriteStdOut "Removing unused include: " A_LoopField
+        Print "Removing unused include: " A_LoopField
         NewContent := StrReplace(NewContent, A_LoopField "`n")
     }
     if OldContent != NewContent
         FileOpen(g_LocalLibDir "\packages.ahk", "w").Write(NewContent)
 
-    WriteStdOut "Cleaning packages complete"
+    Print "Cleaning packages complete"
 }
 
 RemovePackageFromGlobalInstallEntries(PackageInfo) {
@@ -2084,5 +2091,9 @@ LoadPackageJson(path:=".\", &RawContent:="") {
 }
 LoadJson(fileName, &RawContent:="") => JSON.Load(RawContent := FileRead(fileName))
 
-WriteStdOut(msg) => FileAppend(msg "`n", "*")
-WriteErrorStdOut(exception, mode) => (WriteStdOut("Uncaught error on line " exception.Line ": " exception.Message "`n" (exception.Extra ? "`tSpecifically: " exception.Extra "`n" : "")), 1)
+Print(msg) {
+    try FileAppend(msg "`n", "*")
+    catch
+        Print.Buffer .= InStr(Print.Buffer, msg) ? "" : msg "`n"
+}
+PrintError(exception, mode) => (Print("Uncaught error on line " exception.Line ": " exception.Message "`n" (exception.Extra ? "`tSpecifically: " exception.Extra "`n" : "")), 1)

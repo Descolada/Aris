@@ -1,6 +1,4 @@
 LaunchGui(FileOrDir?, SelectedTab := 1) {
-    WriteStdOut.DefineProp("call", {call:(this, msg) => g_MainGui.Tabs.Value = 1 ? g_MainGui.Tabs.Package.Metadata.Value .= msg "`n" : g_MainGui.Tabs.Index.Metadata.Value .= msg "`n"})
-
     g_MainGui.OnEvent("Size", GuiReSizer)
     g_MainGui.OnEvent("Close", (*) => ExitApp())
 
@@ -122,6 +120,9 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
     g_MainGui.Show("w640 h425")
     P.Metadata.Opt("+ReadOnly") ; If this isn't done after showing the GUI, the Edit may display black if the cursor was located inside of it
 
+    Print.DefineProp("call", {call:(this, msg) => g_MainGui.Tabs.Value = 1 ? g_MainGui.Tabs.Package.Metadata.Value .= msg "`n" : g_MainGui.Tabs.Index.Metadata.Value .= msg "`n"})
+    if Print.Buffer
+        Print(Trim(Print.Buffer)), Print.Buffer := ""
 
     /*
     ; This can be used to set a small identifying icon to the tray menu large icon, because by
@@ -146,14 +147,14 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
 }
 
 CheckArisUpdate() {
-    WriteStdOut "Checking for Aris updates..."
+    Print "Checking for Aris updates..."
     if !(releases := QueryGitHubReleases("Descolada/ARIS/main")) || !(releases is Array) || !releases.Length {
-        WriteStdOut "Couldn't find any Aris releases"
+        Print "Couldn't find any Aris releases"
         return
     }
     PackageJson := LoadPackageJson(A_ScriptDir)
     if VerCompare(releases[1]["tag_name"], PackageJson["version"]) <= 0 {
-        WriteStdOut "Aris is already up-to-date"
+        Print "Aris is already up-to-date"
         return
     }
     
@@ -195,12 +196,12 @@ PackageAction(Tab, Action, Input?, *) {
         case "install":
             Result := InstallPackage(PackageInfo.PackageName)
             if !Result && g_Index.Has(PN := PackageInfo.PackageName) && g_Index[PN].Has("repository") && (Repo := g_Index[PN]["repository"] is String ? g_Index[PN]["repository"] : g_Index[PN]["repository"]["url"]) && Repo ~= "forums:|autohotkey\.com" {
-                WriteStdOut("`nRetrying to download latest version from AutoHotkey forums...")
+                Print("`nRetrying to download latest version from AutoHotkey forums...")
                 InstallPackage(PackageInfo.PackageName "@latest")
             }
         case "install-external":
             if Input is String {
-                InstallPackageDependencies(Input)
+                InstallPackageDependencies(Input, 0)
             } else {
                 IB := InputBox('Install a package from a non-index source.`n`nInsert a source (GitHub repo, Gist, archive file URL) from where to install the package.`n`nIf installing from a GitHub repo, this can be "Username/Repo" or "Username/Repo@Version" (queries from releases) or "Username/Repo@commit" (without quotes).', "Add package", "h240")
                 if IB.Result != "Cancel"
