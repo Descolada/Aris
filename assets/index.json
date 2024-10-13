@@ -584,6 +584,7 @@
 		"description": "Create and display notification GUIs",
 		"files": "Notify.ahk",
 		"license": "MIT",
-		"repository": "XMCQCX/Notify/main"
+		"repository": "XMCQCX/Notify_Class/main",
+		"website": "https://github.com/XMCQCX/Notify_Class"
 	}
 }
