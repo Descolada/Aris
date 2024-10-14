@@ -88,7 +88,7 @@ aris i thqby/ahk2_lib as RapidOcr -m RapidOcr/RapidOcr.ahk --files RapidOcr/*.*
 ## Gist install
 Install a specific file from a Gist:
 ```
-https://gist.github.com/anonymous1184/7cce378c9dfdaf733cb3ca6df345b140/GetUrl.ahk
+aris i https://gist.github.com/anonymous1184/7cce378c9dfdaf733cb3ca6df345b140/GetUrl.ahk
 ```
 Short form can be used:
 ```
