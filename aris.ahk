@@ -1673,6 +1673,29 @@ LoadPackageIndex() {
         DownloadPackageIndex()
     global g_Index := Mapi()
     Index := LoadJson(A_ScriptDir "\assets\index.json")
+    for Version, VersionIndex in Index {
+        if !IsObject(VersionIndex) {
+            g_Index.%Version% := VersionIndex
+            continue
+        }
+        if !IsVersionCompatible(Version, "^2.0")
+            continue
+        for PackageName, Info in VersionIndex {
+            if !IsObject(Info) {
+                g_Index.%PackageName% := Info
+                continue
+            }
+            if !Info.Has("author")
+                Info["author"] := StrSplit(PackageName, "/")[1]
+            if !Info.Has("repository")
+                Info["repository"] := Map("type", "github", "url", PackageName)
+            else
+                StandardizeRepositoryInfo(Info)
+            if !Info.Has("main")
+                Info["main"] := ""
+            g_Index[PackageName] := Info
+        }
+    }
     for PackageName, Info in Index {
         if !IsObject(Info) {
             g_Index.%PackageName% := Info
