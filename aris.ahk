@@ -382,7 +382,8 @@ class PackageInfoBase {
     }
     Author := "", Name := "", PackageName := "", Version := "", BuildMetadata := "", Repository := "", 
     RepositoryType := "", Main := "", Dependencies := Map(), DependencyEntry := "", InstallEntry := "", Files := [],
-    Branch := "", ThreadId := "", InstallVersion := "", DependencyVersion := "", IsMain := false, Global := false
+    Branch := "", ThreadId := "", InstallVersion := "", DependencyVersion := "", IsMain := false, Global := false, 
+    IsAlias := "" ; This will contain the original package name
 }
 
 InputToPackageInfo(Input, Skip:=0, Switches?) {
@@ -468,6 +469,7 @@ InputToPackageInfo(Input, Skip:=0, Switches?) {
     }
 
     if Switches["alias"] != "" {
+        PackageInfo.IsAlias := PackageInfo.PackageName
         Split := StrSplit(Switches["alias"], "/",,2)
         if Split.Length = 1
             PackageInfo.Name := Split[1], PackageInfo.PackageName := (PackageInfo.PackageName ? StrSplit(PackageInfo.PackageName, "/")[1] "/" PackageInfo.Name : "")
@@ -1378,13 +1380,13 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
 
     if !PackageInfo.IsMain && FileExist(TempDir "\" TempDownloadDir "\package.json") && !g_Index.Has(PackageInfo.PackageName) {
         PackageJson := LoadPackageJson(TempDir "\" TempDownloadDir)
-        if PackageJson.Has("name") {
+        if !PackageInfo.IsAlias && PackageJson.Has("name") {
             if InStr(PackageJson["name"], "/") {
-                PackageInfo.PackageName := PackageJson["name"]
                 Split := ParsePackageName(PackageJson["name"])
-                PackageInfo.Name := RemoveAhkSuffix(Split.Name), PackageInfo.Author := Split.Author
+                PackageInfo.Name := RemoveAhkSuffix(Split.Name) || PackageInfo.Name, PackageInfo.Author := Split.Author || PackageInfo.Author
+                PackageInfo.PackageName := PackageInfo.Author "/" PackageInfo.Name
             } else {
-                PackageInfo.Name := RemoveAhkSuffix(PackageJson["name"]), PackageInfo.PackageName := PackageInfo.PackageName || PackageInfo.Author "/" PackageInfo.Name
+                PackageInfo.Name := RemoveAhkSuffix(PackageJson["name"]), PackageInfo.PackageName := PackageInfo.Author "/" PackageInfo.Name
             }
         }
         ;if PackageJson.Has("version")
