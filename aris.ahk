@@ -1542,7 +1542,7 @@ VerifyPackageIsDownloadable(PackageInfo) {
                 throw Error("No matching version found among GitHub releases")
 
             PackageInfo.Version := release["tag_name"]
-            if release.Has("assets") && release["assets"].Length {
+            if release.Has("assets") && release["assets"].Length && release["assets"].Length = 1 {
                 asset := release["assets"][1]
                 if asset["name"] ~= "i)\.ahk?\d?$" {
                     PackageInfo.Main := PackageInfo.Main || asset["name"]
@@ -1825,7 +1825,8 @@ QueryPackageDependencies(path := ".\", From := "") {
     if !From || (From && From != "packages.ahk") {
         Loop files (From ? From : path "*.ah*") {
             for Include in ReadIncludesFromFile(A_LoopFileFullPath)
-                Packages[Include.PackageName] := Include
+                if !Packages.Has(Include.PackageName)
+                    Packages[Include.PackageName] := Include
         }
     }
     return Packages
