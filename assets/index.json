@@ -1,5 +1,11 @@
 ﻿{
 	"v2.0": {
+		"Chunjee/adash": {
+			"description": "A modern utility library, including methods for array, enumerable, as well as general object manipulation",
+			"files": "adash.ahk",
+			"license": "MIT",
+			"repository": "adash-ahk/adash.ahk/main"
+		},
 		"DaveT1/Expect": {
 			"description": "Rapid units testing class",
 			"files": "v2/DaveT1/Expect.ahk",
@@ -209,6 +215,11 @@
 		"SKAN/RunAsTask": {
 			"description": "Auto-elevates script without UAC prompt",
 			"files": "v2/SKAN/RunAsTask.ahk",
+			"repository": "ahkscript/ScriptHub/main"
+		},
+		"SKAN/RunCMD": {
+			"description": "Run a program in windowless mode and capture its output",
+			"files": "v2/SKAN/RunCMD.ahk",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"SKAN/ToggleSound": {
