@@ -120,7 +120,7 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
     g_MainGui.Show("w640 h425")
     P.Metadata.Opt("+ReadOnly") ; If this isn't done after showing the GUI, the Edit may display black if the cursor was located inside of it
 
-    Print.DefineProp("call", {call:(this, msg) => g_MainGui.Tabs.Value = 1 ? g_MainGui.Tabs.Package.Metadata.Value .= msg "`n" : g_MainGui.Tabs.Index.Metadata.Value .= msg "`n"})
+    Print.DefineProp("call", {call:(this, msg) => ((ctrl := ((g_MainGui.Tabs.Value = 1) ? g_MainGui.Tabs.Package.Metadata : g_MainGui.Tabs.Index.Metadata), ctrl.Value .= msg "`n", PostMessage(0x115, 7, 0,, ctrl.hWnd)))})
     if Print.Buffer
         Print(Trim(Print.Buffer)), Print.Buffer := ""
 
@@ -137,9 +137,12 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
     */
 
     if IsSet(OutFileName) && OutFileName {
-        PackageAction(P, "install-external", FileOrDir)
-        if FileExist("package.json")
-            PackageAction(P, "install-external", "package.json")
+        Print "Installing dependencies from `"" OutFileName "`"`n"
+        PackageAction(P, "install-external", FileOrDir, 0)
+        if FileExist("package.json") {
+            Print "`n----------------------------------------------------`nInstalling packages from package.json`n"
+            PackageAction(P, "install-external", "package.json", 0)
+        }
     }
 
     if !g_Config.Has("check_aris_updates_daily") || (g_Config["check_aris_updates_daily"] && (Abs(DateDiff(A_NowUTC, g_Config["check_aris_updates_daily"], "Days")) >= 1)) {
@@ -176,7 +179,7 @@ LVGetPackageInfo(LV) {
     return {PackageName: LV.GetText(Selected, 1), Version: LV.GetText(Selected, 2)}
 }
 
-PackageAction(Tab, Action, Input?, *) {
+PackageAction(Tab, Action, Input?, ClearOutput:=1, *) {
     if Action != "install-external" {
         PackageInfo := LVGetPackageInfo(Tab.LV)
         if !PackageInfo {
@@ -185,7 +188,8 @@ PackageAction(Tab, Action, Input?, *) {
             return
         }
     }
-    Tab.Metadata.Value := ""
+    if ClearOutput
+        Tab.Metadata.Value := ""
     switch Action, 0 {
         case "reinstall":
             RemovePackage(PackageInfo.PackageName "@" PackageInfo.Version, false)
