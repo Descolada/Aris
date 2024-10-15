@@ -1,9 +1,20 @@
 ﻿{
 	"v2.0": {
 		"Chunjee/adash": {
-			"description": "A modern utility library, including methods for array, enumerable, as well as general object manipulation",
-			"files": "adash.ahk",
+			"author": "Shawn Brooker",
+			"bugs": {
+				"url": "https://github.com/adash-ahk/adash.ahk/issues"
+			},
+			"description": "A modern utility library for AutoHotkey",
+			"homepage": "https://adash.app",
+			"keywords": [
+				"autohotkey",
+				"ahk",
+				"utility",
+				"lodash"
+			],
 			"license": "MIT",
+			"main": "adash.ahk",
 			"repository": "adash-ahk/adash.ahk/main"
 		},
 		"DaveT1/Expect": {
@@ -14,23 +25,23 @@
 		"Descolada/Acc": {
 			"description": "Acc library for AHK v2 (note: use of UIA is preferred over Acc)",
 			"files": "Lib/Acc.ahk",
+			"homepage": "https://github.com/Descolada/Acc-v2",
 			"license": "MIT",
-			"repository": "Descolada/Acc-v2/main",
-			"website": "https://github.com/Descolada/Acc-v2"
+			"repository": "Descolada/Acc-v2/main"
 		},
 		"Descolada/Array": {
 			"description": "Adds useful methods to arrays",
 			"files": "Lib/Array.ahk",
+			"homepage": "https://github.com/Descolada/AHK-v2-libraries",
 			"license": "MIT",
-			"repository": "Descolada/AHK-v2-libraries/main",
-			"website": "https://github.com/Descolada/AHK-v2-libraries"
+			"repository": "Descolada/AHK-v2-libraries/main"
 		},
 		"Descolada/DUnit": {
 			"description": "Alternative unit testing framework to YUnit",
 			"files": "Lib/DUnit.ahk",
+			"homepage": "https://github.com/Descolada/AHK-v2-libraries",
 			"license": "MIT",
-			"repository": "Descolada/AHK-v2-libraries/main",
-			"website": "https://github.com/Descolada/AHK-v2-libraries"
+			"repository": "Descolada/AHK-v2-libraries/main"
 		},
 		"Descolada/FileReadLine": {
 			"description": "Read a single line from a file",
@@ -40,60 +51,60 @@
 		"Descolada/JAB": {
 			"description": "Java Access Bridge library to automate Java applications interfaces",
 			"files": "Lib/JAB.ahk",
+			"homepage": "https://github.com/Descolada/AHK-v2-libraries",
 			"license": "MIT",
-			"repository": "Descolada/AHK-v2-libraries/main",
-			"website": "https://github.com/Descolada/AHK-v2-libraries"
+			"repository": "Descolada/AHK-v2-libraries/main"
 		},
 		"Descolada/Map": {
 			"description": "Adds useful methods to maps",
 			"files": "Lib/Map.ahk",
+			"homepage": "https://github.com/Descolada/AHK-v2-libraries",
 			"license": "MIT",
-			"repository": "Descolada/AHK-v2-libraries/main",
-			"website": "https://github.com/Descolada/AHK-v2-libraries"
+			"repository": "Descolada/AHK-v2-libraries/main"
 		},
 		"Descolada/Media": {
 			"description": "Implements UWP Media Control, allowing access and control of the playing media (but not any media, only UWP ones that are notified by a tray tip with the play-pause buttons and playing song title)",
 			"files": "Lib/Media.ahk",
+			"homepage": "https://github.com/Descolada/AHK-v2-libraries",
 			"license": "MIT",
-			"repository": "Descolada/AHK-v2-libraries/main",
-			"website": "https://github.com/Descolada/AHK-v2-libraries"
+			"repository": "Descolada/AHK-v2-libraries/main"
 		},
 		"Descolada/Misc": {
 			"description": "Miscallaneous useful functions such as Range, RegExMatchAll, Highlight, WinGetInfo, GetCaretPos, ConvertWinPos, etc",
 			"files": "Lib/Misc.ahk",
+			"homepage": "https://github.com/Descolada/AHK-v2-libraries",
 			"license": "MIT",
-			"repository": "Descolada/AHK-v2-libraries/main",
-			"website": "https://github.com/Descolada/AHK-v2-libraries"
+			"repository": "Descolada/AHK-v2-libraries/main"
 		},
 		"Descolada/OCR": {
 			"description": "OCR library using Windows' built-in UWP OCR capabilities",
 			"files": "Lib/OCR.ahk",
-			"license": "MIT",
-			"repository": "Descolada/OCR/main",
-			"tags": [
+			"homepage": "https://github.com/Descolada/OCR",
+			"keywords": [
 				"OCR",
 				"optical character recognition",
 				"image search"
 			],
-			"website": "https://github.com/Descolada/OCR"
+			"license": "MIT",
+			"repository": "Descolada/OCR/main"
 		},
 		"Descolada/String": {
 			"description": "Adds useful methods to strings",
 			"files": "Lib/String.ahk",
+			"homepage": "https://github.com/Descolada/AHK-v2-libraries",
 			"license": "MIT",
-			"repository": "Descolada/AHK-v2-libraries/main",
-			"website": "https://github.com/Descolada/AHK-v2-libraries"
+			"repository": "Descolada/AHK-v2-libraries/main"
 		},
 		"Descolada/UIA": {
 			"description": "An AutoHotkey v2 wrapper for the UIAutomation framework, which can be used to automate windows that normally might be difficult or impossible to automate with AHK",
 			"files": "Lib/UIA.ahk",
-			"license": "MIT",
-			"repository": "Descolada/UIA-v2/main",
-			"tags": [
+			"homepage": "https://github.com/Descolada/UIA-v2",
+			"keywords": [
 				"UIA",
 				"UI automation"
 			],
-			"website": "https://github.com/Descolada/UIA-v2"
+			"license": "MIT",
+			"repository": "Descolada/UIA-v2/main"
 		},
 		"Descolada/UIA_Browser": {
 			"dependencies": {
@@ -106,20 +117,20 @@
 		"Descolada/WinEvent": {
 			"description": "Can be used to monitor for window events such as close, open, minimize etc",
 			"files": "Lib/WinEvent.ahk",
+			"homepage": "https://github.com/Descolada/AHK-v2-libraries",
 			"license": "MIT",
-			"repository": "Descolada/AHK-v2-libraries/main",
-			"website": "https://github.com/Descolada/AHK-v2-libraries"
+			"repository": "Descolada/AHK-v2-libraries/main"
 		},
 		"Descolada/XHotstring": {
 			"description": "Implements regular expression hotstrings",
 			"files": "Lib/XHotstring.ahk",
-			"license": "MIT",
-			"repository": "Descolada/AHK-v2-libraries/main",
-			"tags": [
+			"homepage": "https://github.com/Descolada/AHK-v2-libraries",
+			"keywords": [
 				"RegEx",
 				"hotstrings"
 			],
-			"website": "https://github.com/Descolada/AHK-v2-libraries"
+			"license": "MIT",
+			"repository": "Descolada/AHK-v2-libraries/main"
 		},
 		"FanaticGuru/GuiResizer": {
 			"description": "A class to simplify adjusting GUI controls to GUI resizing",
@@ -139,20 +150,20 @@
 		"G33kDude/HashMap": {
 			"description": "Provides a hash map based alternative implementation of AutoHotkey's Map class, with the goal of allowing drop-in replacement for situations where the native Map's performance limitations have been reached",
 			"files": "Dist/HashMap.ahk",
+			"homepage": "https://github.com/G33kDude/cJson.ahk",
 			"license": "MIT",
-			"repository": "G33kDude/HashMap.ahk/main",
-			"website": "https://github.com/G33kDude/cJson.ahk"
+			"repository": "G33kDude/HashMap.ahk/main"
 		},
 		"G33kDude/cJson": {
 			"description": "A high-performance JSON parsing library",
 			"files": "Dist/JSON.ahk",
-			"license": "MIT",
-			"repository": "G33kDude/cJson.ahk/v2",
-			"tags": [
+			"homepage": "https://github.com/G33kDude/cJson.ahk",
+			"keywords": [
 				"JSON",
 				"parser"
 			],
-			"website": "https://github.com/G33kDude/cJson.ahk"
+			"license": "MIT",
+			"repository": "G33kDude/cJson.ahk/v2"
 		},
 		"Hellbent/PopupWindow": {
 			"dependencies": {
@@ -284,20 +295,20 @@
 		},
 		"Uberi/Yunit": {
 			"description": "Super simple unit testing framework",
+			"homepage": "https://github.com/Uberi/Yunit/tree/v2",
 			"license": "AGPL-3.0",
 			"main": "Yunit.ahk",
 			"repository": "Uberi/Yunit/v2",
 			"scripts": {
 				"postdownload": "A_WorkingDir := A_Args[1]\nFileAppend('`n#include JUnit.ahk`n#include OutputDebug.ahk`n#include Stdout.ahk`n#include Window.ahk', 'Yunit.ahk')"
-			},
-			"website": "https://github.com/Uberi/Yunit/tree/v2"
+			}
 		},
 		"XMCQCX/Notify": {
 			"description": "Create and display notification GUIs",
 			"files": "Notify.ahk",
+			"homepage": "https://github.com/XMCQCX/Notify_Class",
 			"license": "MIT",
-			"repository": "XMCQCX/Notify_Class/main",
-			"website": "https://github.com/XMCQCX/Notify_Class"
+			"repository": "XMCQCX/Notify_Class/main"
 		},
 		"anonymous1184/GetUrl": {
 			"description": "Get the current URL from a browser window",
@@ -324,14 +335,14 @@
 			"files": [
 				"AHK v2/Lib/*.*"
 			],
+			"homepage": "https://github.com/evilC/AutoHotInterception",
 			"license": "MIT",
 			"main": "AHK v2/Lib/AutoHotInterception.ahk",
 			"repository": "evilC/AutoHotInterception/master",
 			"scripts": {
 				"postdownload": "A_WorkingDir := A_Args[1]\nDownload(\"https://github.com/oblitum/Interception/releases/latest/download/Interception.zip\", \"Interception.zip\")\nDirCopy \"Interception.zip\", \"Interception\", true\nFileCopy('Interception\\Interception\\library\\x64\\interception.dll', 'AHK v2\\Lib\\x64\\interception.dll', true)\nFileCopy('Interception\\Interception\\library\\x86\\interception.dll', 'AHK v2\\Lib\\x86\\interception.dll', true)\nFileMove('Common\\Lib\\AutoHotInterception.dll', 'AHK v2\\Lib\\AutoHotInterception.dll', true)\nif !(FileExist('C:\\Windows\\System32\\drivers\\mouse.sys') && FileExist('C:\\Windows\\System32\\drivers\\keyboard.sys')) {\nMsgBox('Preparing to run the Interception driver installer.`nReboot your computer after installation.`n`nPress OK to continue', 'Notice')\nRun '*RunAs \".\\Interception\\Interception\\command line installer\\install-interception.exe\" /install'\n}\nDirDelete('Interception', true)\nDirDelete('Common', true)\nRunWait 'powershell.exe -windowstyle hidden -ExecutionPolicy Bypass -File \"' A_WorkingDir '\\AHK v2\\Lib\\Unblocker.ps1\"',, 'Hide'\nExitApp",
 				"preinstall": "ExitApp(MsgBox('This package requires installing the Interception driver, which requires administrator access and must be used cautiously as not to disable certain key combinations such as Ctrl+Alt+Delete. Are you sure you want to continue?', 'Warning', 'YesNo') = 'Yes' ? 0 : 1)"
-			},
-			"website": "https://github.com/evilC/AutoHotInterception"
+			}
 		},
 		"evilC/InterceptionTapHoldManager": {
 			"dependencies": {
@@ -340,31 +351,31 @@
 			},
 			"description": "A patch for TapHoldManager that allows it to be used with the Interception driver. See main description under evilC/TapHoldManager",
 			"files": "AHK v2/Lib/InterceptionTapHold.ahk",
+			"homepage": "https://github.com/evilC/TapHoldManager",
 			"license": "MIT",
-			"repository": "evilC/TapHoldManager/master",
-			"website": "https://github.com/evilC/TapHoldManager"
+			"repository": "evilC/TapHoldManager/master"
 		},
 		"evilC/TapHoldManager": {
 			"description": "An AutoHotkey library that allows you to map multiple actions to one key using a tap-and hold system. Long press / Tap / Multi Tap / Tap and Hold / Multi Tap and Hold etc are all supported.",
 			"files": "AHK v2/Lib/TapHoldManager.ahk",
+			"homepage": "https://github.com/evilC/TapHoldManager",
 			"license": "MIT",
-			"repository": "evilC/TapHoldManager/master",
-			"website": "https://github.com/evilC/TapHoldManager"
+			"repository": "evilC/TapHoldManager/master"
 		},
 		"feiyue/FindText": {
 			"description": "A high-performance image search library, which can use images in text form",
 			"files": "v2/feiyue/FindText.ahk",
-			"repository": "ahkscript/ScriptHub/main",
-			"tags": [
+			"keywords": [
 				"image"
-			]
+			],
+			"repository": "ahkscript/ScriptHub/main"
 		},
 		"iseahound/ImagePut": {
 			"description": "A core library for images in AutoHotkey",
 			"files": "ImagePut.ahk",
+			"homepage": "https://github.com/iseahound/ImagePut",
 			"license": "MIT",
-			"repository": "iseahound/ImagePut/master",
-			"website": "https://github.com/iseahound/ImagePut"
+			"repository": "iseahound/ImagePut/master"
 		},
 		"jNizM/DNSQuery": {
 			"description": "Retrieves the Resource Record (RR) depends on DNS Record Type",
@@ -457,8 +468,8 @@
 		"just me/GuiCtrlTips": {
 			"description": "Add tooltips to your Gui.Controls",
 			"files": "GuiCtrlTips.ahk",
-			"repository": "AHK-just-me/AHKv2_GuiCtrlTips/main",
-			"website": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=116218"
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=116218",
+			"repository": "AHK-just-me/AHKv2_GuiCtrlTips/main"
 		},
 		"just me/ListViewExtensions": {
 			"description": "Additional functions for GUI ListView controls",
