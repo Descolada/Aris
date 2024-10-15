@@ -35,15 +35,15 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
     P.LV.W := -15
     P.LV.OnEvent("ItemSelect", PackageLVItemSelected)
     P.ReinstallBtn := g_MainGui.AddButton("w50", "Reinstall")
-    P.ReinstallBtn.OnEvent("Click", PackageAction.Bind(P, "reinstall"))
+    P.ReinstallBtn.OnEvent("Click", PackageAction.Bind(P, "reinstall",,1))
     P.RemoveBtn := g_MainGui.AddButton("x+10 yp+0 w50", "Remove")
-    P.RemoveBtn.OnEvent("Click", PackageAction.Bind(P, "remove"))
+    P.RemoveBtn.OnEvent("Click", PackageAction.Bind(P, "remove",,1))
     P.UpdateBtn := g_MainGui.AddButton("x+10 yp+0 w50", "Update")
-    P.UpdateBtn.OnEvent("Click", PackageAction.Bind(P, "update"))
+    P.UpdateBtn.OnEvent("Click", PackageAction.Bind(P, "update",,1))
     P.UpdateLatestBtn := g_MainGui.AddButton("x+10 yp+0", "Force update")
-    P.UpdateLatestBtn.OnEvent("Click", PackageAction.Bind(P, "update-latest"))
+    P.UpdateLatestBtn.OnEvent("Click", PackageAction.Bind(P, "update-latest",,1))
     P.AddBtn := g_MainGui.AddButton("x+10 yp+0 w50", "Add")
-    P.AddBtn.OnEvent("Click", PackageAction.Bind(P, "install-external"))
+    P.AddBtn.OnEvent("Click", PackageAction.Bind(P, "install-external",,1))
     P.ModifyRangeBtn := g_MainGui.AddButton("x+10 yp+0 w80", "Modify range")
     P.ModifyRangeBtn.OnEvent("Click", ModifyPackageVersionRange.Bind(P.LV))
     P.Metadata := g_MainGui.Add("Edit", "xs y+10 w390 h140")
@@ -57,7 +57,7 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
     I.LV := g_MainGui.Add("ListView", "r10 w390 Section -Multi", ["Package name", "Installed version", "Allowed versions", "Source"])
     I.LV.W := -15, I.LV.H := -215
     I.LV.OnEvent("ItemSelect", IndexLVItemSelected)
-    I.LV.OnEvent("DoubleClick", PackageAction.Bind(I, "install"))
+    I.LV.OnEvent("DoubleClick", PackageAction.Bind(I, "install",,1))
     I.SearchText := g_MainGui.Add("Text",, "Search:")
 
     AnchorUnder := (o, to, X, Y) => (o.Anchor := to, o.AnchorIn := false, o.YP := 1.0, o.Y := Y, o.X := X)
@@ -76,7 +76,7 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
 
     I.InstallBtn := g_MainGui.AddButton("xs y+8 w60", "Install")
     AnchorUnder(I.InstallBtn, I.LV, 5, 30)
-    I.InstallBtn.OnEvent("Click", PackageAction.Bind(I, "install"))
+    I.InstallBtn.OnEvent("Click", PackageAction.Bind(I, "install",,1))
     I.QueryVersionBtn := g_MainGui.AddButton("x+10 yp+0", "Query versions")
     AnchorAfter(I.QueryVersionBtn, I.InstallBtn, 5, 0)
     I.QueryVersionBtn.OnEvent("Click", LaunchVersionSelectionGui)
@@ -215,7 +215,8 @@ PackageAction(Tab, Action, Input?, ClearOutput:=1, *) {
                     InstallPackage(IB.Value)
             }
     }
-    OutputAddedIncludesString(!!InStr(Action, "update"))
+    if !InStr(Action, "remove")
+        OutputAddedIncludesString(!!InStr(Action, "update"))
     LoadPackageFolder(A_WorkingDir)
     PopulateTabs()
 }
