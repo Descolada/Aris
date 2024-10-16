@@ -865,7 +865,7 @@ InstallPackage(Package, Update:=0, Switches?) {
             InstallEntry := ConstructInstallCommand(Include, Include.InstallVersion (Include.BuildMetadata ? "+" Include.BuildMetadata : ""))
             Addition := "#include .\" StrReplace(Include.PackageName, "/", "\") ".ahk `; " InstallEntry "`n"
             if !InStr(IncludeFileContent, Addition)
-                IncludeFileContent .= Addition, g_AddedIncludesString .= "#include <Aris/" Include.PackageName "> `; " InstallEntry
+                IncludeFileContent .= Addition, g_AddedIncludesString .= "#include <Aris/" Include.PackageName "> `; " InstallEntry "`n"
         }
     }
 
@@ -962,8 +962,8 @@ RemovePackage(PackageName, RemoveDependencyEntry:=true) {
             }
         }
 
-        ForceRemovePackage(Match, Match.Global ? g_GlobalLibDir : g_LocalLibDir, RemoveDependencyEntry)
-        Print 'Package "' Match.PackageName "@" Match.InstallVersion '" removed!'
+        if !ForceRemovePackage(Match, Match.Global ? g_GlobalLibDir : g_LocalLibDir, RemoveDependencyEntry)
+            Print 'Package "' Match.PackageName "@" Match.InstallVersion '" removed!'
     } else {
         Print "Multiple matches found:"
         for Match in Matches
@@ -973,10 +973,24 @@ RemovePackage(PackageName, RemoveDependencyEntry:=true) {
 
 ForceRemovePackage(PackageInfo, LibDir, RemoveDependencyEntry:=true) {
     global g_PackageJson
-    if RemovePackageFromGlobalInstallEntries(PackageInfo) {
-        if DirExist(LibDir "\" PackageInfo.InstallName)
-            DirDelete(LibDir "\" PackageInfo.InstallName, true)
+    if PackageInfo.HasProp("Preremove") {
+        Exec := ExecScript(PackageInfo.Preremove, '"' LibDir "\" StrReplace(PackageInfo.InstallName, "/", "\") '"')
+        if Exec.ExitCode {
+            if g_Switches["force"]
+                Print "Package preremove script failed with ExitCode " Exec.ExitCode
+            else {
+                Print "Package preremove script failed with ExitCode " Exec.ExitCode ", remove aborted"
+                return Exec.ExitCode
+            }
+        }
     }
+    if PackageInfo.Global {
+        if RemovePackageFromGlobalInstallEntries(PackageInfo) {
+            if DirExist(LibDir "\" PackageInfo.InstallName)
+                DirDelete(LibDir "\" PackageInfo.InstallName, true)
+        }
+    } else if LibDir = g_LocalLibDir && DirExist(LibDir "\" PackageInfo.InstallName)
+        DirDelete(LibDir "\" PackageInfo.InstallName, true)
     if FileExist(g_LocalLibDir "\" PackageInfo.PackageName ".ahk")
         FileDelete(g_LocalLibDir "\" PackageInfo.PackageName ".ahk")
     try DirDelete(LibDir "\" PackageInfo.Author)
@@ -999,10 +1013,19 @@ ForceRemovePackage(PackageInfo, LibDir, RemoveDependencyEntry:=true) {
             }
         }
     }
+    if PackageInfo.HasProp("Postremove") {
+        Exec := ExecScript(PackageInfo.Postremove, '"' LibDir "\" PackageInfo.InstallName '"')
+        if Exec.ExitCode {
+            Print "Package postremove script failed with ExitCode " Exec.ExitCode
+            return Exec.ExitCode
+        }
+    }
+    return 0
 }
 
 ForceRemovePackageWithDependencies(PackageInfo, InstalledPackages, LibDir, RemoveDependencyEntry:=true) {
-    ForceRemovePackage(PackageInfo, LibDir, RemoveDependencyEntry)
+    if (Result := ForceRemovePackage(PackageInfo, LibDir, RemoveDependencyEntry))
+        return Result
     Dependencies := QueryInstalledPackageDependencies(PackageInfo, InstalledPackages, LibDir)
     for Dependency, Version in Dependencies {
         DependencyInfo := DependencyEntryToPackageInfo(Dependency, Version)
@@ -1016,6 +1039,7 @@ ForceRemovePackageWithDependencies(PackageInfo, InstalledPackages, LibDir, Remov
         }
         ForceRemovePackageWithDependencies(DependencyInfo, InstalledPackages, LibDir, RemoveDependencyEntry)
     }
+    return 0
 }
 
 ConstructInstallCommand(PackageInfo, Version) {
@@ -1088,7 +1112,9 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
     if !CanUpdate && PackageInfo.Dependencies.Count {
         for DependencyName, DependencyVersion in PackageInfo.Dependencies {
             Print "Starting install of dependency " DependencyName "@" DependencyVersion
-            if !DownloadPackageWithDependencies(DependencyEntryToPackageInfo(DependencyName, DependencyVersion), TempDir, Includes)
+            DependencyEntry := DependencyEntryToPackageInfo(DependencyName, DependencyVersion)
+            DependencyEntry.DependencyEntry := "" ; Clear it to add a semver version to package.json at the end of InstallPackage
+            if !DownloadPackageWithDependencies(DependencyEntry, TempDir, Includes)
                 throw Error("Failed to install dependency", -1, DependencyName "@" DependencyVersion)
         }
     }
@@ -1209,12 +1235,14 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
     if IsVersioned { ; A specific version was requested, in which case force the install
         if Includes.Has(PackageInfo.PackageName) && (Include := Includes[PackageInfo.PackageName]) && (DirExist(g_LocalLibDir "\" Include.InstallName) || DirExist(g_GlobalLibDir "\" Include.InstallName)) {
             InstalledPackages := QueryInstalledPackages()
-            ForceRemovePackageWithDependencies(Include, InstalledPackages, Include.Global ? g_GlobalLibDir : g_LocalLibDir)
+            if ForceRemovePackageWithDependencies(Include, InstalledPackages, Include.Global ? g_GlobalLibDir : g_LocalLibDir)
+                return 0
             Includes.Delete(PackageInfo.PackageName)
         }
     } else if CanUpdate {
         if Includes.Has(PackageInfo.PackageName) && (Include := Includes[PackageInfo.PackageName]) && (DirExist(g_LocalLibDir "\" Include.InstallName) || DirExist(g_GlobalLibDir "\" Include.InstallName)) && IsVersionCompatible(PackageInfo.Version, "^" Include.DependencyVersion) {
-            ForceRemovePackage(Include, Include.Global ? g_GlobalLibDir : g_LocalLibDir, false)
+            if ForceRemovePackage(Include, Include.Global ? g_GlobalLibDir : g_LocalLibDir, false)
+                return 0
             Includes.Delete(PackageInfo.PackageName)
         }
     }
@@ -2062,6 +2090,10 @@ MergeJsonInfoToPackageInfo(JsonInfo, PackageInfo) {
             PackageInfo.Postinstall := JsonInfo["scripts"]["postinstall"]
         if !PackageInfo.HasProp("Postdownload") && JsonInfo["scripts"].Has("postdownload")
             PackageInfo.PostDownload := JsonInfo["scripts"]["postdownload"]
+        if !PackageInfo.HasProp("Preremove") && JsonInfo["scripts"].Has("preremove")
+            PackageInfo.Preremove := JsonInfo["scripts"]["preremove"]
+        if !PackageInfo.HasProp("Postremove") && JsonInfo["scripts"].Has("postremove")
+            PackageInfo.Postremove := JsonInfo["scripts"]["postremove"]
     }
     return PackageInfo
 }
