@@ -1785,11 +1785,21 @@ UpdatePackageIndex() {
 }
 
 ListInstalledPackages() {
-    Packages := QueryInstalledPackages()
-    for _, Package in Packages
-        Print Package.PackageName "@" Package.InstallVersion
-    else
-        Print "No packages installed"
+    if g_Switches["global_install"] {
+        for PackageName, InstallInfo in g_GlobalInstalledPackages {
+            for InstallName, ProjectArray in InstallInfo {
+                Print InstallName "`n`tDependant projects:"
+                for Project in ProjectArray
+                    Print "`t" Project
+            }
+        }
+    } else {
+        Packages := QueryInstalledPackages()
+        for _, Package in Packages
+            Print Package.PackageName "@" Package.InstallVersion (Package.Global ? " (global)" : "")
+        else
+            Print "No packages installed"
+    }
 }
 
 QueryInstalledPackages(path := ".\") {
