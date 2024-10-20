@@ -35,6 +35,88 @@ ArrayJoin(arr, delim:=",") {
     return (len := StrLen(delim)) ? SubStr(result, 1, -len) : result
 }
 
+/*
+ * ObjectSort() by bichlepa
+ * 
+ * Description:
+ *    Reads content of an object and returns a sorted array
+ * 
+ * Parameters:
+ *    obj:              Object which will be sorted
+ *    keyName:          [optional] 
+ *                      Omit it if you want to sort an array of strings, numbers etc.
+ *                      If you have an array of objects, specify here the key by which contents the object will be sorted.
+ *    callBackFunction: [optional] Use it if you want to have custom sort rules.
+ *                      The function will be called once for each value. It must return a number or string.
+ *    reverse:          [optional] Pass true if the result array should be reversed
+ */
+ObjectSort(obj, keyName := "", callbackFunc := "", reverse := false) {
+    temp := Map()
+    sorted := [] ; Return value
+    
+    for oneKey, oneValue in (((obj is Map) || (obj is Array)) ? obj : obj.OwnProps()) {
+        ; Get the value by which it will be sorted
+        if keyName
+            value := oneValue is Map ? oneValue[keyName] : oneValue.%keyName%
+        else
+            value := oneValue
+        
+        ; If there is a callback function, call it. The value is the key of the temporary list.
+        if (callbackFunc)
+            tempKey := callbackFunc(value)
+        else
+            tempKey := value
+        
+        ; Insert the value in the temporary object.
+        ; It may happen that some values are equal therefore we put the values in an array.
+        if !temp.Has(tempKey)
+            temp[tempKey] := []
+        temp[tempKey].Push(oneValue)
+    }
+    
+    ; Now loop through the temporary list. AutoHotkey sorts them for us.
+    for oneTempKey, oneValueList in temp {
+        for oneValueIndex, oneValue in oneValueList {
+            ; And add the values to the result list
+            if (reverse)
+                sorted.InsertAt(1, oneValue)
+            else
+                sorted.Push(oneValue)
+        }
+    }
+    
+    return sorted
+}
+
+; Credit: iPhilip, Source: https://www.autohotkey.com/boards/viewtopic.php?style=17&p=509167#p509167
+; https://en.wikipedia.org/wiki/Levenshtein_distance#Iterative_with_two_matrix_rows
+LD(Source, Target, CaseSense := True) {
+    if CaseSense ? Source == Target : Source = Target
+       return 0
+    Source := StrSplit(Source)
+    Target := StrSplit(Target)
+    if !Source.Length
+       return Target.Length
+    if !Target.Length
+       return Source.Length
+    
+    v0 := [], v1 := []
+    Loop Target.Length + 1
+       v0.Push(A_Index - 1)
+    v1.Length := v0.Length
+    
+    for Index, SourceChar in Source {
+       v1[1] := Index
+       for TargetChar in Target
+          v1[A_Index + 1] := Min(v1[A_Index] + 1, v0[A_Index + 1] + 1, v0[A_Index] + (CaseSense ? SourceChar !== TargetChar : SourceChar != TargetChar))
+       Loop Target.Length + 1
+          v0[A_Index] := v1[A_Index]
+    }
+    return v1[Target.Length + 1]
+}
+
+ConvertRange(OldValue, OldMin, OldMax, NewMin, NewMax) => (((OldValue - OldMin) * (NewMax - NewMin)) / (OldMax - OldMin)) + NewMin
+
 MoveFilesAndFolders(SourcePattern, DestinationFolder, DoOverwrite := false) {
     if DoOverwrite = 1
         DoOverwrite := 2  ; See DirMove for description of mode 2 vs. 1.
