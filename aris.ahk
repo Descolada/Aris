@@ -76,6 +76,7 @@ global g_SwitchAliases := Mapi("--global", "global_install", "--global-install",
 global g_MainGui := Gui("+MinSize640x400 +Resize", "Aris")
 global g_AddedIncludesString := ""
 global g_IsComSpecAvailable := false
+global g_LocalAppData := EnvGet("LOCALAPPDATA")
 A_FileEncoding := "UTF-8"
 
 if !A_Args.Length && !DllCall("GetStdHandle", "int", -11, "ptr") { ; Hack to detect whether we were run from Explorer
@@ -124,7 +125,11 @@ if !g_Config.Has("first_run") || g_Config["first_run"] {
     FileOpen("assets/config.json", "w").Write(JSON.Dump(g_Config, true))
     SelectedTab := 3
 }
-
+if FileExist(g_LocalAppData "\Programs\Aris\Aris.bat") && !InStr(FileRead(g_LocalAppData "\Programs\Aris\Aris.bat"), A_AhkPath) {
+    try AddArisToPATH()
+    if IsArisShellMenuItemPresent()
+        try AddArisShellMenuItem()
+}
 
 if (!A_Args.Length || (A_Args.Length = 1 && FileExist(A_Args[1]) && A_Args[1] ~= "i)\.ahk?\d?$")) {
     Persistent()
@@ -240,7 +245,7 @@ AddArisToPATH() {
 }
 
 RemoveArisFromPATH() {
-    if !(LocalAppData := EnvGet("LOCALAPPDATA"))
+    if !(g_LocalAppData)
         return
 
     CurrPath := g_IsComSpecAvailable ? RunCMD(A_ComSpec . " /c " 'reg query HKCU\Environment /v PATH') : RegRead("HKCU\Environment", "PATH")
@@ -250,21 +255,21 @@ RemoveArisFromPATH() {
     if g_IsComSpecAvailable && G_RunCMD.ExitCode
         return
 
-    if InStr(CurrPath, ";" LocalAppData "\Programs\Aris") {
-        g_IsComSpecAvailable ? RunWait(A_ComSpec ' /c SETX PATH "' StrReplace(CurrPath, ";" LocalAppData "\Programs\Aris") '"',, "Hide") : RegWrite(StrReplace(CurrPath, ";" LocalAppData "\Programs\Aris"), "REG_SZ", "HKCU\Environment", "PATH")
+    if InStr(CurrPath, ";" g_LocalAppData "\Programs\Aris") {
+        g_IsComSpecAvailable ? RunWait(A_ComSpec ' /c SETX PATH "' StrReplace(CurrPath, ";" g_LocalAppData "\Programs\Aris") '"',, "Hide") : RegWrite(StrReplace(CurrPath, ";" g_LocalAppData "\Programs\Aris"), "REG_SZ", "HKCU\Environment", "PATH")
         SendMessage(0x1A, 0, StrPtr("Environment"), 0xFFFF)
     }
-    if FileExist(LocalAppData "\Programs\Aris\Aris.bat") {
-        DirDelete(LocalAppData "\Programs\Aris", true)
+    if FileExist(g_LocalAppData "\Programs\Aris\Aris.bat") {
+        DirDelete(g_LocalAppData "\Programs\Aris", true)
     }
 }
 
 IsArisInPATH() {
-    if !(LocalAppData := EnvGet("LOCALAPPDATA"))
+    if !(g_LocalAppData)
         return false
     CurrPath := g_IsComSpecAvailable ? RunCMD(A_ComSpec . " /c " 'reg query HKCU\Environment /v PATH') : RegRead("HKCU\Environment", "PATH", "")
     CurrPath := RegExReplace(CurrPath, "^[\w\W]*?PATH\s+REG_SZ\s+",,,1)
-    if CurrPath && InStr(CurrPath, LocalAppData "\Programs\Aris")
+    if CurrPath && InStr(CurrPath, g_LocalAppData "\Programs\Aris")
         return true
     return false
 }
