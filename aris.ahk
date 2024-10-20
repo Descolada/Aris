@@ -886,14 +886,18 @@ InstallPackage(Package, Update:=0, Switches?) {
 }
 
 InstallPackageDependencies(From := "", Update := 2) {
+    Result := 1
     Dependencies := QueryPackageDependencies(, From)
     if !Dependencies.Count {
         Print "No dependencies found"
         return
     }
     for PackageName, PackageInfo in Dependencies
-        if Update != 0 || (Update = 0 && !g_InstalledPackages.Has(PackageName))
-            InstallPackage(PackageInfo, Update) ; InStr(PackageInfo.DependencyEntry, ":") ? PackageInfo.DependencyEntry : PackageName "@" PackageInfo.Version)
+        if Update != 0 || (Update = 0 && !g_InstalledPackages.Has(PackageName)) {
+            if !InstallPackage(PackageInfo, Update) ; InStr(PackageInfo.DependencyEntry, ":") ? PackageInfo.DependencyEntry : PackageName "@" PackageInfo.Version)
+                Result := 0
+        }
+    return Result
 }
 
 UpdatePackage(PackageName) {
@@ -943,10 +947,11 @@ RemovePackage(PackageName, RemoveDependencyEntry:=true) {
     InstalledPackages := QueryInstalledPackages()
 
     if !(Matches := FindMatchingInstalledPackages(PackageInfo, InstalledPackages))
-        return
+        return 0
 
     if !Matches.Length {
         Print "No such package installed"
+        return 0
     } else if Matches.Length = 1 {
         Match := Matches[1]
 
@@ -958,7 +963,7 @@ RemovePackage(PackageName, RemoveDependencyEntry:=true) {
                     DepString .= "`n`t" Dependency.PackageName "@" Dependency.DependencyVersion
 
                 Print DepString
-                return
+                return 0
             }
         }
 
@@ -968,7 +973,9 @@ RemovePackage(PackageName, RemoveDependencyEntry:=true) {
         Print "Multiple matches found:"
         for Match in Matches
             Print "`t" Match.PackageName "@" Match.InstallVersion
+        return 0
     }
+    return 1
 }
 
 ForceRemovePackage(PackageInfo, LibDir, RemoveDependencyEntry:=true) {
@@ -1721,6 +1728,12 @@ LoadPackageIndex() {
                 Info["repository"] := Map("type", "github", "url", PackageName)
             else
                 StandardizeRepositoryInfo(Info)
+            if Info.Has("keywords") && IsObject(Info["keywords"]) {
+                keywords := ""
+                for keyword in Info["keywords"]
+                    keywords .= ", " keyword
+                Info["keywords"] := LTrim(keywords, " ,")
+            }
             if !Info.Has("main")
                 Info["main"] := ""
             g_Index[PackageName] := Info
