@@ -2,8 +2,13 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
     g_MainGui.OnEvent("Size", GuiReSizer)
     g_MainGui.OnEvent("Close", (*) => ExitApp())
 
-    g_MainGui.FolderTV := g_MainGui.Add("TreeView", "r25 w200", "Package files")
-    g_MainGui.FolderTV.X := 10, g_MainGui.FolderTV.Height := -50, g_MainGui.FolderTV.WidthP := 0.3
+    SB := g_MainGui.AddStatusBar(, "Undefined package")
+    SB.GetPos(,,, &SB_Height) ; Get default values for StatusBar and a button to adjust for screen scaling
+    g_MainGui.LoadPackageBtn := g_MainGui.AddButton(, "Load package")
+    g_MainGui.LoadPackageBtn.GetPos(,,, &Btn_Height)
+
+    g_MainGui.FolderTV := g_MainGui.Add("TreeView", "r25 w200 x0 y7", "Package files")
+    g_MainGui.FolderTV.X := 10, g_MainGui.FolderTV.Height := -(SB_Height+Btn_Height+10), g_MainGui.FolderTV.WidthP := 0.3
     g_MainGui.FolderTV.OnEvent("ContextMenu", ShowFolderTVContextMenu)
 
     if IsSet(FileOrDir) {
@@ -18,9 +23,8 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
         LoadPackageFolder(g_Config.Has("last_project_directory") && DirExist(g_Config["last_project_directory"]) ? g_Config["last_project_directory"] : A_WorkingDir)
 
     g_MainGui.PackageJson := LoadPackageJson()
-    g_MainGui.AddStatusBar(, g_MainGui.PackageJson["name"] ? (g_MainGui.PackageJson["name"] "@" (g_MainGui.PackageJson["version"] || "undefined-version")) : "Undefined package: add package name and version in metadata.")
-    g_MainGui.LoadPackageBtn := g_MainGui.AddButton(, "Load package")
-    g_MainGui.LoadPackageBtn.Y := -45
+    SB.SetText(g_MainGui.PackageJson["name"] ? (g_MainGui.PackageJson["name"] "@" (g_MainGui.PackageJson["version"] || "undefined-version")) : "Undefined package: add package name and version in metadata.")
+    g_MainGui.LoadPackageBtn.Y := -(SB_Height+Btn_Height+5)
     g_MainGui.ModifyMetadata := g_MainGui.AddButton("x+27", "Modify metadata")
     g_MainGui.ModifyMetadata.Anchor := g_MainGui.FolderTV, g_MainGui.ModifyMetadata.AnchorIn := false, g_MainGui.ModifyMetadata.YP := 1.0, g_MainGui.ModifyMetadata.Y := 5, g_MainGui.ModifyMetadata.XP := 1.0, g_MainGui.ModifyMetadata.X := -92
     g_MainGui.ModifyMetadata.OnEvent("Click", LaunchModifyMetadataGui)
@@ -28,7 +32,7 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
 
     g_MainGui.Tabs := g_MainGui.AddTab3("w410 h395 x220 y6", ["Current package", "Index", "Settings"])
     g_MainGui.Tabs.UseTab(1)
-    g_MainGui.Tabs.XP := 0.30, g_MainGui.Tabs.X := 15, g_MainGui.Tabs.W := -5, g_MainGui.Tabs.H := -25
+    g_MainGui.Tabs.XP := 0.30, g_MainGui.Tabs.X := 15, g_MainGui.Tabs.W := -5, g_MainGui.Tabs.H := -(SB_Height+5)
 
     P := g_MainGui.Tabs.Package := {TabName:"Package"}
     P.LV := g_MainGui.Add("ListView", "r10 w390 Section -Multi", ["Package name", "Version", "Allowed versions", "Installed", "Scope", "In index"])
@@ -49,7 +53,7 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
     P.ModifyRangeBtn := g_MainGui.AddButton("x+10 yp+0 w80", "Modify range")
     P.ModifyRangeBtn.OnEvent("Click", ModifyPackageVersionRange.Bind(P.LV))
     P.Metadata := g_MainGui.Add("Edit", "xs y+10 w390 h140")
-    P.Metadata.W := -15, P.Metadata.H := -35
+    P.Metadata.W := -15, P.Metadata.H := -(SB_Height+15)
 
     PopulatePackagesTab(P)
 
@@ -88,8 +92,7 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
     AnchorAfter(I.UpdateIndexBtn, I.QueryVersionBtn, 5, 0)
     I.UpdateIndexBtn.OnEvent("Click", UpdatePackageIndexPopulateTab)
     I.Metadata := g_MainGui.Add("Edit", "xs y+10 w390 h120 ReadOnly")
-    AnchorUnder(I.Metadata, I.LV, 0, 60)
-    I.Metadata.W := 0
+    I.Metadata.F := (this, G, *) => (I.LV.GetPos(&LVX, &LVY, &LVW, &LVH), G.GetPos(,,&GW,&GH), this.GetPos(&X, &Y, &W, &H), this.Move(LVX, NewY := LVY+LVH+60, LVW, GH-NewY-SB_Height-55))
 
     PopulateIndexTab(I)
 
