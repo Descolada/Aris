@@ -30,7 +30,7 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
     g_MainGui.Tabs.UseTab(1)
     g_MainGui.Tabs.XP := 0.30, g_MainGui.Tabs.X := 15, g_MainGui.Tabs.W := -5, g_MainGui.Tabs.H := -25
 
-    P := g_MainGui.Tabs.Package := {}
+    P := g_MainGui.Tabs.Package := {Type:"Package"}
     P.LV := g_MainGui.Add("ListView", "r10 w390 Section -Multi", ["Package name", "Version", "Allowed versions", "Installed", "Scope", "In index"])
     P.LV.W := -15
     P.LV.OnEvent("ItemSelect", PackageLVItemSelected)
@@ -53,7 +53,7 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
 
     g_MainGui.Tabs.UseTab(2)
 
-    I := g_MainGui.Tabs.Index := {}
+    I := g_MainGui.Tabs.Index := {Type:"Index"}
     I.LV := g_MainGui.Add("ListView", "r10 w390 Section -Multi", ["Package name", "Installed version", "Allowed versions", "Source"])
     I.LV.W := -15, I.LV.H := -215
     I.LV.OnEvent("ItemSelect", IndexLVItemSelected)
@@ -176,10 +176,11 @@ LVGetPackageInfo(LV) {
     Selected := LV.GetNext(0)
     if !Selected
         return 0
-    return {PackageName: LV.GetText(Selected, 1), Version: LV.GetText(Selected, 2)}
+    return {PackageName: LV.GetText(Selected, 1), Version: LV.GetText(Selected, 2), Selected: Selected}
 }
 
 PackageAction(Tab, Action, Input?, ClearOutput:=1, *) {
+    Result := 1
     if Action != "install-external" {
         PackageInfo := LVGetPackageInfo(Tab.LV)
         if !PackageInfo {
@@ -193,13 +194,14 @@ PackageAction(Tab, Action, Input?, ClearOutput:=1, *) {
     switch Action, 0 {
         case "reinstall":
             RemovePackage(PackageInfo.PackageName "@" PackageInfo.Version, false)
-            InstallPackage(PackageInfo.PackageName "@" PackageInfo.Version)
+            Result := InstallPackage(PackageInfo.PackageName "@" PackageInfo.Version)
         case "remove":
-            RemovePackage(PackageInfo.PackageName "@" PackageInfo.Version)
+            if Result := RemovePackage(PackageInfo.PackageName "@" PackageInfo.Version)
+                PackageInfo.Selected := Min(PackageInfo.Selected, Tab.LV.GetCount()-1)
         case "update":
-            InstallPackage(PackageInfo.PackageName "@" g_InstalledPackages[PackageInfo.PackageName].DependencyVersion, 1)
+            Result := InstallPackage(PackageInfo.PackageName "@" g_InstalledPackages[PackageInfo.PackageName].DependencyVersion, 1)
         case "update-latest":
-            InstallPackage(PackageInfo.PackageName "@latest")
+            Result := InstallPackage(PackageInfo.PackageName "@latest")
         case "install":
             Result := InstallPackage(PackageInfo.PackageName)
             if !Result && g_Index.Has(PN := PackageInfo.PackageName) && g_Index[PN].Has("repository") && (Repo := g_Index[PN]["repository"] is String ? g_Index[PN]["repository"] : g_Index[PN]["repository"]["url"]) && Repo ~= "forums:|autohotkey\.com" {
@@ -208,17 +210,24 @@ PackageAction(Tab, Action, Input?, ClearOutput:=1, *) {
             }
         case "install-external":
             if Input is String {
-                InstallPackageDependencies(Input, 0)
+                Result := InstallPackageDependencies(Input, 0)
             } else {
                 IB := InputBox('Install a package from a non-index source.`n`nInsert a source (GitHub repo, Gist, archive file URL) from where to install the package.`n`nIf installing from a GitHub repo, this can be "Username/Repo" or "Username/Repo@Version" (queries from releases) or "Username/Repo@commit" (without quotes).', "Add package", "h240")
                 if IB.Result != "Cancel"
-                    InstallPackage(IB.Value)
+                    Result := InstallPackage(IB.Value)
             }
     }
-    if !InStr(Action, "remove")
-        OutputAddedIncludesString(!!InStr(Action, "update"))
-    LoadPackageFolder(A_WorkingDir)
-    PopulateTabs()
+    if Result {
+        if !InStr(Action, "remove")
+            OutputAddedIncludesString(!!InStr(Action, "update"))
+        LoadPackageFolder(A_WorkingDir)
+        PopulateTabs()
+    }
+    try {
+        Tab.LV.Modify(PackageInfo.Selected, "Select")
+        if Action = "remove" && Result
+            PackageLVItemSelected(Tab.LV, PackageInfo.Selected, 1)
+    }
 }
 
 ModifyPackageVersionRange(LV, *) {
@@ -299,12 +308,8 @@ ExtractPackageDescription(Info) {
         Content .= "Homepage: " Info["homepage"] "`n"
     if Info.Has("license")
         Content .= "License: " Info["license"] "`n"
-    if Info.Has("tags") && Info["tags"].Length {
-        Content .= "Tags: "
-        for Tag in Info["tags"]
-            Content .= Tag ", "
-        Content := SubStr(Content, 1, -2) "`n"
-    }
+    if Info.Has("keywords") && Info["keywords"]
+        Content .= "Keywords: " Info["keywords"] "`n"
     if Info.Has("dependencies") && Info["dependencies"].Count {
         Content .= "Dependencies:`n"
         for Dependency, Version in Info["dependencies"]
@@ -349,6 +354,7 @@ PopulatePackagesTab(Tab) {
     Tab.LV.ModifyCol(5, 50)
     Tab.LV.ModifyCol(6, 50)
     Tab.LV.Opt("+Redraw")
+    Sleep -1
 }
 
 PopulateIndexTab(Tab) {
@@ -358,7 +364,7 @@ PopulateIndexTab(Tab) {
     Tab.LV.Delete()
 
     for PackageName, Info in g_Index {
-        if PackageName = "version"
+        if !InStr(PackageName, "/") || !IsObject(Info)
             continue
 
         g_MainGui.UnfilteredIndex.Push([PackageName, g_InstalledPackages.Has(PackageName) ? g_InstalledPackages[PackageName].InstallVersion : unset, g_InstalledPackages.Has(PackageName) ? g_InstalledPackages[PackageName].DependencyVersion : unset, g_Index[PackageName]["repository"]["type"]])
@@ -366,7 +372,10 @@ PopulateIndexTab(Tab) {
     }
     Tab.LV.ModifyCol(1)
     Tab.LV.ModifyCol(4, 80)
+    if Tab.Search.Value
+        OnIndexSearch(Tab.Search)
     Tab.LV.Opt("+Redraw")
+    Sleep -1
 }
 
 LoadPackageFolder(FullPath) {
@@ -408,20 +417,40 @@ OnIndexSearch(Search, *) {
     LV := Tab.LV
     LV.Opt("-Redraw")
     LV.Delete()
+    StartsWithCompare := (v1) => v1 ~= (Tab.SearchCaseSenseCB.Value ? "" : "i)") "\b\Q" Query "\E"
+    SubstrCompare := (v1) => InStr(v1, Query, Tab.SearchCaseSenseCB.Value)
     if Query = "" {
         for Row in g_MainGui.UnfilteredIndex
             LV.Add(, Row*)
     } else {
         if Tab.SearchByStartCB.Value {
-            if Tab.SearchCaseSenseCB.Value
-                CompareFunc := (v1, v2) => SubStr(v1, 1, StrLen(v2)) == v2
-            else
-                CompareFunc := (v1, v2) => SubStr(v1, 1, StrLen(v2)) = v2
-        } else
-            CompareFunc := (v1, v2) => InStr(v1, v2, Tab.SearchCaseSenseCB.Value)
-        for Row in g_MainGui.UnfilteredIndex
-            if CompareFunc(Row[1], Query)
-                LV.Add(, Row*)
+            CompareFunc := StartsWithCompare
+            FilteredIndex := []
+            for Row in g_MainGui.UnfilteredIndex
+                if CompareFunc(Row[1])
+                    FilteredIndex.Push(Row)
+        } else {
+            FilteredIndex := []
+            for Row in g_MainGui.UnfilteredIndex {
+                PackageName := Row[1], IndexEntry := g_Index[PackageName]
+                if StartsWithCompare(StrSplit(PackageName, "/",, 2)[-1]) {
+                    Row.Weight := 10000, FilteredIndex.Push(Row)
+                } else if StartsWithCompare(PackageName) {
+                    Row.Weight := 1000, FilteredIndex.Push(Row)
+                } else if SubStrCompare(PackageName) {
+                    Row.Weight := 100, FilteredIndex.Push(Row)
+                } else if IndexEntry.Has("keywords") && StartsWithCompare(IndexEntry["keywords"]) {
+                    Row.Weight := 10, FilteredIndex.Push(Row)
+                } else if IndexEntry.Has("description") && StartsWithCompare(IndexEntry["description"]) {
+                    Row.Weight := 1, FilteredIndex.Push(Row)
+                } else
+                    Row.Weight := 0
+            }
+            FilteredIndex := ObjectSort(FilteredIndex, "Weight",, true)
+        }
+
+        for Row in FilteredIndex
+            LV.Add(, Row*)
     }
     LV.Opt("+Redraw")
 }
