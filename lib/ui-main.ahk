@@ -30,20 +30,22 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
     g_MainGui.Tabs.UseTab(1)
     g_MainGui.Tabs.XP := 0.30, g_MainGui.Tabs.X := 15, g_MainGui.Tabs.W := -5, g_MainGui.Tabs.H := -25
 
-    P := g_MainGui.Tabs.Package := {Type:"Package"}
+    P := g_MainGui.Tabs.Package := {TabName:"Package"}
     P.LV := g_MainGui.Add("ListView", "r10 w390 Section -Multi", ["Package name", "Version", "Allowed versions", "Installed", "Scope", "In index"])
     P.LV.W := -15
     P.LV.OnEvent("ItemSelect", PackageLVItemSelected)
+    P.LV.OnEvent("ContextMenu", ShowPackageLVContextMenu)
+    P.LV.TabName := "Package"
     P.ReinstallBtn := g_MainGui.AddButton("w50", "Reinstall")
-    P.ReinstallBtn.OnEvent("Click", PackageAction.Bind(P, "reinstall",,1))
+    P.ReinstallBtn.OnEvent("Click", PackageAction.Bind(P, "reinstall",0,1))
     P.RemoveBtn := g_MainGui.AddButton("x+10 yp+0 w50", "Remove")
-    P.RemoveBtn.OnEvent("Click", PackageAction.Bind(P, "remove",,1))
+    P.RemoveBtn.OnEvent("Click", PackageAction.Bind(P, "remove",0,1))
     P.UpdateBtn := g_MainGui.AddButton("x+10 yp+0 w50", "Update")
-    P.UpdateBtn.OnEvent("Click", PackageAction.Bind(P, "update",,1))
+    P.UpdateBtn.OnEvent("Click", PackageAction.Bind(P, "update",0,1))
     P.UpdateLatestBtn := g_MainGui.AddButton("x+10 yp+0", "Force update")
     P.UpdateLatestBtn.OnEvent("Click", PackageAction.Bind(P, "update-latest",,1))
     P.AddBtn := g_MainGui.AddButton("x+10 yp+0 w50", "Add")
-    P.AddBtn.OnEvent("Click", PackageAction.Bind(P, "install-external",,1))
+    P.AddBtn.OnEvent("Click", PackageAction.Bind(P, "install-external",0,1))
     P.ModifyRangeBtn := g_MainGui.AddButton("x+10 yp+0 w80", "Modify range")
     P.ModifyRangeBtn.OnEvent("Click", ModifyPackageVersionRange.Bind(P.LV))
     P.Metadata := g_MainGui.Add("Edit", "xs y+10 w390 h140")
@@ -53,11 +55,13 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
 
     g_MainGui.Tabs.UseTab(2)
 
-    I := g_MainGui.Tabs.Index := {Type:"Index"}
+    I := g_MainGui.Tabs.Index := {TabName:"Index"}
     I.LV := g_MainGui.Add("ListView", "r10 w390 Section -Multi", ["Package name", "Installed version", "Allowed versions", "Source"])
     I.LV.W := -15, I.LV.H := -215
     I.LV.OnEvent("ItemSelect", IndexLVItemSelected)
-    I.LV.OnEvent("DoubleClick", PackageAction.Bind(I, "install",,1))
+    I.LV.OnEvent("DoubleClick", PackageAction.Bind(I, "install",0,1))
+    I.LV.OnEvent("ContextMenu", ShowPackageLVContextMenu)
+    I.LV.TabName := "Index"
     I.SearchText := g_MainGui.Add("Text",, "Search:")
 
     AnchorUnder := (o, to, X, Y) => (o.Anchor := to, o.AnchorIn := false, o.YP := 1.0, o.Y := Y, o.X := X)
@@ -76,13 +80,13 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
 
     I.InstallBtn := g_MainGui.AddButton("xs y+8 w60", "Install")
     AnchorUnder(I.InstallBtn, I.LV, 5, 30)
-    I.InstallBtn.OnEvent("Click", PackageAction.Bind(I, "install",,1))
+    I.InstallBtn.OnEvent("Click", PackageAction.Bind(I, "install",0,1))
     I.QueryVersionBtn := g_MainGui.AddButton("x+10 yp+0", "Query versions")
     AnchorAfter(I.QueryVersionBtn, I.InstallBtn, 5, 0)
     I.QueryVersionBtn.OnEvent("Click", LaunchVersionSelectionGui)
     I.UpdateIndexBtn := g_MainGui.AddButton("x+10 yp+0", "Update index")
     AnchorAfter(I.UpdateIndexBtn, I.QueryVersionBtn, 5, 0)
-    I.UpdateIndexBtn.OnEvent("Click", (*) => (UpdatePackageIndex(), PopulateIndexTab(I)))
+    I.UpdateIndexBtn.OnEvent("Click", UpdatePackageIndexPopulateTab)
     I.Metadata := g_MainGui.Add("Edit", "xs y+10 w390 h120 ReadOnly")
     AnchorUnder(I.Metadata, I.LV, 0, 60)
     I.Metadata.W := 0
@@ -209,7 +213,7 @@ PackageAction(Tab, Action, Input?, ClearOutput:=1, *) {
                 InstallPackage(PackageInfo.PackageName "@latest")
             }
         case "install-external":
-            if Input is String {
+            if Input && (Input is String) {
                 Result := InstallPackageDependencies(Input, 0)
             } else {
                 IB := InputBox('Install a package from a non-index source.`n`nInsert a source (GitHub repo, Gist, archive file URL) from where to install the package.`n`nIf installing from a GitHub repo, this can be "Username/Repo" or "Username/Repo@Version" (queries from releases) or "Username/Repo@commit" (without quotes).', "Add package", "h240")
@@ -282,6 +286,8 @@ IndexLVItemSelected(LV, Item, Selected) {
     Tab.Metadata.Value := ExtractPackageDescription(g_Index[PackageName])
     Tab.InstallBtn.Text := LV.GetText(Item, 4) = "Yes" ? "Reinstall" : "Install"
 }
+
+UpdatePackageIndexPopulateTab(*) => (UpdatePackageIndex(), PopulateIndexTab(I))
 
 ExtractPackageDescription(Info) {
     Content := ""
@@ -690,4 +696,28 @@ ShowFolderTVContextMenu(FolderTV, Item, IsRightClick, *) {
     }
     FolderMenu.Add("Open project folder in Explorer", (*) => Run('explore "' A_WorkingDir '"'))
     FolderMenu.Show()
+}
+
+ShowPackageLVContextMenu(LV, Item, IsRightClick, *) {
+    Tab := LV.TabName = "Index" ? g_MainGui.Tabs.Index : g_MainGui.Tabs.Package
+    PackageMenu := Menu()
+    if !(Item && (PackageName := LV.GetText(Item))) {
+        if LV.TabName = "Index" {
+            PackageMenu.Add("Update index", UpdatePackageIndexPopulateTab)
+        } else {
+            PackageMenu.Add("Install external package", PackageAction.Bind(Tab, "install-external",0,1))
+        }
+    } else {
+        if g_InstalledPackages.Has(PackageName) {
+            PackageMenu.Add("Modify version range", ModifyPackageVersionRange.Bind(LV))
+            PackageMenu.Add("Update", PackageAction.Bind(Tab, "update",0, 1))
+            PackageMenu.Add("Force update to latest", PackageAction.Bind(Tab, "update-latest",, 1))
+            PackageMenu.Add("Reinstall", PackageAction.Bind(Tab, "reinstall",0, 1))
+            PackageMenu.Add("Remove", PackageAction.Bind(Tab, "remove",0, 1))
+        } else {
+            PackageMenu.Add("Install", PackageAction.Bind(Tab, "install",0, 1))
+            PackageMenu.Add("Query versions", LaunchVersionSelectionGui)
+        }
+    }
+    PackageMenu.Show()
 }
