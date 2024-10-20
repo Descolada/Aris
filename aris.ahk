@@ -1771,15 +1771,14 @@ DownloadPackageIndex() {
     Print "Checking for index updates..."
     try {
         Download(g_GitHubRawBase "assets/index.json", A_ScriptDir "\assets\~index.json")
+        if !g_Config.Has("auto_update_index_daily") || g_Config["auto_update_index_daily"] {
+            g_Config["auto_update_index_daily"] := A_NowUTC
+            SaveSettings()
+        }
         if (DownloadedIndexContent := FileRead(A_ScriptDir "\assets\~index.json")) != FileRead(A_ScriptDir "\assets\index.json") {
             DownloadedIndex := JSON.Load(DownloadedIndexContent)
             if Integer(StrSplit(DownloadedIndex['version'], ".")[1]) = Integer(StrSplit(g_Index.Version, ".")[1]) {
                 FileMove(A_ScriptDir "\assets\~index.json", A_ScriptDir "\assets\index.json", 1)
-                if !g_Config.Has("auto_update_index_daily") || g_Config["auto_update_index_daily"] {
-                    g_Config["auto_update_index_daily"] := A_NowUTC
-                    SaveSettings()
-                }
-                SaveSettings()
                 Print "Index successfully updated to latest version"
             } else {
                 Print "Incompatible index.json version, ARIS update is recommended"
