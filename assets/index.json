@@ -378,6 +378,13 @@
 			"license": "MIT",
 			"repository": "iseahound/ImagePut/master"
 		},
+		"iseahound/TextRender": {
+			"description": "Draw images and text on the screen, configure its background color, text outline, and drop shadow, make the text clickable and more",
+			"files": "TextRender.ahk",
+			"homepage": "https://github.com/iseahound/TextRender",
+			"license": "MIT",
+			"repository": "iseahound/TextRender/main"
+		},
 		"jNizM/DNSQuery": {
 			"description": "Retrieves the Resource Record (RR) depends on DNS Record Type",
 			"files": "src/Network/DNSQuery.ahk",
