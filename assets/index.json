@@ -543,17 +543,13 @@
 		},
 		"thqby/Audio": {
 			"description": "Core Audio APIs",
-			"files": [
-				"Audio.ahk"
-			],
+			"files": "Audio.ahk",
 			"license": "MIT",
 			"repository": "thqby/ahk2_lib/master"
 		},
 		"thqby/CGdip": {
 			"description": "Gdip implemented as a class instead of seperate functions",
-			"files": [
-				"CGdip.ahk"
-			],
+			"files": "CGdip.ahk",
 			"license": "MIT",
 			"repository": "thqby/ahk2_lib/master"
 		},
@@ -567,20 +563,52 @@
 			"main": "Chrome.ahk",
 			"repository": "thqby/ahk2_lib/master"
 		},
+		"thqby/ComObjDll": {
+			"description": "Create a COM object from an unregistered DLL",
+			"files": "ComObjDll.ahk",
+			"license": "MIT",
+			"repository": "thqby/ahk2_lib/master"
+		},
 		"thqby/Crypt": {
 			"description": "Cryptograhic functions for MD5, SHA, and AES hashes",
+			"files": "Crypt.ahk",
+			"license": "MIT",
+			"repository": "thqby/ahk2_lib/master"
+		},
+		"thqby/Detours": {
+			"description": "Detours is a software package for monitoring and instrumenting API calls on Windows.",
 			"files": [
-				"Crypt.ahk"
+				"Detours/*.*"
 			],
 			"license": "MIT",
+			"main": "Detours.ahk",
 			"repository": "thqby/ahk2_lib/master"
 		},
 		"thqby/DirectoryWatcher": {
 			"description": "Call the notification function when the specified directory changes",
+			"files": "DirectoryWatcher.ahk",
+			"license": "MIT",
+			"repository": "thqby/ahk2_lib/master"
+		},
+		"thqby/DownloadAsync": {
+			"dependencies": {
+				"thqby/WinHttpRequest": "*"
+			},
+			"description": "Asynchronous download, you can get the download progress, and call the specified function after the download is complete.",
+			"files": "DownloadAsync.ahk",
+			"license": "MIT",
+			"repository": "thqby/ahk2_lib/master",
+			"scripts": {
+				"postdownload": "A_WorkingDir := A_Args[1]\nA_FileEncoding := 'UTF-8'\nContent := FileRead('DownloadAsync.ahk')\nFileOpen('DownloadAsync.ahk', 'w').Write(Trim(StrReplace(Content, '#Include WinHttpRequest.ahk'), '`r`n'))"
+			}
+		},
+		"thqby/NTL": {
+			"description": "NTL is a high-performance, portable C++ library providing data structures and algorithms for manipulating signed, arbitrary length integers, and for vectors, matrices, and polynomials over the integers and over finite fields.",
 			"files": [
-				"DirectoryWatcher.ahk"
+				"NTLCalc/*.*"
 			],
 			"license": "MIT",
+			"main": "NTLCalc.ahk",
 			"repository": "thqby/ahk2_lib/master"
 		},
 		"thqby/RapidOcr": {
@@ -592,11 +620,15 @@
 			"main": "RapidOcr.ahk",
 			"repository": "thqby/ahk2_lib/master"
 		},
+		"thqby/Socket": {
+			"description": "Simple implementation of a socket Server and Client.",
+			"files": "Socket.ahk",
+			"license": "MIT",
+			"repository": "thqby/ahk2_lib/master"
+		},
 		"thqby/WebSocket": {
 			"description": "The websocket client implemented through winhttp",
-			"files": [
-				"WebSocket.ahk"
-			],
+			"files": "WebSocket.ahk",
 			"license": "MIT",
 			"repository": "thqby/ahk2_lib/master"
 		},
@@ -609,12 +641,43 @@
 			"main": "WebView2.ahk",
 			"repository": "thqby/ahk2_lib/master"
 		},
+		"thqby/WinHttpRequest": {
+			"description": "Wrapper for WinHttp.WinHttpRequest.5.1 to make web requests.",
+			"files": "WinHttpRequest.ahk",
+			"license": "MIT",
+			"repository": "thqby/ahk2_lib/master"
+		},
+		"thqby/YAML": {
+			"description": "Converts a AutoHotkey Object Notation (YAML/JSON) string into an object.",
+			"files": "YAML.ahk",
+			"license": "MIT",
+			"repository": "thqby/ahk2_lib/master"
+		},
+		"thqby/archive": {
+			"description": "Read and write archives in many formats.",
+			"files": "archive.ahk",
+			"license": "MIT",
+			"repository": "thqby/ahk2_lib/master"
+		},
 		"thqby/child_process": {
 			"description": "Create a child process, and read stdout/stderr asynchronously, supporting multiple stdin inputs",
+			"files": "child_process.ahk",
+			"license": "MIT",
+			"repository": "thqby/ahk2_lib/master"
+		},
+		"thqby/ctypes": {
+			"description": "Create struct, union, array and pointer bindings, and use it like an AHK object",
+			"files": "ctypes.ahk",
+			"license": "MIT",
+			"repository": "thqby/ahk2_lib/master"
+		},
+		"thqby/wincapture": {
+			"description": "wincapture contains 3 types of windows capture, as well as waiting for screen changes, bitmap grayscale, binarization, colors search and picture search.",
 			"files": [
-				"child_process.ahk"
+				"wincapture/*.*"
 			],
 			"license": "MIT",
+			"main": "wincapture.ahk",
 			"repository": "thqby/ahk2_lib/master"
 		}
 	},
