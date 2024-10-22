@@ -547,6 +547,12 @@
 			"license": "MIT",
 			"repository": "thqby/ahk2_lib/master"
 		},
+		"thqby/Base64": {
+			"description": "Encode a buffer to a base64 string, or decode a base64 string.",
+			"files": "Base64.ahk",
+			"license": "MIT",
+			"repository": "thqby/ahk2_lib/master"
+		},
 		"thqby/CGdip": {
 			"description": "Gdip implemented as a class instead of seperate functions",
 			"files": "CGdip.ahk",
@@ -609,6 +615,12 @@
 			],
 			"license": "MIT",
 			"main": "NTLCalc.ahk",
+			"repository": "thqby/ahk2_lib/master"
+		},
+		"thqby/Promise": {
+			"description": "Implements a Javascript-like Promise",
+			"files": "Promise.ahk",
+			"license": "MIT",
 			"repository": "thqby/ahk2_lib/master"
 		},
 		"thqby/RapidOcr": {
@@ -679,6 +691,18 @@
 			"license": "MIT",
 			"main": "wincapture.ahk",
 			"repository": "thqby/ahk2_lib/master"
+		},
+		"thqby/windows": {
+			"description": "Alternative to thqby/winrt (provides an alternative entry point for the system-defined WinRT classes). Provides an AutoHotkey v2 \"language projection\" for the Windows Runtime (WinRT). In other words, it hides the details of interop between AutoHotkey and WinRT, allowing WinRT objects to be used like native AutoHotkey objects.",
+			"license": "Unlicense",
+			"main": "windows.ahk",
+			"repository": "thqby/winrt.ahk/main"
+		},
+		"thqby/winrt": {
+			"description": "Provides an AutoHotkey v2 \"language projection\" for the Windows Runtime (WinRT). In other words, it hides the details of interop between AutoHotkey and WinRT, allowing WinRT objects to be used like native AutoHotkey objects.",
+			"license": "Unlicense",
+			"main": "winrt.ahk",
+			"repository": "thqby/winrt.ahk/main"
 		}
 	},
 	"version": "2.0.0"
