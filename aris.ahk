@@ -832,8 +832,7 @@ InstallPackage(Package, Update:=0, Switches?) {
         IncludeFileContent := FileRead(g_LocalLibDir "\packages.ahk")
     else
         IncludeFileContent := "; Avoid modifying this file manually`n`n"
-
-    g_AddedIncludesString := ""
+    
     for IncludePackageName, Include in g_InstalledPackages {
         if CurrentlyInstalled.Has(IncludePackageName "@" Include.InstallVersion)
             continue
@@ -1123,7 +1122,7 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
     ; First download dependencies listed in index.json, except if we are updating our package
     if !CanUpdate && PackageInfo.Dependencies.Count {
         for DependencyName, DependencyVersion in PackageInfo.Dependencies {
-            Print "Starting install of dependency " DependencyName "@" DependencyVersion
+            Print "Found dependency `"" DependencyName "@" DependencyVersion "`", starting install of dependency"
             DependencyEntry := DependencyEntryToPackageInfo(DependencyName, DependencyVersion)
             DependencyEntry.DependencyEntry := "" ; Clear it to add a semver version to package.json at the end of InstallPackage
             if !DownloadPackageWithDependencies(DependencyEntry, TempDir, Includes)
@@ -1478,7 +1477,7 @@ IsGithubMinimalInstallPossible(PackageInfo, IgnoreVersion := false) {
 }
 
 GithubDownloadMinimalInstall(PackageInfo, Path) {
-    Print('Downloading minimal install for package "' PackageInfo.PackageName '"')
+    Print('Downloading files for package "' PackageInfo.PackageName '"')
 
     Path := Trim(Path, "\/")
     Repo := StrSplit(PackageInfo.Repository, "/")
@@ -1559,6 +1558,7 @@ VerifyPackageIsDownloadable(PackageInfo) {
         Repo := StrSplit(PackageInfo.Repository, "/")
         if !(releases := QueryGitHubReleases(PackageInfo.Repository)) || !(releases is Array) || !releases.Length {
             ; No releases found. Try to get commit hash instead.
+            Print("No GitHub releases found, querying commits instead.")
             if !((commits := (IsGithubMinimalInstallPossible(PackageInfo, true) ? QueryGitHubRepo(PackageInfo.Repository, "commits?path=" (PackageInfo.Files.Length ? PackageInfo.Files[1] : PackageInfo.Main)) : QueryGitHubCommits(PackageInfo.Repository))) && commits is Array && commits.Length)
                 throw Error("Unable to find releases or commits for the specified GitHub repository", -1, PackageInfo.PackageName)
             
@@ -1570,7 +1570,6 @@ VerifyPackageIsDownloadable(PackageInfo) {
             } else
                 PackageInfo.Version := SubStr(commits[1]["sha"], 1, 7)
 
-            Print("No GitHub releases found, falling back to the default branch.")
             if IsGithubMinimalInstallPossible(PackageInfo)
                 return
 
