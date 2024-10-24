@@ -388,6 +388,7 @@
 		"jNizM/DNSQuery": {
 			"description": "Retrieves the Resource Record (RR) depends on DNS Record Type",
 			"files": "src/Network/DNSQuery.ahk",
+			"license": "MIT",
 			"repository": "jNizM/ahk-scripts-v2/main",
 			"scripts": {
 				"postdownload": "A_FileEncoding := \"UTF-8\", Path := A_Args[1] \"\\DNSQuery.ahk\", Content := FileRead(Path), FileOpen(Path, \"w\").Write(RegExReplace(Content, \"; ======+\\r?\\n; Example[\\w\\W]+$\"))"
@@ -396,6 +397,7 @@
 		"jNizM/DnsServerList": {
 			"description": "Gets a list of DNS servers for the local computer",
 			"files": "src/Network/DnsServerList.ahk",
+			"license": "MIT",
 			"repository": "jNizM/ahk-scripts-v2/main",
 			"scripts": {
 				"postdownload": "A_FileEncoding := \"UTF-8\", Path := A_Args[1] \"\\DnsServerList.ahk\", Content := FileRead(Path), FileOpen(Path, \"w\").Write(RegExReplace(Content, \"; ======+\\r?\\n; Example[\\w\\W]+$\"))"
@@ -404,6 +406,7 @@
 		"jNizM/EnumInstalledApps": {
 			"description": "Gets general information about an application (from the Add/Remove Programs Application)",
 			"files": "src/ComObject/EnumInstalledApps.ahk",
+			"license": "MIT",
 			"repository": "jNizM/ahk-scripts-v2/main",
 			"scripts": {
 				"postdownload": "A_FileEncoding := \"UTF-8\", Path := A_Args[1] \"\\EnumInstalledApps.ahk\", Content := FileRead(Path), FileOpen(Path, \"w\").Write(RegExReplace(Content, \"; ======+\\r?\\n; Example[\\w\\W]+$\"))"
@@ -412,6 +415,7 @@
 		"jNizM/FileCountLines": {
 			"description": "Count the number of lines in a file",
 			"files": "src/FileObject/FileCountLines.ahk",
+			"license": "MIT",
 			"repository": "jNizM/ahk-scripts-v2/main",
 			"scripts": {
 				"postdownload": "A_FileEncoding := \"UTF-8\", Path := A_Args[1] \"\\FileCountLines.ahk\", Content := FileRead(Path), FileOpen(Path, \"w\").Write(RegExReplace(Content, \"; ======+\\r?\\n; Example[\\w\\W]+$\"))"
@@ -420,6 +424,7 @@
 		"jNizM/FileFindString": {
 			"description": "Finds a specific word / string in a text file",
 			"files": "src/FileObject/FileFindString.ahk",
+			"license": "MIT",
 			"repository": "jNizM/ahk-scripts-v2/main",
 			"scripts": {
 				"postdownload": "A_FileEncoding := \"UTF-8\", Path := A_Args[1] \"\\FileFindString.ahk\", Content := FileRead(Path), FileOpen(Path, \"w\").Write(RegExReplace(Content, \"; ======+\\r?\\n; Example[\\w\\W]+$\"))"
@@ -428,6 +433,7 @@
 		"jNizM/FileReadLastLines": {
 			"description": "Read last x lines of a text file",
 			"files": "src/FileObject/FileReadLastLines.ahk",
+			"license": "MIT",
 			"repository": "jNizM/ahk-scripts-v2/main",
 			"scripts": {
 				"postdownload": "A_FileEncoding := \"UTF-8\", Path := A_Args[1] \"\\FileReadLastLines.ahk\", Content := FileRead(Path), FileOpen(Path, \"w\").Write(RegExReplace(Content, \"; ======+\\r?\\n; Example[\\w\\W]+$\"))"
@@ -436,6 +442,7 @@
 		"jNizM/GetAdaptersInfo": {
 			"description": "Gets network adapter information for the local computer",
 			"files": "src/Network/GetAdaptersInfo.ahk",
+			"license": "MIT",
 			"repository": "jNizM/ahk-scripts-v2/main",
 			"scripts": {
 				"postdownload": "A_FileEncoding := \"UTF-8\", Path := A_Args[1] \"\\GetAdaptersInfo.ahk\", Content := FileRead(Path), FileOpen(Path, \"w\").Write(RegExReplace(Content, \"; ======+\\r?\\n; Example[\\w\\W]+$\"))"
@@ -444,22 +451,40 @@
 		"jNizM/GetFilePEHeader": {
 			"description": "Get the PE File Header information (Machine Type)",
 			"files": "src/FileObject/GetFilePEHeader.ahk",
+			"license": "MIT",
 			"repository": "jNizM/ahk-scripts-v2/main",
 			"scripts": {
 				"postdownload": "A_FileEncoding := \"UTF-8\", Path := A_Args[1] \"\\GetFilePEHeader.ahk\", Content := FileRead(Path), FileOpen(Path, \"w\").Write(RegExReplace(Content, \"; ======+\\r?\\n; Example[\\w\\W]+$\"))"
 			}
 		},
+		"jNizM/Hash": {
+			"description": "Calculate hash (MD2, MD4, MD5, SHA-1, SHA-256, SHA-384, SHA-512, HMAC, PBKDF2) from string, hex or file",
+			"files": "src/HashCalc.ahk",
+			"license": "MIT",
+			"repository": "jNizM/HashCalc/master",
+			"scripts": {
+				"postdownload": "A_FileEncoding := \"UTF-8\", Path := A_Args[1] \"\\src\\HashCalc.ahk\", Content := FileRead(Path), FileOpen(Path, \"w\").Write(RegExReplace(Content, \"; COMPILER DIRECTIVES ===[\\w\\W]+?; INCLUDES ====+\\r?\\n\\r?\\n\"))"
+			}
+		},
 		"jNizM/IsProcessElevated": {
 			"description": "Retrieves whether a process has elevated privileges",
 			"files": "src/ProcessThreadModule/IsProcessElevated.ahk",
+			"license": "MIT",
 			"repository": "jNizM/ahk-scripts-v2/main",
 			"scripts": {
 				"postdownload": "A_FileEncoding := \"UTF-8\", Path := A_Args[1] \"\\IsProcessElevated.ahk\", Content := FileRead(Path), FileOpen(Path, \"w\").Write(RegExReplace(Content, \"; ======+\\r?\\n; Example[\\w\\W]+$\"))"
 			}
 		},
+		"jNizM/NVML": {
+			"description": "Wrapper for NVIDIA NVML: retrieve info about NVIDIA graphics cards",
+			"files": "src/Class_NVML.ahk",
+			"license": "MIT, NVML",
+			"repository": "jNizM/NVIDIA_NVML/main"
+		},
 		"jNizM/ResolveHostname": {
 			"description": "Gets the IP Address from a Hostname (Resolve Hostname to IP Address) like nslookup",
 			"files": "src/Network/ResolveHostname.ahk",
+			"license": "MIT",
 			"repository": "jNizM/ahk-scripts-v2/main",
 			"scripts": {
 				"postdownload": "A_FileEncoding := \"UTF-8\", Path := A_Args[1] \"\\ResolveHostname.ahk\", Content := FileRead(Path), FileOpen(Path, \"w\").Write(RegExReplace(Content, \"; ======+\\r?\\n; Example[\\w\\W]+$\"))"
