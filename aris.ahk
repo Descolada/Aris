@@ -1582,8 +1582,7 @@ VerifyPackageIsDownloadable(PackageInfo) {
                 throw Error("No matching version found among GitHub releases")
 
             PackageInfo.Version := release["tag_name"]
-            if release.Has("assets") && release["assets"].Length && release["assets"].Length = 1 {
-                asset := release["assets"][1]
+            if release.Has("assets") && release["assets"].Length && release["assets"].Length = 1 && (asset := release["assets"][1]) && (asset["name"] ~= "\.(ahk?\d?|zip|7z|tar|tar\.bz|rar)$") {
                 if asset["name"] ~= "i)\.ahk?\d?$" {
                     PackageInfo.Main := PackageInfo.Main || asset["name"]
                     PackageInfo.Files := [PackageInfo.Main]
