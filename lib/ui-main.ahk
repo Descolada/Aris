@@ -1,4 +1,6 @@
 LaunchGui(FileOrDir?, SelectedTab := 1) {
+    g_MainGui.Width := 640, g_MainGui.Height := 425
+
     g_MainGui.OnEvent("Size", GuiReSizer)
     g_MainGui.OnEvent("Close", (*) => ExitApp())
 
@@ -7,7 +9,7 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
     g_MainGui.LoadPackageBtn := g_MainGui.AddButton(, "Load package")
     g_MainGui.LoadPackageBtn.GetPos(,,, &Btn_Height)
 
-    g_MainGui.FolderTV := g_MainGui.Add("TreeView", "r25 w200 x0 y7", "Package files")
+    g_MainGui.FolderTV := g_MainGui.Add("TreeView", "r25 w200 x10 y7", "Package files")
     g_MainGui.FolderTV.X := 10, g_MainGui.FolderTV.Height := -(SB_Height+Btn_Height+10), g_MainGui.FolderTV.WidthP := 0.3
     g_MainGui.FolderTV.OnEvent("ContextMenu", ShowFolderTVContextMenu)
 
@@ -124,7 +126,9 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
     if SelectedTab != 1
         g_MainGui.Tabs.Choose(SelectedTab)
 
-    g_MainGui.Show("w640 h425")
+    g_MainGui.Move(,, g_MainGui.Width, g_MainGui.Height) ; Force draw of controls to remove flicker
+    Sleep -1
+    g_MainGui.Show("w" g_MainGui.Width " h" g_MainGui.Height)
     P.Metadata.Opt("+ReadOnly") ; If this isn't done after showing the GUI, the Edit may display black if the cursor was located inside of it
 
     Print.DefineProp("call", {call:(this, msg) => ((ctrl := ((g_MainGui.Tabs.Value = 1) ? g_MainGui.Tabs.Package.Metadata : g_MainGui.Tabs.Index.Metadata), ctrl.Value .= msg "`n", PostMessage(0x115, 7, 0,, ctrl.hWnd)))})
