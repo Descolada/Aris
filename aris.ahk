@@ -2056,8 +2056,17 @@ QueryGitHubRepo(repo, subrequest := "", data := "", token := "") {
     repo := StrSplit(repo, "/")
     if (subrequest := Trim(subrequest, "/\"))
         subrequest := "/" subrequest
+    if repo.Length > 2
+        data := "sha=" repo[3] (data ? "?" data : "")
+    if data != "" {
+        data := LTrim(ObjToQuery(data), "?")
+        if subrequest != ""
+            subrequest .= (InStr(subrequest, "?") ? "&" : "?") data
+        else
+            subrequest := "?" data
+    }
 
-    whr.Open("GET", "https://api.github.com/repos/" repo[1] "/" repo[2] subrequest (data ? ObjToQuery(data) : ""), true)
+    whr.Open("GET", "https://api.github.com/repos/" repo[1] "/" repo[2] subrequest, true)
     whr.SetRequestHeader("Accept", "application/vnd.github+json")
     if !token && g_Config.Has("github_token")
         token := g_Config["github_token"]
