@@ -105,9 +105,9 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
 
     g_MainGui.AddGroupBox("w195 x+10 yp+0 h90", "Path and shell")
     S.AddRemoveFromPATH := g_MainGui.AddButton("xp+20 yp+20 w150", (IsArisInPATH() ? "Remove Aris from PATH" : "Add Aris to PATH"))
-    S.AddRemoveFromPATH.OnEvent("Click", (btnCtrl, *) => btnCtrl.Text = "Remove Aris from PATH" ? (RemoveArisFromPATH(), btnCtrl.Text := "Add Aris to PATH") : (AddArisToPATH(), btnCtrl.Text := "Remove Aris from PATH") )
+    S.AddRemoveFromPATH.OnEvent("Click", (btnCtrl, *) => btnCtrl.Text = "Remove Aris from PATH" ? (RemoveArisFromPATH(), btnCtrl.Text := "Add Aris to PATH", g_Config["add_to_path"] := 0, SaveSettings()) : (AddArisToPATH(), btnCtrl.Text := "Remove Aris from PATH", g_Config["add_to_path"] := 1, SaveSettings()) )
     S.AddRemoveShellMenuItem := g_MainGui.AddButton("xp y+10 w150", (IsArisShellMenuItemPresent() ? "Remove Aris from shell" : "Add Aris to shell"))
-    S.AddRemoveShellMenuItem.OnEvent("Click", (btnCtrl, *) => btnCtrl.Text = "Remove Aris from shell" ? (RemoveArisShellMenuItem(), btnCtrl.Text := "Add Aris to shell") : (AddArisShellMenuItem(), btnCtrl.Text := "Remove Aris from shell") )
+    S.AddRemoveShellMenuItem.OnEvent("Click", (btnCtrl, *) => btnCtrl.Text = "Remove Aris from shell" ? (RemoveArisShellMenuItem(), btnCtrl.Text := "Add Aris to shell", g_Config["add_to_shell"] := 0, SaveSettings()) : (AddArisShellMenuItem(), btnCtrl.Text := "Remove Aris from shell", g_Config["add_to_shell"] := 1, SaveSettings()) )
 
     S.GlobalInstalls := g_MainGui.AddCheckbox("xs+10 ys+20 " (g_Config["global_install"] ? "Checked" : ""), "Install all packages globally")
     g_MainGui.AddGroupBox("xs ys+50 w200 h65", "Updates")

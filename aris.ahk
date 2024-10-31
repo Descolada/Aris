@@ -57,6 +57,8 @@
 
 #Requires AutoHotkey v2
 
+#SingleInstance Off
+
 TraySetIcon A_ScriptDir "\assets\main.ico"
 Print.Buffer := ""
 OnError(PrintError)
@@ -67,6 +69,7 @@ OnError(PrintError)
 #include <version>
 #include <hash>
 #include <web>
+#include <env>
 
 global g_GitHubRawBase := "https://raw.githubusercontent.com/Descolada/ARIS/main/"
 global g_Index, g_Config := Map(), g_PackageJson, g_LocalLibDir := A_WorkingDir "\Lib\Aris", g_GlobalLibDir := A_MyDocuments "\AutoHotkey\Lib\Aris", g_InstalledPackages, g_GlobalInstalledPackages
@@ -92,12 +95,13 @@ try g_IsComSpecAvailable := !RunWait(A_ComSpec " /c echo 1",, "Hide")
 Console := DllCall("AttachConsole", "UInt", 0x0ffffffff, "ptr")
 
 for i, Arg in A_Args {
-    if Arg = "--working-dir" {
-        if A_Args.Length > i && DirExist(A_Args[i+1]) {
-            SetWorkingDir(A_Args[i+1]), A_Args.RemoveAt(i, 2)
-            break
-        } else
-            throw Error("Invalid working directory specified")
+    switch Arg, 0 {
+        case  "--working-dir":
+            if A_Args.Length > i && DirExist(A_Args[i+1]) {
+                SetWorkingDir(A_Args[i+1]), A_Args.RemoveAt(i, 2)
+                break
+            } else
+                throw Error("Invalid working directory specified")
     }
 }
 
@@ -107,6 +111,20 @@ if !g_Config.Has("auto_update_index_daily") || (g_Config["auto_update_index_dail
     UpdatePackageIndex()
 }
 
+if g_Config["add_to_path"] && !IsArisInPATH() {
+    try AddArisToPATH()
+    catch
+        Print "Failed to add Aris to PATH (missing rights to write to registry?)"
+} else if g_Config.Has("add_to_path") && !g_Config["add_to_path"] && IsArisInPATH()
+    try RemoveArisFromPATH()
+
+if g_Config["add_to_shell"] && !IsArisShellMenuItemPresent() {
+    try AddArisShellMenuItem()
+    catch
+        Print "Failed to add Aris shell menu item (missing rights to write to registry?)"
+} else if g_Config.Has("add_to_shell") && !g_Config["add_to_shell"] && IsArisShellMenuItemPresent()
+    try RemoveArisShellMenuItem()
+
 Loop files A_ScriptDir "\*.*", "D" {
     if A_LoopFileName ~= "^~temp-\d+"
         DirDelete(A_LoopFileFullPath, true)
@@ -114,21 +132,15 @@ Loop files A_ScriptDir "\*.*", "D" {
 
 ClearCache()
 
-if !g_Config.Has("first_run") || g_Config["first_run"] {
-    try AddArisToPATH()
-    catch
-        Print "Failed to add Aris to PATH (missing rights to write to registry?)"
-    try AddArisShellMenuItem()
-    catch
-        Print "Failed to add Aris shell menu item (missing rights to write to registry?)"
+if !A_Args.Length && !g_Config.Has("first_run") || g_Config["first_run"] {
+    if !g_Config.Has("add_to_path") && !g_Config.Has("add_to_shell") {
+        if MsgBox("Would you like to add Aris to the Explorer context menu (the one appearing when right-clicking AHK files), and create a command alias for the command prompt?`n`nRecommended choice: Yes", "First run", 0x4|0x20) = "Yes" {
+            RunWait '"' A_AhkPath '" "' A_ScriptFullPath '" --add-to-path --add-to-shell',, "Hide"
+        }
+    }
     g_Config["first_run"] := false
     FileOpen("assets/config.json", "w").Write(JSON.Dump(g_Config, true))
     SelectedTab := 3
-}
-if FileExist(g_LocalAppData "\Programs\Aris\Aris.bat") && !InStr(FileRead(g_LocalAppData "\Programs\Aris\Aris.bat"), A_AhkPath) {
-    try AddArisToPATH()
-    if IsArisShellMenuItemPresent()
-        try AddArisShellMenuItem()
 }
 
 if (!A_Args.Length || (A_Args.Length = 1 && FileExist(A_Args[1]) && A_Args[1] ~= "i)\.ahk?\d?$")) {
@@ -153,8 +165,26 @@ if (!A_Args.Length || (A_Args.Length = 1 && FileExist(A_Args[1]) && A_Args[1] ~=
                 continue
             }
             g_Switches[g_SwitchAliases[Arg]] := true
-        } else if !Command && !LastSwitch
-            Print("Unknown command. Use install, remove, update, or list."), ExitApp()
+        } else if !Command && !LastSwitch {
+            switch Arg, 0 {
+                case "-v", "--version":
+                    Print(LoadPackageJson(A_ScriptDir)["version"])
+                case "--add-to-path":
+                    g_Config["add_to_path"] := 1, SaveSettings(), AddArisToPATH()
+                    Print(IsArisInPATH() ? "Successfully added Aris to PATH" : "Failed to add Aris to PATH (missing rights to write to registry?)")
+                case "--remove-from-path":
+                    g_Config["add_to_path"] := 0, SaveSettings(), RemoveArisFromPATH()
+                    Print(IsArisInPATH() ? "Failed to remove Aris from PATH (missing rights to write to registry?)" : "Successfully removed Aris from PATH")
+                case "--add-to-shell":
+                    g_Config["add_to_shell"] := 1, SaveSettings(), AddArisShellMenuItem()
+                    Print(IsArisShellMenuItemPresent() ? "Successfully added Aris shell menu item" : "Failed to add Aris to shell menu item (missing rights to write to registry?)")
+                case "--remove-from-shell":
+                    g_Config["add_to_shell"] := 0, SaveSettings(), RemoveArisShellMenuItem()
+                    Print(IsArisShellMenuItemPresent() ? "Failed to remove Aris shell menu item (missing rights to write to registry?)" : "Successfully removed Aris shell menu item")
+                default:
+                    Print("Unknown command. Use install, remove, update, or list."), ExitApp()
+            }
+        }
         else {
             if LastSwitch = "files" {
                 Switches["files"].Push(StrReplace(Arg, "\", "/"))
@@ -220,98 +250,6 @@ ClearCache(Force := false) {
         }
     } else
         DirCreate(g_CacheDir)
-}
-
-AddArisToPATH() {
-    ; Get the current PATH in this roundabout way because of the Store version registry virtualization
-    CurrPath := g_IsComSpecAvailable ? RunCMD(A_ComSpec . " /c " 'reg query HKCU\Environment /v PATH') : RegRead("HKCU\Environment", "PATH")
-    CurrPath := RegExReplace(CurrPath, "^[\w\W]*?PATH\s+REG_SZ\s+",,,1)
-    Global G_RunCMD
-    if g_IsComSpecAvailable && G_RunCMD.ExitCode
-        return
-    if !(LocalAppData := EnvGet("LOCALAPPDATA"))
-        return
-    BatContent := '@echo off`n@"' A_AhkPath '" "' A_ScriptFullPath '" "--working-dir" "%cd%" %*'
-    if !DirExist(LocalAppData "\Programs\Aris")
-        DirCreate(LocalAppData "\Programs\Aris")
-    if !FileExist(LocalAppData "\Programs\Aris\Aris.bat") || FileRead(LocalAppData "\Programs\Aris\Aris.bat") != BatContent
-        FileOpen(LocalAppData "\Programs\Aris\Aris.bat", "w", "CP0").Write(BatContent)
-    if !InStr(CurrPath, LocalAppData "\Programs\Aris") {
-        FileOpen(A_ScriptDir "\assets\user-path-backup.txt", "w").Write(CurrPath)
-        ; https://stackoverflow.com/questions/9546324/adding-a-directory-to-the-path-environment-variable-in-windows
-        g_IsComSpecAvailable ? RunWait(A_ComSpec ' /c SETX PATH "' CurrPath ';' LocalAppData '\Programs\Aris"',, "Hide") : RegWrite(CurrPath ';' LocalAppData '\Programs\Aris', "REG_SZ", "HKCU\Environment", "PATH")
-        SendMessage(0x1A, 0, StrPtr("Environment"), 0xFFFF)
-    }
-}
-
-RemoveArisFromPATH() {
-    if !(g_LocalAppData)
-        return
-
-    CurrPath := g_IsComSpecAvailable ? RunCMD(A_ComSpec . " /c " 'reg query HKCU\Environment /v PATH') : RegRead("HKCU\Environment", "PATH")
-    CurrPath := RegExReplace(CurrPath, "^[\w\W]*?PATH\s+REG_SZ\s+",,,1)
-
-    Global G_RunCMD
-    if g_IsComSpecAvailable && G_RunCMD.ExitCode
-        return
-
-    if InStr(CurrPath, ";" g_LocalAppData "\Programs\Aris") {
-        g_IsComSpecAvailable ? RunWait(A_ComSpec ' /c SETX PATH "' StrReplace(CurrPath, ";" g_LocalAppData "\Programs\Aris") '"',, "Hide") : RegWrite(StrReplace(CurrPath, ";" g_LocalAppData "\Programs\Aris"), "REG_SZ", "HKCU\Environment", "PATH")
-        SendMessage(0x1A, 0, StrPtr("Environment"), 0xFFFF)
-    }
-    if FileExist(g_LocalAppData "\Programs\Aris\Aris.bat") {
-        DirDelete(g_LocalAppData "\Programs\Aris", true)
-    }
-}
-
-IsArisInPATH() {
-    if !(g_LocalAppData)
-        return false
-    CurrPath := g_IsComSpecAvailable ? RunCMD(A_ComSpec . " /c " 'reg query HKCU\Environment /v PATH') : RegRead("HKCU\Environment", "PATH", "")
-    CurrPath := RegExReplace(CurrPath, "^[\w\W]*?PATH\s+REG_SZ\s+",,,1)
-    if CurrPath && InStr(CurrPath, g_LocalAppData "\Programs\Aris")
-        return true
-    return false
-}
-
-AddArisShellMenuItem() {
-    BaseKey := GetArisShellRegistryKey()
-    if g_IsComSpecAvailable {
-        RunCMD(A_ComSpec . " /c reg add " BaseKey '\Shell\Aris /t REG_SZ /d "Install Aris packages" /f')
-        RunCMD(A_ComSpec . " /c reg add " BaseKey '\Shell\Aris\command /t REG_SZ /d "\"' A_AhkPath '\" \"' A_ScriptFullPath '\" \"%1\"" /f')
-    } else {
-        RegWrite("Install Aris packages", "REG_SZ", BaseKey '\Shell\Aris')
-        RegWrite('"' A_AhkPath '" "' A_ScriptFullPath '" "%1"', "REG_SZ", BaseKey '\Shell\Aris\command')
-    }
-}
-
-RemoveArisShellMenuItem() {
-    BaseKey := GetArisShellRegistryKey()
-    g_IsComSpecAvailable ? RunCMD(A_ComSpec . " /c reg delete " BaseKey '\Shell\Aris /f') : RegDeleteKey(BaseKey '\Shell\Aris')
-}
-
-IsArisShellMenuItemPresent() {
-    try {
-        RegRead(GetArisShellRegistryKey() "\Shell\Aris\command")
-        return 1
-    }
-    return 0
-}
-
-GetArisShellRegistryKey() {
-    BaseKey := "HKCU\SOFTWARE\Classes\AutoHotkeyScript"
-    try {
-        RegRead(BaseKey '\Shell\Aris\command')
-        return BaseKey
-    }
-
-    ; Check for Store Edition
-    Loop Reg "HKCU\SOFTWARE\Classes\.ahk\OpenWithProgids", "V"
-        KeyName := A_LoopRegName
-    if IsSet(KeyName)
-        return "HKCU\SOFTWARE\Classes\" KeyName
-    
-    return "HKCU\SOFTWARE\Classes\AutoHotkeyScript"
 }
 
 RefreshGlobals() {
@@ -617,13 +555,8 @@ SearchPackageByName(Input, Skip := 0) {
     if g_Index.Has(PackageName) {
         MergeJsonInfoToPackageInfo(g_Index[PackageName], PackageInfo)
     } else {
-        whr := ComObject("WinHttp.WinHttpRequest.5.1")
-        whr.Open("GET", "https://api.github.com/repos/" InputAuthor "/" InputName, true)
-        whr.SetRequestHeader("Accept", "application/vnd.github+json")
-        whr.Send()
-        whr.WaitForResponse()
-        res := whr.ResponseText
-        if InStr(whr.ResponseText, '"name"') {
+        res := QueryGitHubRepo(InputAuthor "/" InputName)
+        if res && IsObject(res) && res.Has("name") {
             MergeJsonInfoToPackageInfo(Map("name", PackageName, "repository", Map("type", "github", "url", InputAuthor "/" InputName), "author", InputAuthor), PackageInfo)
         } else
             throw ValueError("Package not found", -1, PackageInfo.Name)
@@ -803,7 +736,7 @@ InstallPackage(Package, Update:=0, Switches?) {
     } else {
         try DownloadResult := DownloadPackageWithDependencies(PackageInfo, TempDir, g_InstalledPackages, Update)
         catch as err {
-            Print "Failed to download package with dependencies"
+            Print 'Failed to install package "' ReadablePackageName '"'
             Print "`t" err.Message (err.Extra ? ": " err.Extra : "")
             goto Cleanup
         }
@@ -1397,7 +1330,10 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
     ZipName := PackageInfo.ZipName
     if !FileExist(g_CacheDir "\" ZipName) {
         Print('Downloading package "' PackageInfo.PackageName '"')
-        Download PackageInfo.SourceAddress, g_CacheDir "\" ZipName
+        if PackageInfo.RepositoryType = "github"
+            DownloadGitHubFile(PackageInfo.SourceAddress, g_CacheDir "\" ZipName)
+        else
+            Download PackageInfo.SourceAddress, g_CacheDir "\" ZipName
     }
 
     if PackageInfo.RepositoryType = "archive"
@@ -2049,6 +1985,29 @@ QueryGitHubGist(GistId, subrequest := "", data := "") {
     whr.Send()
     whr.WaitForResponse()
     return JSON.Load(whr.ResponseText)
+}
+
+DownloadGitHubFile(url, filename?, token:="") {
+    local oStream, whr := ComObject("WinHttp.WinHttpRequest.5.1")
+
+    whr.Open("GET", url, true)
+    whr.SetRequestHeader("Accept", "application/vnd.github+json")
+    if !token && g_Config.Has("github_token")
+        token := g_Config["github_token"]
+    if token
+        whr.SetRequestHeader("Authorization", "Bearer " token)
+    whr.Send()
+    whr.WaitForResponse()
+
+    if whr.status == 200 {
+        oStream := ComObject("ADODB.Stream")
+        oStream.Open()
+        oStream.Type := 1
+        oStream.Write(whr.responseBody)
+        oStream.SaveToFile(filename ?? StrSplit(url, "/")[-1], 2)
+        oStream.Close()
+    } else
+        throw Error("Downloading GitHub file failed",, url)
 }
 
 QueryGitHubRepo(repo, subrequest := "", data := "", token := "") {
