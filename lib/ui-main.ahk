@@ -122,6 +122,10 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
     S.SaveSettings.SetFont("bold")
     S.SaveSettings.OnEvent("Click", (*) => (ApplyGuiConfigChanges(), SaveSettings(true)))
 
+    S.Uninstall := g_MainGui.AddButton("xs+305 y+135 w100", "Uninstall Aris")
+    S.Uninstall.SetFont("bold")
+    S.Uninstall.OnEvent("Click", UninstallAris)
+
     g_MainGui.Tabs.UseTab(0)
     if SelectedTab != 1
         g_MainGui.Tabs.Choose(SelectedTab)
@@ -727,4 +731,17 @@ ShowPackageLVContextMenu(LV, Item, IsRightClick, *) {
         }
     }
     PackageMenu.Show()
+}
+
+UninstallAris(*) {
+    if MsgBox("This action will delete the current folder Aris is running in, and remove any shell and PATH entries.`n`nAre you sure you want to continue?", "Warning", 0x4|0x30) = "No"
+        return
+    RemoveArisFromPATH()
+    RemoveArisShellMenuItem()
+    try DirDelete(A_ScriptDir, 1)
+    if !FileExist(A_ScriptFullPath) {
+        MsgBox("Aris successfully uninstalled.", "Aris", 0x40)
+        ExitApp
+    } else
+        MsgBox("Failed to delete the Aris folder. Delete the main folder manually to uninstall.", "Aris", 0x10)
 }
