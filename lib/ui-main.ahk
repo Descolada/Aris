@@ -278,6 +278,8 @@ PackageLVItemSelected(LV, Item, Selected) {
 
     if FileExist(g_MainGui.CurrentLibDir SelectedPackage.InstallName "\package.json") {
         Info := LoadPackageJson(g_MainGui.CurrentLibDir SelectedPackage.InstallName)
+        if Info.Has("keywords") && IsObject(Info["keywords"])
+            Info["keywords"] := ArrayJoin(Info["keywords"], ", ")
         Info["main"] := SelectedPackage.Main
     } else if g_Index.Has(SelectedPackage.PackageName)
         Info := g_Index[SelectedPackage.PackageName]
