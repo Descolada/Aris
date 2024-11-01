@@ -165,6 +165,30 @@
 			"license": "MIT",
 			"repository": "G33kDude/cJson.ahk/v2"
 		},
+		"GroggyOtter/AHK-v2-AutoUpdater": {
+			"description": "Class object that will notify you of AHKv2 updates and ask if you'd like to download the new version.",
+			"license": "GPL-3.0",
+			"main": "src/AHK_v2_Auto_Updater.v2.ahk",
+			"repository": "GroggyOtter/AHK_v2_Auto_Updater/main"
+		},
+		"GroggyOtter/JavaScriptStrings": {
+			"description": "Adds JavaScript-style string functionality to AHK v2 strings.",
+			"license": "MIT",
+			"main": "src/javascript_strings.ahk",
+			"repository": "GroggyOtter/AHK-JavaScript-Strings/main"
+		},
+		"GroggyOtter/Peep": {
+			"description": "Easily get information from nested objects.",
+			"license": "MIT",
+			"main": "script/Peep.v2.ahk",
+			"repository": "GroggyOtter/PeepAHK/main"
+		},
+		"GroggyOtter/jsongo": {
+			"description": "Full JSON support for AHKv2 written natively in AHK.",
+			"license": "GPL-3.0",
+			"main": "src/jsongo.v2.ahk",
+			"repository": "GroggyOtter/jsongo_AHKv2/main"
+		},
 		"Hellbent/PopupWindow": {
 			"dependencies": {
 				"buliasz/Gdip": "*"
