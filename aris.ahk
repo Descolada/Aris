@@ -413,7 +413,7 @@ InputToPackageInfo(Input, Skip:=0, Switches?) {
     }
 
     if Switches["alias"] != "" {
-        PackageInfo.IsAlias := PackageInfo.PackageName
+        PackageInfo.IsAlias := PackageInfo.PackageName || "Unknown"
         Split := StrSplit(Switches["alias"], "/",,2)
         if Split.Length = 1
             PackageInfo.Name := Split[1], PackageInfo.PackageName := (PackageInfo.PackageName ? StrSplit(PackageInfo.PackageName, "/")[1] "/" PackageInfo.Name : "")
@@ -795,7 +795,7 @@ InstallPackage(Package, Update:=0, Switches?) {
             if Include.Files.Length = 1
                 Include.Main := StrSplitLast(Include.Files[1], "/")[-1]
         }
-        SplitPath(Include.Main,,, &MainFileExt)
+        SplitPath(StrReplace(Include.Main, "/", "\"),,, &MainFileExt)
         if !(MainFileExt ~= "ahk?\d?$")
             Print("Warning: package " Include.Author "\" Include.Name " main file does not have an AHK file extension, please verify that the file contents are valid!")
 
@@ -1009,12 +1009,25 @@ ConstructInstallCommand(PackageInfo, Version) {
             vargs := PackageInfo.Repository "@" Version
     }
 
-    if PackageInfo.Main && !(PackageInfo.Files.Length = 1 && StrSplitLast(PackageInfo.Files[1], "/")[-1] = StrSplitLast(PackageInfo.Main, "/")[-1])
-        vargs .= " --main " QuoteFile(PackageInfo.Main)
-    if PackageInfo.Files.Length && !(PackageInfo.Files.Length = 1 && PackageInfo.Files[1] = "*.*") {
+    ;if PackageInfo.IsAlias
+    ;    vargs .= " as " PackageInfo.Name
+
+    if PackageInfo.RepositoryType = "forums"
+        return vargs
+
+    if PackageInfo.Files.Length = 1 {
+        if PackageInfo.Files[1] = "*.*"
+            return vargs " --main " QuoteFile(PackageInfo.Main)
+        if InStr(packageInfo.Files[1], PackageInfo.Main)
+            return vargs " --files " QuoteFile(PackageInfo.Files[1])
+    }
+
+    vargs .= " --main " QuoteFile(PackageInfo.Main)
+    if PackageInfo.Files.Length {
         vargs .= " --files"
         for PackageFile in PackageInfo.Files
-            vargs .= " " QuoteFile(PackageFile)
+            if PackageFile != PackageInfo.Main
+                vargs .= " " QuoteFile(PackageFile)
     }
     return vargs
 
@@ -1115,74 +1128,79 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
         }
     }
 
-    if PackageInfo.Files.Length {
-        DirCreateEx(TempDir "\" FinalDirName "~")
-        NoMainName := PackageInfo.Main = "", WildcardFilesSet := false
-        if PackageInfo.Files.Length = 1 && PackageInfo.Files[1] == PackageInfo.Main
-            PackageInfo.Files[1] := "*.*", WildcardFilesSet := true
-        if NoMainName {
-            if PackageInfo.Files.Length = 1
+    ; Copy relevant files
+    DirCreateEx(TempDir "\" FinalDirName "~")
+    if PackageInfo.Main = "" {
+        if PackageInfo.Files.Length = 1 {
+            SplitPath(StrReplace(PackageInfo.Files[1], "/", "\"),,, &SingleFileExt:="", &SingleFileNoExt:="")
+            if SingleFileExt != "*" && SingleFileNoExt != "*" && SingleFileNoExt != ""
                 PackageInfo.Main := PackageInfo.Files[1]
-            else
-                SetPackageInfoMainFile(PackageInfo, TempDir, FinalDirName)
-        } 
-        MainFile := StrReplace(PackageInfo.Main, "/", "\")
-        if !FileExist(TempDir "\" FinalDirName "\" MainFile) {
-            Loop files TempDir "\" FinalDirName "\*.ah*", "R" {
-                if A_LoopFileName = MainFile {
-                    PackageInfo.Main := MainFile := StrSplit(A_LoopFileFullPath, TempDir "\" FinalDirName "\",, 2)[-1]
-                    break
-                }
-            }
         }
-        if NoMainName && PackageInfo.Files.Length = 1 && PackageInfo.Files[1] ~= "i)(?<!\*)\.ahk?\d?$" {
-            PackageInfo.Main := StrSplit(MainFile, "\")[-1]
-            FileMove(TempDir "\" FinalDirName "\" MainFile, TempDir "\" FinalDirName "~\" PackageInfo.Main)
-        } else {
-            Loop Files TempDir, "D" {
-                TempDirFullPath := A_LoopFileFullPath
+        if PackageInfo.Main = ""
+            SetPackageInfoMainFile(PackageInfo, TempDir, FinalDirName)
+    }
+    if !(PackageInfo.Files.Length = 1 && PackageInfo.Files[1] = PackageInfo.Main && FileExist(TempDir "\" FinalDirName "\" (MainFile := StrSplitLast(PackageInfo.Main, "/")[-1])))
+        MainFile := StrReplace(PackageInfo.Main, "/", "\")
+    if !FileExist(TempDir "\" FinalDirName "\" MainFile) {
+        Loop files TempDir "\" FinalDirName "\*.ah*", "R" {
+            if A_LoopFileName = MainFile {
+                PackageInfo.Main := StrReplace(MainFile := StrSplit(A_LoopFileFullPath, TempDir "\" FinalDirName "\",, 2)[-1], "\", "/")
                 break
             }
-            for Pattern in PackageInfo.Files {
-                Pattern := Trim(StrReplace(Pattern, "/", "\"), "\/")
-                Loop files TempDirFullPath "\" FinalDirName "\" Pattern, "DF" (InStr(Pattern, "*.*") ? "R" : "") {
-                    FileName := StrReplace(A_LoopFileFullPath, TempDirFullPath "\" FinalDirName,,,,1)
-                    FileName := Trim(StrReplace(FileName, "/", "\"), "\/")
-
-                    DirName := "", SplitName := StrSplit(FileName, "\")
-                    if FileExist(TempDirFullPath "\" FinalDirName "\" FileName)
-                        SplitName.Pop()
-                    for SubDir in SplitName {
-                        DirName .= SubDir "\"
-                        if !DirExist(TempDirFullPath "\" FinalDirName "~\" DirName)
-                            DirCreateEx(TempDirFullPath "\" FinalDirName "~\" DirName)
-                    }
-
-                    if DirExist(A_LoopFileFullPath)
-                        DirMove(A_LoopFileFullPath, TempDir "\" FinalDirName "~\" FileName, 1)
-                    else
-                        FileMove(A_LoopFileFullPath, TempDir "\" FinalDirName "~\" FileName)
-                } else {
-                    throw Error('No files matching file pattern "' Pattern '" found!')
-                }
-            }
         }
-
-        if WildcardFilesSet
-            PackageInfo.Files[1] := PackageInfo.Main
-        
-        if !FileExist(TempDir "\" FinalDirName "~\" MainFile) {
-            PackageInfo.Main := StrSplit(MainFile, "\")[-1]
-            if DirExist(TempDir "\" FinalDirName "\" PackageInfo.Main)
-                DirMove(TempDir "\" FinalDirName "\" PackageInfo.Main, TempDir "\" FinalDirName "~", 2)
-            else if FileExist(TempDir "\" FinalDirName "\" PackageInfo.Main)
-                FileMove(TempDir "\" FinalDirName "\" PackageInfo.Main, TempDir "\" FinalDirName "~\" PackageInfo.Main)
-        }
-        if FileExist(TempDir "\" FinalDirName "\LICENSE")
-            FileMove(TempDir "\" FinalDirName "\LICENSE", TempDir "\" FinalDirName "~\LICENSE")
-        DirDelete(TempDir "\" FinalDirName, 1)
-        DirMove(TempDir "\" FinalDirName "~", TempDir "\" FinalDirName, 1)
+        if !FileExist(TempDir "\" FinalDirName "\" MainFile)
+            throw Error("Unable to find the main file", -1, MainFile)
     }
+    if !PackageInfo.Files.Length
+        PackageInfo.Files.Push("*.*")
+    MainFileFound := false
+    SplitPath(StrReplace(PackageInfo.Main, "/", "\"),,, &MainFileExt:="", &MainFileNoExt:="")
+    for PackageFile in PackageInfo.Files {
+        SplitPath(StrReplace(PackageFile, "/", "\"),,, &SingleFileExt:="", &SingleFileNoExt:="")
+        if PackageFile = "*.*" || (SingleFileExt = "*" && MainFileNoExt = SingleFileNoExt) || (SingleFileNoExt = "*" && MainFileExt = SingleFileExt) || PackageFile = PackageInfo.Main {
+            MainFileFound := true
+            break
+        }
+    }
+    if !MainFileFound
+        PackageInfo.Files.Push(PackageInfo.Main)
+    Loop Files TempDir, "D" {
+        TempDirFullPath := A_LoopFileFullPath
+        break
+    }
+    if PackageInfo.Files.Length = 1 && PackageInfo.Files[1] = PackageInfo.Main {
+        PackageInfo.Main := StrSplit(MainFile, "\")[-1]
+        FileMove(TempDir "\" FinalDirName "\" MainFile, TempDir "\" FinalDirName "~\" PackageInfo.Main)
+    } else {
+        for Pattern in PackageInfo.Files {
+            Pattern := Trim(StrReplace(Pattern, "/", "\"), "\/")
+            Loop files TempDirFullPath "\" FinalDirName "\" Pattern, "DF" (InStr(Pattern, "*.*") ? "R" : "") {
+                FileName := StrReplace(A_LoopFileFullPath, TempDirFullPath "\" FinalDirName,,,,1)
+                FileName := Trim(StrReplace(FileName, "/", "\"), "\/")
+
+                DirName := "", SplitName := StrSplit(FileName, "\")
+                if FileExist(TempDirFullPath "\" FinalDirName "\" FileName)
+                    SplitName.Pop()
+                for SubDir in SplitName {
+                    DirName .= SubDir "\"
+                    if !DirExist(TempDirFullPath "\" FinalDirName "~\" DirName)
+                        DirCreateEx(TempDirFullPath "\" FinalDirName "~\" DirName)
+                }
+
+                if DirExist(A_LoopFileFullPath)
+                    DirMove(A_LoopFileFullPath, TempDir "\" FinalDirName "~\" FileName, 1)
+                else
+                    FileMove(A_LoopFileFullPath, TempDir "\" FinalDirName "~\" FileName)
+            } else
+                throw Error('No files matching file pattern "' Pattern '" found!')
+        }
+    }
+
+    if FileExist(TempDir "\" FinalDirName "\LICENSE")
+        FileMove(TempDir "\" FinalDirName "\LICENSE", TempDir "\" FinalDirName "~\LICENSE")
+    DirDelete(TempDir "\" FinalDirName, 1)
+    DirMove(TempDir "\" FinalDirName "~", TempDir "\" FinalDirName, 1)
+
 
     if IsVersioned { ; A specific version was requested, in which case force the install
         if Includes.Has(PackageInfo.PackageName) && (Include := Includes[PackageInfo.PackageName]) && (DirExist(g_LocalLibDir "\" Include.InstallName) || DirExist(g_GlobalLibDir "\" Include.InstallName)) {
@@ -1321,6 +1339,7 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
         }
 
         FileAppend(Code, TempDir "\" TempDownloadDir "\" PackageInfo.Name ".ahk")
+        PackageInfo.Main := PackageInfo.Name ".ahk", PackageInfo.Files := ["*.*"]
 
         PackageInfo.PackageName := PackageInfo.Author "/" PackageInfo.Name
         ;FileAppend(JSON.Dump(Map("repository", Map("type", "forums", "url", "https://www.autohotkey.com/boards/viewtopic.php?t=" PackageInfo.ThreadId "&codebox=" PackageInfo.CodeBox), "author", PackageInfo.Author, "name", PackageInfo.PackageName, "version", PackageInfo.Version), true), TempDir "\" TempDownloadDir "\package.json")
@@ -1389,7 +1408,7 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
         }
     }
 
-    if DirExist(TempDir "\" FinalDirName) || DirExist(LibDir "\" FinalDirName) {
+    if DirExist(TempDir "\" FinalDirName) || (g_InstalledPackages.Has(PackageInfo.PackageName) && DirExist(LibDir "\" FinalDirName)) {
         Print 'Package "' StrReplace(FinalDirName, "\", "/") '" already installed or up-to-date, skipping...`n'
         DirDelete(TempDir "\" TempDownloadDir, true)
         return 1
@@ -1405,15 +1424,10 @@ IsGithubMinimalInstallPossible(PackageInfo, IgnoreVersion := false) {
         return false
     if !PackageInfo.Files.Length ; In this case never allow minimal install
         return false
-    if PackageInfo.Files.Length = 1 {
-        if PackageInfo.Main != "" ; Files started out empty and Main was pushed into Files, so also ignore this one
-            return false
-        if PackageInfo.Main = "" && PackageInfo.Files[1] ~= "i)(?<!\*)\.ahk?\d?$"
-            return true
-    } 
+    if PackageInfo.Files.Length = 1 && PackageInfo.Files[1] ~= "i)(?<!\*)\.ahk?\d?$"
+        return true
     for FileName in PackageInfo.Files {
-        FileName := StrReplace(FileName, "/", "\")
-        SplitPath(FileName,,, &Ext:="", &NameNoExt:="")
+        SplitPath(StrReplace(FileName, "/", "\"),,, &Ext:="", &NameNoExt:="")
         if Ext = "" || Ext = "*" || NameNoExt = "" || NameNoExt = "*"
             return false
     }
@@ -1433,6 +1447,7 @@ GithubDownloadMinimalInstall(PackageInfo, Path) {
         try DownloadGitHubFile("https://github.com/" Repo[1] "/" Repo[2] "/raw/" PackageInfo.Version "/"  PackageInfo.MainPath, Path "\" PackageInfo.Main)
         catch
             throw Error("Download failed", -1, '"' Path "\" PackageInfo.Main '@' PackageInfo.Version '" from GitHub repo "' Repo[1] "/" Repo[2] '"')
+        PackageInfo.Main := PackageInfo.Files[1]
         return 1
     }
 
@@ -1676,10 +1691,7 @@ LoadPackageIndex() {
             else
                 StandardizeRepositoryInfo(Info)
             if Info.Has("keywords") && IsObject(Info["keywords"]) {
-                keywords := ""
-                for keyword in Info["keywords"]
-                    keywords .= ", " keyword
-                Info["keywords"] := LTrim(keywords, " ,")
+                Info["keywords"] := ArrayJoin(Info["keywords"], ", ")
             }
             if !Info.Has("main")
                 Info["main"] := ""
@@ -2023,7 +2035,7 @@ GetPathForGitHubCommits(Files) {
         return ""
     local CurrentPath := InStr(Files[1], "/") ? StrSplitLast(Files[1], "/")[1] : ""
     if Files.Length = 1 {
-        SplitPath(Files[1],,, &Ext:="", &NameNoExt:="")
+        SplitPath(StrReplace(Files[1], "/", "\"),,, &Ext:="", &NameNoExt:="")
         if Ext = "*" || NameNoExt = "" || NameNoExt = "*"
             return CurrentPath
         return Files[1]
@@ -2131,8 +2143,8 @@ MergeMainFileToFiles(PackageInfo, MainFile) {
     if MainFile = ""
         return
     MainFileName := StrSplitLast(MainFile, "/")[-1]
-    if PackageInfo.Files.Length = 1 && StrSplitLast(PackageInfo.Files[1], "/")[-1] = MainFileName
-        PackageInfo.Main := ""
+    if !PackageInfo.Files.Length
+        PackageInfo.Files.Push("*.*")
     for PackageFile in PackageInfo.Files {
         if InStr(PackageFile, "*") || StrSplitLast(PackageFile, "/")[-1] = MainFileName
             return
