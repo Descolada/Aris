@@ -1,5 +1,16 @@
 ﻿{
 	"v2.0": {
+		"AstraVista/ScriptSock": {
+			"description": "Communicate easily between scripts",
+			"files": "v2/AstraVista/ScriptSock.ahk",
+			"keywords": "IPC, inter-process, communication",
+			"repository": "ahkscript/ScriptHub/main"
+		},
+		"AstraVista/ScriptVar": {
+			"description": "Deep clone an object, convert a user class object to a string packet, convert a compiled packet back to object",
+			"files": "v2/AstraVista/ScriptVar.ahk",
+			"repository": "ahkscript/ScriptHub/main"
+		},
 		"Chunjee/adash": {
 			"author": "Shawn Brooker",
 			"bugs": {
@@ -20,6 +31,12 @@
 		"DaveT1/Expect": {
 			"description": "Rapid units testing class",
 			"files": "v2/DaveT1/Expect.ahk",
+			"repository": "ahkscript/ScriptHub/main"
+		},
+		"Delta Pythagorean/Lua": {
+			"description": "Extend your AHK script with Lua",
+			"files": "v2/Delta Pythagorean/Lua.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?t=122655",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"Descolada/Acc": {
@@ -153,6 +170,13 @@
 			"homepage": "https://github.com/G33kDude/cJson.ahk",
 			"license": "MIT",
 			"repository": "G33kDude/HashMap.ahk/main"
+		},
+		"G33kDude/Neutron": {
+			"description": "Neutron provides a powerful set of tools for build HTML-based user interfaces with AutoHotkey. It leverages the Trident engine, known for its use in Internet Explorer, because of its deep integration with the Microsoft Windows operating system and its wide availability across systems.",
+			"files": "Neutron.ahk",
+			"homepage": "https://github.com/G33kDude/Neutron.ahk",
+			"license": "MIT",
+			"repository": "G33kDude/Neutron.ahk/v2"
 		},
 		"G33kDude/cJson": {
 			"description": "A high-performance JSON parsing library",
@@ -288,6 +312,11 @@
 			"files": "AHK V2/ShinsImageScanClass.ahk",
 			"repository": "Spawnova/ShinsImageScanClass/main"
 		},
+		"Spawnova/ShinsOverlayClass": {
+			"description": "A Direct2D overlay, made to be user friendly and fast.",
+			"files": "AHK V2/ShinsOverlayClass.ahk",
+			"repository": "Spawnova/ShinsOverlayClass/main"
+		},
 		"The-CoDingman/WebViewToo": {
 			"description": "Allows for use of the WebView2 Framework within AHK to create Web-based GUIs",
 			"files": [
@@ -308,6 +337,12 @@
 			"files": "AHK2/TheArkive_CliSAK.ahk",
 			"license": "MIT",
 			"repository": "TheArkive/CLSAK_AHK/master"
+		},
+		"TheArkive/JXON": {
+			"description": "JSON serializer for AHK v2",
+			"files": "_JXON.ahk",
+			"license": "MIT",
+			"repository": "TheArkive/JXON_ahk2/master"
 		},
 		"TheArkive/WinClip": {
 			"dependencies": {
@@ -569,6 +604,11 @@
 			"files": "CLR.ahk",
 			"repository": "Lexikos/CLR.ahk/v2.0"
 		},
+		"lexikos/ObjRegisterActive": {
+			"description": "Registers an object as the active object for a given class ID.",
+			"files": "v2/lexikos/ObjRegisterActive.ahk",
+			"repository": "ahkscript/ScriptHub/main"
+		},
 		"lexikos/OnProcessClose": {
 			"description": "Monitor for process close event efficiently",
 			"files": [
@@ -682,6 +722,12 @@
 			"main": "NTLCalc.ahk",
 			"repository": "thqby/ahk2_lib/master"
 		},
+		"thqby/Native": {
+			"description": "Create native functions or methods from MCode, load modules written in C/C++ as native classes or functions.",
+			"files": "Native/Native.ahk",
+			"license": "MIT",
+			"repository": "thqby/ahk2_lib/master"
+		},
 		"thqby/Promise": {
 			"description": "Implements a Javascript-like Promise",
 			"files": "Promise.ahk",
@@ -746,6 +792,12 @@
 			"description": "Create struct, union, array and pointer bindings, and use it like an AHK object",
 			"files": "ctypes.ahk",
 			"license": "MIT",
+			"repository": "thqby/ahk2_lib/master"
+		},
+		"thqby/import_v1lib": {
+			"description": "Import AHK v1 library to v2: call v1 functions and classes, read and modify global variables.",
+			"license": "MIT",
+			"main": "import_v1lib.ahk",
 			"repository": "thqby/ahk2_lib/master"
 		},
 		"thqby/wincapture": {
