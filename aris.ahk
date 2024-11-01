@@ -721,8 +721,8 @@ InstallPackage(Package, Update:=0, Switches?) {
                     Dependencies := g_Index[PackageInfo.PackageName]["dependencies"]
             }
             if Dependencies.Count {
-                for Dependency, Version in Dependencies
-                    InstallPackage(Dependency "@" StrSplitLast(Version, "@")[-1])
+                for Dependency, DependencyInfo in Dependencies
+                    InstallPackage(Dependency "@" DependencyInfo.DependencyVersion)
             }
             g_PackageJson := LoadPackageJson()
             DownloadResult := true
@@ -741,14 +741,16 @@ InstallPackage(Package, Update:=0, Switches?) {
             goto Cleanup
         }
     }
-    if DownloadResult is Integer && DownloadResult > 0 && !PackageInfo.IsMain {
-        Result := DownloadResult = 1
-        goto Cleanup
-    }
-    FinalDirName := StrReplace(DownloadResult.InstallName, "/", "\")
+    if DownloadResult is Integer {
+        if DownloadResult > 0 && !PackageInfo.IsMain
+            Result := DownloadResult = 1
+        if !(PackageInfo.IsMain && DownloadResult)
+            goto Cleanup
+    } else
+        FinalDirName := StrReplace(DownloadResult.InstallName, "/", "\")
 
     if PackageInfo.IsMain {
-        DirMove(TempDir "\" FinalDirName, A_WorkingDir, 2)
+        DirCopy(TempDir "\" FinalDirName, A_WorkingDir, 1)
     } else {
         if DownloadResult.Global {
             if !DirExist(g_GlobalLibDir "\" FinalDirName)
