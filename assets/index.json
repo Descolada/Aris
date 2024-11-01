@@ -3,12 +3,14 @@
 		"AstraVista/ScriptSock": {
 			"description": "Communicate easily between scripts",
 			"files": "v2/AstraVista/ScriptSock.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=126320",
 			"keywords": "IPC, inter-process, communication",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"AstraVista/ScriptVar": {
 			"description": "Deep clone an object, convert a user class object to a string packet, convert a compiled packet back to object",
 			"files": "v2/AstraVista/ScriptVar.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=127205",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"Chunjee/adash": {
@@ -31,6 +33,7 @@
 		"DaveT1/Expect": {
 			"description": "Rapid units testing class",
 			"files": "v2/DaveT1/Expect.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=130093",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"Delta Pythagorean/Lua": {
@@ -63,6 +66,7 @@
 		"Descolada/FileReadLine": {
 			"description": "Read a single line from a file",
 			"files": "v2/Descolada/FileReadLine.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=117999",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"Descolada/JAB": {
@@ -152,16 +156,19 @@
 		"FanaticGuru/GuiResizer": {
 			"description": "A class to simplify adjusting GUI controls to GUI resizing",
 			"files": "v2/FanaticGuru/GuiResizer.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?t=113921",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"FanaticGuru/SpellCurrency": {
 			"description": "A function to convert a number to currency words",
 			"files": "v2/FanaticGuru/SpellCurrency.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=133138",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"Flipeador/WinCloseEx": {
 			"description": "Close a window with different methods",
 			"files": "v2/Ruevil2/ADOSQL.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=126579",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"G33kDude/HashMap": {
@@ -219,16 +226,19 @@
 			},
 			"description": "Simplifies the process of working with layered windows",
 			"files": "v2/Hellbent/PopupWindow.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=132744",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"Hellbent/Vector": {
 			"description": "Vector math class",
 			"files": "v2/Hellbent/Vector.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=132770",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"MrDoge/MemoryModule": {
 			"description": "Include a .dll into a compiled .exe and then load the .dll and use it without having to extract the .dll",
 			"files": "v2/MrDoge/MemoryModule.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=128846",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"MrDoge/SH_Watcher": {
@@ -243,7 +253,7 @@
 			"repository": "FuPeiJiang/VD.ahk/v2_port"
 		},
 		"MrDoge/sqlite": {
-			"description": "Monitors for folder changes based on an event-driven method.",
+			"description": "Wrapper for SQLite, which implements a small, fast, self-contained, high-reliability, full-featured, SQL database engine",
 			"files": "v2/MrDoge/sqlite.ahk",
 			"repository": "ahkscript/ScriptHub/main"
 		},
@@ -260,51 +270,61 @@
 		"Ruevil2/ADOSQL": {
 			"description": "Wraps the utility of ADODB to connect to a database, submit a query, and read the resulting recordset",
 			"files": "v2/Ruevil2/ADOSQL.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=125462",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"SKAN/InBuf": {
 			"description": "Find values from a buffer",
 			"files": "v2/SKAN/InBuf.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=132507",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"SKAN/ListBuffer": {
 			"description": "UI as a function to view/search binary content, up to few MB's",
 			"files": "v2/SKAN/ListBuffer.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=101121",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"SKAN/MapFile": {
 			"description": "Maps a view of a file object (Parameter FileObj) into the address space of AutoHotkey process",
 			"files": "v2/SKAN/MapFile.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=132507",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"SKAN/MonitorFind": {
 			"description": "Enumerates a list (database) of plugged-in monitors",
 			"files": "v2/SKAN/MonitorFind.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=133259",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"SKAN/PathX": {
 			"description": "PathX() is an alternative solution for SplitPath(). It breaks down a fullpath to individual parts and returns them as an object.",
 			"files": "v2/SKAN/PathX.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=120582",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"SKAN/RunAsTask": {
 			"description": "Auto-elevates script without UAC prompt",
 			"files": "v2/SKAN/RunAsTask.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=119710",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"SKAN/RunCMD": {
 			"description": "Run a program in windowless mode and capture its output",
 			"files": "v2/SKAN/RunCMD.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=133668",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"SKAN/ToggleSound": {
 			"description": "Toggle between audio devices using their names or IDs",
 			"files": "v2/SKAN/ToggleSound.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=131731",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"SKAN/WiseGui": {
 			"description": "Create highly customizable notifications",
 			"files": "v2/SKAN/WiseGui.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=94044",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"Spawnova/ShinsImageScanClass": {
@@ -366,6 +386,7 @@
 		"Tigerlily/MonitorFind": {
 			"description": "Wrapper for monitor configuration WinAPI functions, get and set monitor properties (brightness etc)",
 			"files": "v2/Tigerlily/MonitorFind.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=79220",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"Uberi/Yunit": {
@@ -398,11 +419,13 @@
 		"cyruz/ConfMan": {
 			"description": "Ini files management class, implementing an object central storage and an interface dealing with the underlined classes",
 			"files": "v2/cyruz/ConfMan.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=112809",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"cyruz/StdoutToVar": {
 			"description": "Runs a command line program and returns its output",
 			"files": "v2/cyruz/StdoutToVar.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=109148",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"evilC/AutoHotInterception": {
@@ -441,6 +464,7 @@
 		"feiyue/FindText": {
 			"description": "A high-performance image search library, which can use images in text form",
 			"files": "v2/feiyue/FindText.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=116471",
 			"keywords": [
 				"image"
 			],
@@ -582,21 +606,25 @@
 		"just me/ListViewExtensions": {
 			"description": "Additional functions for GUI ListView controls",
 			"files": "v2/just me/ListViewExtensions.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=95019",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"just me/SQLiteDB": {
 			"description": "Class definitions as wrappers for SQLite3.dll to work with SQLite DBs",
 			"files": "v2/just me/SQLiteDB.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=95389",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"just me/ToolTipOptions": {
 			"description": "Can set font, color and title options for subsequent calls to the ToolTip command",
 			"files": "v2/just me/ToolTipOptions.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=113308",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"just me/WatchFolder": {
 			"description": "Notifies about changes within folders, a rewrite of HotKeyIt's WatchDirectory()",
 			"files": "v2/just me/WatchFolder.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=95659",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"lexikos/CLR": {
@@ -607,6 +635,7 @@
 		"lexikos/ObjRegisterActive": {
 			"description": "Registers an object as the active object for a given class ID.",
 			"files": "v2/lexikos/ObjRegisterActive.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=6&t=6148",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"lexikos/OnProcessClose": {
@@ -615,22 +644,26 @@
 				"v2/lexikos/OnProcessClose.ahk",
 				"v2/lexikos/RegisterWaitCallback.ahk"
 			],
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=110691",
 			"main": "v2/lexikos/OnProcessClose.ahk",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"lexikos/RegisterWaitCallback": {
 			"description": "Monitor for a handle signal event",
 			"files": "v2/lexikos/RegisterWaitCallback.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=110691",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"lexikos/XInput": {
 			"description": "Wraps a few key functions of XInput: get XBox controller information (read L/R triggers), set level of vibration",
 			"files": "v2/lexikos/XInput.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=106254",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"neogna2/GetOpenedFiles": {
 			"description": "Gets an array of files currently in use by a process",
 			"files": "v2/neogna2/GetOpenedFiles.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=110405",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"nperovic/ColorButton": {
