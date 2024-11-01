@@ -38,7 +38,7 @@ RemoveArisFromPATH() {
     }
 }
 
-IsArisInPATH() {
+IsArisInPATH(onlyCurrentInstance:=1) {
     if !(g_LocalAppData)
         return false
     CurrPath := RegRead("HKCU\Environment", "PATH", "")
@@ -47,6 +47,8 @@ IsArisInPATH() {
         return false
     if !FileExist(g_LocalAppData "\Programs\Aris\Aris.bat")
         return false
+    if !onlyCurrentInstance
+        return true
     CurrContents := FileRead(g_LocalAppData "\Programs\Aris\Aris.bat")
     if !InStr(CurrContents, A_AhkPath) || !InStr(CurrContents, A_ScriptFullPath)
         return false
@@ -69,10 +71,10 @@ RemoveArisShellMenuItem() {
     g_IsComSpecAvailable ? RunCMD(A_ComSpec . " /c reg delete " BaseKey '\Shell\Aris /f') : RegDeleteKey(BaseKey '\Shell\Aris')
 }
 
-IsArisShellMenuItemPresent() {
+IsArisShellMenuItemPresent(onlyCurrentInstance:=1) {
     try {
         Current := RegRead(GetArisShellRegistryKey() "\Shell\Aris\command")
-        if !Current || !InStr(Current, A_AhkPath) || !InStr(Current, A_ScriptDir)
+        if onlyCurrentInstance && (!Current || !InStr(Current, A_AhkPath) || !InStr(Current, A_ScriptDir))
             return 0
         return 1
     }

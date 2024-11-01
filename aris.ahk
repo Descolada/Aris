@@ -116,14 +116,14 @@ if g_Config["add_to_path"] && !IsArisInPATH() {
     try AddArisToPATH()
     catch
         Print "Failed to add Aris to PATH (missing rights to write to registry?)"
-} else if g_Config.Has("add_to_path") && !g_Config["add_to_path"] && IsArisInPATH()
+} else if g_Config.Has("add_to_path") && !g_Config["add_to_path"] && IsArisInPATH(0)
     try RemoveArisFromPATH()
 
 if g_Config["add_to_shell"] && !IsArisShellMenuItemPresent() {
     try AddArisShellMenuItem()
     catch
         Print "Failed to add Aris shell menu item (missing rights to write to registry?)"
-} else if g_Config.Has("add_to_shell") && !g_Config["add_to_shell"] && IsArisShellMenuItemPresent()
+} else if g_Config.Has("add_to_shell") && !g_Config["add_to_shell"] && IsArisShellMenuItemPresent(0)
     try RemoveArisShellMenuItem()
 
 Loop files A_ScriptDir "\*.*", "D" {
