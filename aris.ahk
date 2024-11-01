@@ -429,8 +429,6 @@ InputToPackageInfo(Input, Skip:=0, Switches?) {
 StandardizePackageInfo(PackageInfo) {
     local i
     PackageInfo.Main := Trim(StrReplace(PackageInfo.Main, "\", "/"), "/ ")
-    if PackageInfo.Main && !(PackageInfo.Main ~= "i)\.ahk?\d?$")
-        PackageInfo.Main .= ".ahk"
     for i, PackageFile in PackageInfo.Files {
         PackageInfo.Files[i] := Trim(StrReplace(PackageFile, "\", "/"), "/ ")
     }
@@ -789,14 +787,19 @@ InstallPackage(Package, Update:=0, Switches?) {
             PackageJson["dependencies"][IncludePackageName] := g_Index.Has(Include.PackageName) ? SemVerVersion : ConstructInstallCommand(Include, SemVerVersion (Include.InstallBuildMetadata ? "+" Include.InstallBuildMetadata : ""))
         }
         if Update
-            Print 'Package successfully updated to "' IncludePackageName "@" Include.InstallVersion '".`n'
+            Print 'Package successfully updated to "' IncludePackageName "@" Include.InstallVersion '".'
         else
-            Print 'Package "' IncludePackageName "@" Include.InstallVersion '" successfully installed.`n'
+            Print 'Package "' IncludePackageName "@" Include.InstallVersion '" successfully installed.'
 
         if !Include.Main {
             if Include.Files.Length = 1
                 Include.Main := StrSplitLast(Include.Files[1], "/")[-1]
         }
+        SplitPath(Include.Main,,, &MainFileExt)
+        if !(MainFileExt ~= "ahk?\d?$")
+            Print("Warning: package " Include.Author "\" Include.Name " main file does not have an AHK file extension, please verify that the file contents are valid!")
+
+        Print("")
 
         if Include.Main {
             if !DirExist(g_LocalLibDir "\" Include.Author)
@@ -1159,6 +1162,8 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
                         DirMove(A_LoopFileFullPath, TempDir "\" FinalDirName "~\" FileName, 1)
                     else
                         FileMove(A_LoopFileFullPath, TempDir "\" FinalDirName "~\" FileName)
+                } else {
+                    throw Error('No files matching file pattern "' Pattern '" found!')
                 }
             }
         }
@@ -1421,13 +1426,11 @@ GithubDownloadMinimalInstall(PackageInfo, Path) {
     Path := Trim(Path, "\/")
     Repo := StrSplit(PackageInfo.Repository, "/")
 
-    try Download("https://github.com/" Repo[1] "/" Repo[2] "/raw/" PackageInfo.Version "/LICENSE", Path "\LICENSE")
-    if InStr(FileRead(Path "\LICENSE"), "<!DOCTYPE html>")
-        FileDelete(Path "\LICENSE")
+    try DownloadGitHubFile("https://github.com/" Repo[1] "/" Repo[2] "/raw/" PackageInfo.Version "/LICENSE", Path "\LICENSE")
 
     if PackageInfo.Files.Length = 1 {
         PackageInfo.MainPath := PackageInfo.Files[1], PackageInfo.Main := StrSplit(PackageInfo.Main || PackageInfo.MainPath, "/")[-1]
-        try Download("https://github.com/" Repo[1] "/" Repo[2] "/raw/" PackageInfo.Version "/"  PackageInfo.MainPath, Path "\" PackageInfo.Main)
+        try DownloadGitHubFile("https://github.com/" Repo[1] "/" Repo[2] "/raw/" PackageInfo.Version "/"  PackageInfo.MainPath, Path "\" PackageInfo.Main)
         catch
             throw Error("Download failed", -1, '"' Path "\" PackageInfo.Main '@' PackageInfo.Version '" from GitHub repo "' Repo[1] "/" Repo[2] '"')
         return 1
@@ -1445,7 +1448,9 @@ GithubDownloadMinimalInstall(PackageInfo, Path) {
                     DirCreate(Path TargetPath)
             }
         }
-        Download("https://github.com/" Repo[1] "/" Repo[2] "/raw/" PackageInfo.Version "/" MinFile, Path TargetPath "\" Split[-1])
+        try DownloadGitHubFile("https://github.com/" Repo[1] "/" Repo[2] "/raw/" PackageInfo.Version "/" MinFile, Path TargetPath "\" Split[-1])
+        catch
+            throw Error("Failed to download file", -1, '"' MinFile '" from GitHub repo "' Repo[1] "/" Repo[2] '" commit/version ' PackageInfo.Version)
     }
     return 1
 }
@@ -1590,11 +1595,11 @@ IsPackageInstalled(PackageInfo, Includes, Dirs) {
 
 FindMatchingInstalledPackages(PackageInfo, InstalledPackages) {
     if !FileExist("package.json")
-        return Print("No package.json found")
+        return Print('No package.json found, thus package "' Trim(PackageInfo.PackageName, "/") '" is not installed')
 
     ; Validate that the removed package is a dependency of the project
     if !(g_PackageJson["dependencies"].Count)
-        return Print("No dependencies found in package.json, cannot remove package")
+        return Print('No dependencies/packages found in package.json, thus package "' Trim(PackageInfo.PackageName, "/") '" is not installed')
 
     if InstalledPackages.Has(PackageInfo.PackageName) && VerCompare(InstalledPackages[PackageInfo.PackageName].InstallVersion, PackageInfo.Version)
         return [InstalledPackages[PackageInfo.PackageName]]
