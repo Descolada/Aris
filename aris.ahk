@@ -63,7 +63,8 @@ TraySetIcon A_ScriptDir "\assets\main.ico"
 Print.Buffer := ""
 OnError(PrintError)
 
-#include <Aris/packages>
+#include <Aris/FanaticGuru/GuiReSizer>
+#include <Aris/G33kDude/cJson>
 #include <ui-main>
 #include <utils>
 #include <version>
@@ -1497,7 +1498,7 @@ VerifyPackageIsDownloadable(PackageInfo) {
         if !(releases := QueryGitHubReleases(PackageInfo.Repository)) || !(releases is Array) || !releases.Length {
             ; No releases found. Try to get commit hash instead.
             Print("No GitHub releases found, querying commits instead.")
-            if !((commits := (IsGithubMinimalInstallPossible(PackageInfo, true) ? QueryGitHubRepo(PackageInfo.Repository, "commits?path=" (PackageInfo.Files.Length ? PackageInfo.Files[1] : PackageInfo.Main)) : QueryGitHubCommits(PackageInfo.Repository))) && commits is Array && commits.Length)
+            if !((commits := (IsGithubMinimalInstallPossible(PackageInfo, true) && PackageInfo.Files.Length = 1 ? QueryGitHubRepo(PackageInfo.Repository, "commits?path=" PackageInfo.Files[1]) : QueryGitHubCommits(PackageInfo.Repository))) && commits is Array && commits.Length)
                 throw Error("Unable to find releases or commits for the specified GitHub repository", -1, PackageInfo.PackageName)
             
             PackageInfo.Version := PackageInfo.Version || PackageInfo.InstallVersion || PackageInfo.DependencyVersion
