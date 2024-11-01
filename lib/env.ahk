@@ -45,7 +45,10 @@ IsArisInPATH() {
     CurrPath := RegExReplace(CurrPath, "^[\w\W]*?PATH\s+REG_SZ\s+",,,1)
     if !CurrPath || !InStr(CurrPath, g_LocalAppData "\Programs\Aris")
         return false
-    if !FileExist(g_LocalAppData "\Programs\Aris\Aris.bat") || !InStr(FileRead(g_LocalAppData "\Programs\Aris\Aris.bat"), A_AhkPath)
+    if !FileExist(g_LocalAppData "\Programs\Aris\Aris.bat")
+        return false
+    CurrContents := FileRead(g_LocalAppData "\Programs\Aris\Aris.bat")
+    if !InStr(CurrContents, A_AhkPath) || !InStr(CurrContents, A_ScriptFullPath)
         return false
     return true
 }
