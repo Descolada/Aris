@@ -623,6 +623,11 @@
 			"files": "v2/lexikos/RegisterWaitCallback.ahk",
 			"repository": "ahkscript/ScriptHub/main"
 		},
+		"lexikos/XInput": {
+			"description": "Wraps a few key functions of XInput: get XBox controller information (read L/R triggers), set level of vibration",
+			"files": "v2/lexikos/XInput.ahk",
+			"repository": "ahkscript/ScriptHub/main"
+		},
 		"neogna2/GetOpenedFiles": {
 			"description": "Gets an array of files currently in use by a process",
 			"files": "v2/neogna2/GetOpenedFiles.ahk",
