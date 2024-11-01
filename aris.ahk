@@ -1498,7 +1498,7 @@ VerifyPackageIsDownloadable(PackageInfo) {
         if !(releases := QueryGitHubReleases(PackageInfo.Repository)) || !(releases is Array) || !releases.Length {
             ; No releases found. Try to get commit hash instead.
             Print("No GitHub releases found, querying commits instead.")
-            if !((commits := (IsGithubMinimalInstallPossible(PackageInfo, true) && PackageInfo.Files.Length = 1 ? QueryGitHubRepo(PackageInfo.Repository, "commits?path=" PackageInfo.Files[1]) : QueryGitHubCommits(PackageInfo.Repository))) && commits is Array && commits.Length)
+            if !((commits := ((CommitsPath := GetPathForGitHubCommits(PackageInfo.Files)) != "" ? QueryGitHubRepo(PackageInfo.Repository, "commits?per_page=100&path=" CommitsPath) : QueryGitHubCommits(PackageInfo.Repository))) && commits is Array && commits.Length)
                 throw Error("Unable to find releases or commits for the specified GitHub repository", -1, PackageInfo.PackageName)
             
             PackageInfo.Version := PackageInfo.Version || PackageInfo.InstallVersion || PackageInfo.DependencyVersion
@@ -2013,6 +2013,34 @@ DownloadGitHubFile(url, filename?, token:="") {
         throw Error("Downloading GitHub file failed",, url)
 }
 
+GetPathForGitHubCommits(Files) {
+    if !Files.Length
+        return ""
+    local CurrentPath := InStr(Files[1], "/") ? StrSplitLast(Files[1], "/")[1] : ""
+    if Files.Length = 1 {
+        SplitPath(Files[1],,, &Ext:="", &NameNoExt:="")
+        if Ext = "*" || NameNoExt = "" || NameNoExt = "*"
+            return CurrentPath
+        return Files[1]
+    }
+    for F in Files {
+        CurrentPath := LowestCommonDenominator(CurrentPath, StrSplitLast(F, "/")[1])
+    }
+    return CurrentPath
+
+    LowestCommonDenominator(path1, path2) {
+        local result := ""
+        path1 := StrSplit(path1, "/"), path2 := StrSplit(path2, "/")
+        Loop Min(path1.Length, path2.Length) {
+            if path1[A_index] = path2[A_index]
+                result .= path1[A_Index] "/"
+            else
+                break
+        }
+        return RTrim(result, "/")
+    }
+}
+
 QueryGitHubRepo(repo, subrequest := "", data := "", token := "") {
     whr := ComObject("WinHttp.WinHttpRequest.5.1")
     repo := StrSplit(repo, "/")
@@ -2040,7 +2068,7 @@ QueryGitHubRepo(repo, subrequest := "", data := "", token := "") {
 }
 
 QueryGitHubReleases(repo) => QueryGitHubRepo(repo, "releases")
-QueryGitHubCommits(repo) => QueryGitHubRepo(repo, "commits")
+QueryGitHubCommits(repo) => QueryGitHubRepo(repo, "commits?per_page=100")
 
 QueryForumsReleases(PackageInfo) {
     CdxJson := JSON.Load(DownloadURL("https://web.archive.org/cdx/search/cdx?url=autohotkey.com%2Fboards%2Fviewtopic.php&matchType=prefix&output=json&filter=statuscode:200&filter=urlkey:.*t=" PackageInfo.ThreadId))
