@@ -778,7 +778,7 @@
 				"RapidOcr/*.*"
 			],
 			"license": "MIT",
-			"main": "RapidOcr.ahk",
+			"main": "RapidOcr/RapidOcr.ahk",
 			"repository": "thqby/ahk2_lib/master"
 		},
 		"thqby/Socket": {
@@ -799,7 +799,7 @@
 				"WebView2/*.*"
 			],
 			"license": "MIT",
-			"main": "WebView2.ahk",
+			"main": "WebView2/WebView2.ahk",
 			"repository": "thqby/ahk2_lib/master"
 		},
 		"thqby/WinHttpRequest": {
@@ -844,7 +844,7 @@
 				"wincapture/*.*"
 			],
 			"license": "MIT",
-			"main": "wincapture.ahk",
+			"main": "wincapture/wincapture.ahk",
 			"repository": "thqby/ahk2_lib/master"
 		},
 		"thqby/windows": {
