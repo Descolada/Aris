@@ -1154,10 +1154,10 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
     if !PackageInfo.Files.Length
         PackageInfo.Files.Push("*.*")
     MainFileFound := false
-    SplitPath(StrReplace(PackageInfo.Main, "/", "\"),,, &MainFileExt:="", &MainFileNoExt:="")
+    SplitPath(StrReplace(PackageInfo.Main, "/", "\"),, &MainFileDir:="", &MainFileExt:="", &MainFileNoExt:="")
     for PackageFile in PackageInfo.Files {
-        SplitPath(StrReplace(PackageFile, "/", "\"),,, &SingleFileExt:="", &SingleFileNoExt:="")
-        if PackageFile = "*.*" || (SingleFileExt = "*" && MainFileNoExt = SingleFileNoExt) || (SingleFileNoExt = "*" && MainFileExt = SingleFileExt) || PackageFile = PackageInfo.Main {
+        SplitPath(StrReplace(PackageFile, "/", "\"), &SingleFileName:="", &SingleFileDir:="", &SingleFileExt:="", &SingleFileNoExt:="")
+        if PackageFile = "*.*" || (SingleFileName = "*.*" && (SingleFileDir = "" || InStr(MainFileDir, SingleFileDir))) || ((SingleFileDir = "" || InStr(MainFileDir, SingleFileDir)) && SingleFileExt = "*" && MainFileNoExt = SingleFileNoExt) || (SingleFileNoExt = "*" && MainFileExt = SingleFileExt) || PackageFile = PackageInfo.Main {
             MainFileFound := true
             break
         }
