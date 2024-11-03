@@ -13,6 +13,12 @@
 			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=127205",
 			"repository": "ahkscript/ScriptHub/main"
 		},
+		"Cebolla/Monitor": {
+			"description": "This class provides methods for obtaining information about monitor size, dimensions, position, and DPI.",
+			"files": "cMonitor.ahk",
+			"license": "MIT",
+			"repository": "Nich-Cebolla/Monitor.ahk/main"
+		},
 		"Chunjee/adash": {
 			"author": "Shawn Brooker",
 			"bugs": {
@@ -427,6 +433,12 @@
 			"files": "v2/cyruz/StdoutToVar.ahk",
 			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=109148",
 			"repository": "ahkscript/ScriptHub/main"
+		},
+		"devPnal/AhkSoup": {
+			"description": "HTML Parsing library for Autohotkey (v2)",
+			"files": "AhkSoup.ahk",
+			"license": "MIT",
+			"repository": "devPnal/ahksoup/main"
 		},
 		"evilC/AutoHotInterception": {
 			"description": "AutoHotInterception (AHI) allows you to execute AutoHotkey code in response to events from a specific keyboard or mouse, whilst (optionally) blocking the native functionality (i.e. stopping Windows from seeing that keyboard or mouse event).",
