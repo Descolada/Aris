@@ -1240,7 +1240,8 @@ DownloadPackageWithDependencies(PackageInfo, TempDir, Includes, CanUpdate:=false
             Print "Found dependencies in extracted package manifest"
             for DependencyName, DependencyVersion in PackageJson["dependencies"] {
                 Print "Starting install of dependency " DependencyName "@" DependencyVersion
-                DownloadPackageWithDependencies(DependencyName "@" DependencyVersion, TempDir, Includes)
+                DependencyEntry := DependencyEntryToPackageInfo(DependencyName, DependencyVersion)
+                DownloadPackageWithDependencies(DependencyEntry, TempDir, Includes)
             }
         }
     }
