@@ -85,6 +85,10 @@ Or include a folder (creates a package named "thqby/RapidOcr.ahk"):
 ```
 aris i thqby/ahk2_lib as RapidOcr -m RapidOcr/RapidOcr.ahk --files RapidOcr/*.*
 ```
+If a release has multiple assets then the fallback is the source zip file. However, if a specific asset is required then it can be specified in the version metadata (wildcards are supported):
+```
+aris i Descolada/OCR@latest+OCR.7z
+```
 ## Gist install
 Install a specific file from a Gist:
 ```
