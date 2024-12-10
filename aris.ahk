@@ -1541,7 +1541,22 @@ VerifyPackageIsDownloadable(PackageInfo) {
                 throw Error("No matching version found among GitHub releases")
 
             PackageInfo.Version := release["tag_name"]
-            if release.Has("assets") && release["assets"].Length && release["assets"].Length = 1 && (asset := release["assets"][1]) && (asset["name"] ~= "\.(ahk?\d?|zip|7z|tar|tar\.bz|rar)$") {
+            
+            TargetAsset := PackageInfo.BuildMetadata && InStr(PackageInfo.BuildMetadata, ".") ? PackageInfo.BuildMetadata : ""
+            if TargetAsset && release.Has("assets") && (FoundAssets := FindMatchingAssets(TargetAsset, release["assets"])) && FoundAssets.Length {
+                if !FoundAssets.Length {
+                    Print "`nWarning: detected a potential release file match pattern in build metadata `"" PackageInfo.BuildMetadata "`", but it did not match any release assets. Falling back to the source code zip file..."
+                } else if FoundAssets.Length == 1 {
+                    release["assets"] := FoundAssets
+                    PackageInfo.BuildMetadata := FoundAssets[1]["name"]
+                } else {
+                    Assets := ""
+                    for k, v in FoundAssets
+                        Assets .= v["name"] ", "
+                    throw Error("Multiple matches found for the specified file match pattern `"" PackageInfo.BuildMetadata "`"", -1, Trim(Assets, ", "))
+                }
+            }
+            if release.Has("assets") && release["assets"].Length && release["assets"].Length == 1 && (asset := release["assets"][1]) && (asset["name"] ~= "\.(ahk?\d?|zip|7z|tar|tar\.bz|rar)$") {
                 if asset["name"] ~= "i)\.ahk?\d?$" {
                     PackageInfo.Main := PackageInfo.Main || asset["name"]
                     PackageInfo.Files := [PackageInfo.Main]

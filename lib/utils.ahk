@@ -251,3 +251,24 @@ ExecScript(Script, args:="") {
 QuoteFile(name) => InStr(name, " ") ? '"' name '"' : name
 
 RemoveAhkSuffix(name) => RegExReplace(name, "\.ahk?\d?(?=$|@)")
+
+FindMatchingAssets(needle, assetArray) {
+    if !InStr(needle, ".")
+        throw ValueError("The needle must contain at least one . character", -1, needle)
+    matches := []
+    if !InStr(needle, "*") { ; No wildcard, try to find partial match
+        for k, v in assetArray {
+            if InStr(v["name"], needle)
+                matches.Push(v)
+        }
+    } else { ; Wildcard present
+        ; Escape legal file name characters with RegEx meanings
+        needle := RegExReplace(needle, "[\\\.\^\$\+\{\}\[\]\(\)\``]", "\$0")
+        needle := StrReplace("^" needle "$","*",".*") ; Replace the wildcard
+        for k, v in assetArray {
+            if RegExMatch(v["name"], needle, &found:="") && found[0]
+                matches.push(v)
+        }
+    }
+    return matches
+}
