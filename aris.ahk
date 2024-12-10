@@ -1368,7 +1368,24 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
         PackageInfo.Version := SubStr(HashFile(g_CacheDir "\" ZipName, 3), 1, 7)
 
     Print('Extracting package from "' ZipName '"')
-    DirCopy g_CacheDir "\" ZipName, TempDir "\" TempDownloadDir, true
+    SplitPath(g_CacheDir "\" ZipName,,, &ZipExt)
+    if ZipExt = "zip" || (ZipExt = "rar" && VerCompare(A_OSVersion, ">=10.0.17134")) || VerCompare(A_OSVersion, ">=10.0.22631")
+        DirCopy g_CacheDir "\" ZipName, TempDir "\" TempDownloadDir, true
+    else {
+        sevenZipPath := RegRead("HKLM\Software\" (A_PtrSize = 4 ? "WOW6432Node\" : "") "7-Zip", "Path", "")
+        static sevenZipcmd := 'x "' g_CacheDir "\" ZipName '" -o"' TempDir "\" TempDownloadDir '"'
+        if (sevenZipPath && FileExist(sevenZipPath := Trim(sevenZipPath, "\") '\7z.exe')) 
+            || FileExist(sevenZipPath := A_ScriptDir "\assets\7z.exe") 
+            || FileExist(sevenZipPath := A_ScriptDir "\assets\7za.exe")
+            || FileExist(sevenZipPath := A_ScriptDir "\assets\7z-x" (A_PtrSize = 4 ? "32" : "64") ".exe") 
+            || FileExist(sevenZipPath := A_ScriptDir "\assets\7za-x" (A_PtrSize = 4 ? "32" : "64") ".exe") {
+            Print "The current Windows version doesn't support extracting " ZipExt " files, falling back to 7-zip..."
+            RunWait '"' sevenZipPath '" ' sevenZipcmd,, "Hide"
+            if !DirExist(TempDir "\" TempDownloadDir)
+                throw Error("Failed to extract package with 7-Zip")
+        } else
+            throw Error("The current Windows version " A_OSVersion " doesn't support extracting archive type " ZipExt " and 7-Zip was not found as an alternative")
+    }
 
     DirCount := 0, LastDir := ""
     Loop Files TempDir "\" TempDownloadDir "\*.*", "DF"
