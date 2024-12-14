@@ -263,6 +263,21 @@
 			"files": "v2/MrDoge/sqlite.ahk",
 			"repository": "ahkscript/ScriptHub/main"
 		},
+		"Qriist/LibQurl": {
+			"author": {
+				"email": "Qriist+LibQurl@gmail.com",
+				"name": "Qriist"
+			},
+			"bugs": {
+				"url": "https://github.com/Qriist/LibQurl/issues"
+			},
+			"dependencies": {
+				"G33kDude/cJson": "^2.0.0"
+			},
+			"description": "A full libcurl wrapper for AHKv2",
+			"keywords": "curl, libcurl, internet, transfers",
+			"license": ""
+		},
 		"RaptorX/SQLite": {
 			"description": "Wrapper for SQLite, which implements a small, fast, self-contained, high-reliability, full-featured, SQL database engine",
 			"files": [
