@@ -1539,8 +1539,11 @@ VerifyPackageIsDownloadable(PackageInfo) {
         if !(releases := QueryGitHubReleases(PackageInfo.Repository)) || !(releases is Array) || !releases.Length {
             ; No releases found. Try to get commit hash instead.
             Print("No GitHub releases found, querying commits instead.")
-            if !((commits := ((CommitsPath := GetPathForGitHubCommits(PackageInfo.Files)) != "" ? QueryGitHubRepo(PackageInfo.Repository, "commits?per_page=100&path=" CommitsPath) : QueryGitHubCommits(PackageInfo.Repository))) && commits is Array && commits.Length)
+            if !((commits := ((CommitsPath := GetPathForGitHubCommits(PackageInfo.Files)) != "" ? QueryGitHubRepo(PackageInfo.Repository, "commits?per_page=100&path=" CommitsPath) : QueryGitHubCommits(PackageInfo.Repository))) && commits is Array && commits.Length) {
+                if (commits && commits.Has("status") && commits["status"] == "403")
+                    Print "`nWarning: GitHub query returned error message: `"" commits["message"] "`"`n"
                 throw Error("Unable to find releases or commits for the specified GitHub repository", -1, PackageInfo.PackageName)
+            }
             
             PackageInfo.Version := PackageInfo.Version || PackageInfo.InstallVersion || PackageInfo.DependencyVersion
             if RegExMatch(PackageInfo.Version, "\d+", &NumMatch) && (StrLen(NumMatch[0]) = 14) {
