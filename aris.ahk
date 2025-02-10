@@ -795,21 +795,24 @@ InstallPackage(Package, Update:=0, Switches?) {
             if Include.Files.Length = 1
                 Include.Main := StrSplitLast(Include.Files[1], "/")[-1]
         }
-        SplitPath(StrReplace(Include.Main, "/", "\"),,, &MainFileExt)
+        SplitPath(StrReplace(Include.Main, "/", "\"),,, &MainFileExt, &MainFileNameNoExt)
+        if (MainFileExt == "*" || MainFileNameNoExt == "*")
+            Include.Main := ""
         if !(MainFileExt ~= "ahk?\d?$")
             Print("Warning: package " Include.Author "\" Include.Name " main file does not have an AHK file extension, please verify that the file contents are valid!")
 
         Print("")
 
-        if Include.Main {
-            if !DirExist(g_LocalLibDir "\" Include.Author)
-                DirCreate(g_LocalLibDir "\" Include.Author)
-            FileOpen(g_LocalLibDir "\" Include.Author "\" Include.Name ".ahk", "w").Write("#include " (Include.Global ? "%A_MyDocuments%\AutoHotkey\Lib\Aris\" Include.Author "\" : ".\") StrSplit(Include.InstallName, "/",,2)[-1] "\" StrReplace(Include.Main, "/", "\"))
-            InstallEntry := ConstructInstallCommand(Include, Include.InstallVersion (Include.BuildMetadata ? "+" Include.BuildMetadata : ""))
-            Addition := "#include .\" StrReplace(Include.PackageName, "/", "\") ".ahk `; " InstallEntry "`n"
-            if !InStr(IncludeFileContent, Addition)
-                IncludeFileContent .= Addition, g_AddedIncludesString .= "#include <Aris/" Include.PackageName "> `; " InstallEntry "`n"
-        }
+        InstallEntry := ConstructInstallCommand(Include, Include.InstallVersion (Include.BuildMetadata ? "+" Include.BuildMetadata : ""))
+
+        HashtagInclude := (Include.Main == "" ? "; " : "") "#include"
+        Addition := HashtagInclude " .\" StrReplace(Include.PackageName, "/", "\") ".ahk `; " InstallEntry "`n"
+        if !InStr(IncludeFileContent, Addition)
+            IncludeFileContent .= Addition, g_AddedIncludesString .= HashtagInclude " <Aris/" Include.PackageName "> `; " InstallEntry "`n"
+
+        if !DirExist(g_LocalLibDir "\" Include.Author)
+            DirCreate(g_LocalLibDir "\" Include.Author)
+        FileOpen(g_LocalLibDir "\" Include.Author "\" Include.Name ".ahk", "w").Write(HashtagInclude " " (Include.Global ? "%A_MyDocuments%\AutoHotkey\Lib\Aris\" Include.Author "\" : ".\") StrSplit(Include.InstallName, "/",,2)[-1] "\" StrReplace(Include.Main, "/", "\"))
     }
 
     if !PackageJson["dependencies"].Count
@@ -948,7 +951,7 @@ ForceRemovePackage(PackageInfo, LibDir, RemoveDependencyEntry:=true) {
         try DirDelete(g_LocalLibDir "\" PackageInfo.Author)
     if FileExist(g_LocalLibDir "\packages.ahk") {
         OldPackages := FileRead(g_LocalLibDir "\packages.ahk")
-        NewPackages := RegExReplace(OldPackages, "i)#include (<Aris|\.|%A_MyDocuments%)[\\\/]\Q" StrReplace(PackageInfo.PackageName, "/", "\E[\\\/]\Q") "\E(>|\.ahk)( `; .*|$)\n\r?",,, 1)
+        NewPackages := RegExReplace(OldPackages, "i)[\t; ]*#include (<Aris|\.|%A_MyDocuments%)[\\\/]\Q" StrReplace(PackageInfo.PackageName, "/", "\E[\\\/]\Q") "\E(>|\.ahk)( `; .*|$)\n\r?",,, 1)
         if OldPackages != NewPackages
             FileOpen(g_LocalLibDir "\packages.ahk", "w").Write(NewPackages)
     }
@@ -1016,9 +1019,9 @@ ConstructInstallCommand(PackageInfo, Version) {
         return vargs
 
     if PackageInfo.Files.Length = 1 {
-        if PackageInfo.Files[1] = "*.*"
+        if PackageInfo.Files[1] = "*.*" && PackageInfo.Main != ""
             return vargs " --main " QuoteFile(PackageInfo.Main)
-        if InStr(packageInfo.Files[1], PackageInfo.Main)
+        if PackageInfo.Main == "" || InStr(packageInfo.Files[1], PackageInfo.Main)
             return vargs " --files " QuoteFile(PackageInfo.Files[1])
     }
 
@@ -1373,7 +1376,7 @@ DownloadSinglePackage(PackageInfo, TempDir, LibDir) {
         DirCopy g_CacheDir "\" ZipName, TempDir "\" TempDownloadDir, true
     else {
         sevenZipPath := RegRead("HKLM\Software\" (A_PtrSize = 4 ? "WOW6432Node\" : "") "7-Zip", "Path", "")
-        static sevenZipcmd := 'x "' g_CacheDir "\" ZipName '" -o"' TempDir "\" TempDownloadDir '"'
+        sevenZipcmd := 'x "' g_CacheDir "\" ZipName '" -o"' TempDir "\" TempDownloadDir '"'
         if (sevenZipPath && FileExist(sevenZipPath := Trim(sevenZipPath, "\") '\7z.exe')) 
             || FileExist(sevenZipPath := A_ScriptDir "\assets\7z.exe") 
             || FileExist(sevenZipPath := A_ScriptDir "\assets\7za.exe")
@@ -1815,17 +1818,17 @@ QueryInstalledPackages(path := ".\") {
         return Packages
 
     Loop parse FileRead(LibDir "\packages.ahk"), "`n", "`r" {
-        if !(A_LoopField ~= "i)^\s*#include")
-            continue
-
-        if !RegExMatch(A_LoopField, "i)^#include (?:<Aris|\.|%A_MyDocuments%)[\\\/]([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
+        if !RegExMatch(A_LoopField, "i)^[\t; ]*#include (?:<Aris|\.|%A_MyDocuments%)[\\\/]([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
             continue
         Path := StrReplace(IncludeInfo[1], "/", "\")
 
+        if (SubStr(A_LoopField, 1, 1) == ";") {
+
+        }
         if !FileExist(LibDir "\" Path ".ahk")
             continue
 
-        ExtraInfo := RegExReplace(FileRead(LibDir "\" Path ".ahk"), "i)^#include (\.|%A_MyDocuments%)[\\\/](([^@]+[\\\/]))*")
+        ExtraInfo := RegExReplace(FileRead(LibDir "\" Path ".ahk"), "i)^[\t; ]*#include (\.|%A_MyDocuments%)[\\\/](([^@]+[\\\/]))*")
         ExtraInfoSplit := StrSplit(ExtraInfo, "\")
 
         try PackageInfo := InstallInfoToPackageInfo(Path, StrSplit(ExtraInfoSplit[1], "@",, 2)[2], ExtraInfoSplit[-1], IncludeInfo.Count = 2 ? IncludeInfo[2] : "")
@@ -1879,9 +1882,7 @@ ReadIncludesFromFile(path) {
     if !FileExist(path)
         return Packages
     Loop parse FileRead(path), "`n", "`r" {
-        if !(A_LoopField ~= "i)^\s*#include")
-            continue
-        if !RegExMatch(A_LoopField, "i)^#include (?:<Aris|\.)[\\\/]([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
+        if !RegExMatch(A_LoopField, "i)^[\t; ]*#include (?:<Aris|\.)[\\\/]([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
             continue
 
         try Packages.Push(InstallInfoToPackageInfo(IncludeInfo[1],,, IncludeInfo.Count = 2 ? IncludeInfo[2] : ""))
@@ -1953,10 +1954,7 @@ CleanPackages() {
     Print "Removing unused entries from packages.ahk"
     OldContent := NewContent := FileRead(g_LocalLibDir "\packages.ahk")
     Loop parse NewContent, "`n", "`r" {
-        if !(A_LoopField ~= "i)^\s*#include")
-            continue
-
-        if !RegExMatch(A_LoopField, "i)^#include (?:<Aris|\.|%A_MyDocuments%)[\\\/]([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
+        if !RegExMatch(A_LoopField, "i)^[\t; ]*#include (?:<Aris|\.|%A_MyDocuments%)[\\\/]([^>]+?)(?:>|\.ahk)(?: `; )?(.*)?", &IncludeInfo := "")
             continue
 
         if InstalledMap.Has(IncludeInfo[1])
