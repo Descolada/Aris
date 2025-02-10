@@ -13,6 +13,21 @@
 			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=127205",
 			"repository": "ahkscript/ScriptHub/main"
 		},
+		"Cebolla/Array": {
+			"description": "An AutoHotkey library implementing common array methods",
+			"files": "Array.ahk",
+			"repository": "Nich-Cebolla/AutoHotkey-Array/main"
+		},
+		"Cebolla/DeepClone": {
+			"description": "Deep clones an object, with an option to specify a maximum depth.",
+			"files": [
+				"Object.Prototype.DeepClone.ahk",
+				"GetObjectFromString.ahk"
+			],
+			"license": "MIT",
+			"main": "Object.Prototype.DeepClone.ahk",
+			"repository": "Nich-Cebolla/AutoHotkey-Object.Prototype.DeepClone/main"
+		},
 		"Cebolla/Monitor": {
 			"description": "This class provides methods for obtaining information about monitor size, dimensions, position, and DPI.",
 			"files": "cMonitor.ahk",
@@ -159,6 +174,12 @@
 			"license": "MIT",
 			"repository": "Descolada/AHK-v2-libraries/main"
 		},
+		"FanaticGuru/GuiButtonIcon": {
+			"description": "A function that allows an icon to be assigned to a Gui Button using the button's hwnd to identify the button",
+			"files": "v2/FanaticGuru/GuiButtonIcon.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=115871",
+			"repository": "ahkscript/ScriptHub/main"
+		},
 		"FanaticGuru/GuiResizer": {
 			"description": "A class to simplify adjusting GUI controls to GUI resizing",
 			"files": "v2/FanaticGuru/GuiResizer.ahk",
@@ -239,6 +260,13 @@
 			"description": "Vector math class",
 			"files": "v2/Hellbent/Vector.ahk",
 			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=132770",
+			"repository": "ahkscript/ScriptHub/main"
+		},
+		"Komrad Toast/DLLManager": {
+			"description": "Simplifies DLL file management. Loads your requested DLLs, keeps track of which DLLs are loaded and how many times that DLL has been referenced, and if the reference count on a DLL drops to 0 it is automatically unloaded.",
+			"files": "v2/Komrad Toast/DLLManager.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=134661",
+			"keywords": "DLL, win32",
 			"repository": "ahkscript/ScriptHub/main"
 		},
 		"MrDoge/MemoryModule": {
@@ -358,6 +386,16 @@
 			"files": "AHK V2/ShinsOverlayClass.ahk",
 			"repository": "Spawnova/ShinsOverlayClass/main"
 		},
+		"Tebayaki/HotGestures": {
+			"description": "This is a light Autohotkey library for mouse gestures creating and recognizing. It helps you to customize any one-stroke pattern and bind it to any function.",
+			"files": [
+				"HotGestures.ahk",
+				"GestureRecorder.ahk"
+			],
+			"license": "MIT",
+			"main": "HotGestures.ahk",
+			"repository": "Tebayaki/HotGestures/main"
+		},
 		"The-CoDingman/WebViewToo": {
 			"description": "Allows for use of the WebView2 Framework within AHK to create Web-based GUIs",
 			"files": [
@@ -437,6 +475,13 @@
 			"files": "Gdip_All.ahk",
 			"repository": "buliasz/AHKv2-Gdip/master"
 		},
+		"burque505/JartePlus": {
+			"description": "A library to automate Jarte Plus",
+			"files": "v2/burque505/JartePlus.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=135720",
+			"license": "MIT",
+			"repository": "ahkscript/ScriptHub/main"
+		},
 		"cyruz/ConfMan": {
 			"description": "Ini files management class, implementing an object central storage and an interface dealing with the underlined classes",
 			"files": "v2/cyruz/ConfMan.ahk",
@@ -460,6 +505,12 @@
 			"files": "EveryHangul.ahk",
 			"license": "MIT",
 			"repository": "devPnal/every-hangul-v2"
+		},
+		"emliberace/MIDI": {
+			"description": "The MIDIv2 library grants MIDI functionality to AutoHotKey v2. Send and receive MIDI in your AHK scripts with ease.",
+			"files": "MIDIv2.ahk",
+			"license": "GPL-3.0",
+			"repository": "emliberace/MIDIv2.ahk/main"
 		},
 		"evilC/AutoHotInterception": {
 			"description": "AutoHotInterception (AHI) allows you to execute AutoHotkey code in response to events from a specific keyboard or mouse, whilst (optionally) blocking the native functionality (i.e. stopping Windows from seeing that keyboard or mouse event).",
@@ -717,6 +768,39 @@
 			"license": "MIT",
 			"repository": "nperovic/ToolTipEx/main"
 		},
+		"prasad383/HotKeyChain": {
+			"description": "This class creates an interactive hotkey system with a GUI menu, supporting nested hotkeys and customizable appearance",
+			"files": "v2/prasad383/HotKeyChain.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=135125",
+			"repository": "ahkscript/ScriptHub/main"
+		},
+		"prasad383/SettingsManager": {
+			"description": "A simple class to manage settings for any script using ini files.",
+			"files": "v2/prasad383/SettingsManager.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=135324",
+			"repository": "ahkscript/ScriptHub/main",
+			"scripts": {
+				"postdownload": "A_FileEncoding := \"UTF-8\", Path := A_Args[1] \"\\DNSQuery.ahk\", Content := FileRead(Path), FileOpen(Path, \"w\").Write(RegExReplace(Content, \"[\\w\\W]*;========+\\r?\\n\"))"
+			}
+		},
+		"rockitdontstopit/ImageActions": {
+			"dependencies": {
+				"feiyue/FindText": "*"
+			},
+			"description": "A helper class for FindText, simplifying FindText image searches and clicking",
+			"files": "v2/rockitdontstopit/ImageActions.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=135206",
+			"repository": "ahkscript/ScriptHub/main"
+		},
+		"sxzxs/redis": {
+			"description": "Redis wrapper for AutoHotkey, provides a set of functions to interact with Redis",
+			"files": [
+				"lib/*.*"
+			],
+			"license": "MIT",
+			"main": "lib/redisclient.ahk",
+			"repository": "sxzxs/redis/main"
+		},
 		"thqby/Audio": {
 			"description": "Core Audio APIs",
 			"files": "Audio.ahk",
@@ -783,6 +867,12 @@
 			"scripts": {
 				"postdownload": "A_WorkingDir := A_Args[1]\nA_FileEncoding := 'UTF-8'\nContent := FileRead('DownloadAsync.ahk')\nFileOpen('DownloadAsync.ahk', 'w').Write(Trim(StrReplace(Content, '#Include WinHttpRequest.ahk'), '`r`n'))"
 			}
+		},
+		"thqby/LoadScript": {
+			"description": "Loads a script file or script code as a subprocess and returns an object that can be used to call functions or get/set global variables.",
+			"files": "LoadScript.ahk",
+			"license": "MIT",
+			"repository": "thqby/ahk2_lib/master"
 		},
 		"thqby/NTL": {
 			"description": "NTL is a high-performance, portable C++ library providing data structures and algorithms for manipulating signed, arbitrary length integers, and for vectors, matrices, and polynomials over the integers and over finite fields.",
@@ -891,6 +981,21 @@
 			"license": "Unlicense",
 			"main": "winrt.ahk",
 			"repository": "thqby/winrt.ahk/main"
+		},
+		"xroot/Array2Buffer": {
+			"description": "A simple way to create a buffer (eg Win32 data structure) from a 2D-array containing the data and type.",
+			"files": "v2/xroot/Array2Buffer.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=135564",
+			"repository": "ahkscript/ScriptHub/main"
+		}
+	},
+	"v2.1": {
+		"Komrad Toast/Cursor": {
+			"description": "Setting cursors, loading cursors from file (.bmp / .ico / .cur / .ani), programmatically creating custom cursors, turning on trails and shadows, setting the cursor bounding rectangle, and more can be accomplished with this class",
+			"files": "v2/Komrad Toast/Cursor.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=135044",
+			"license": "MIT",
+			"repository": "ahkscript/ScriptHub/main"
 		}
 	},
 	"version": "2.0.0"
