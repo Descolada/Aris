@@ -201,7 +201,7 @@
 		"G33kDude/HashMap": {
 			"description": "Provides a hash map based alternative implementation of AutoHotkey's Map class, with the goal of allowing drop-in replacement for situations where the native Map's performance limitations have been reached",
 			"files": "Dist/HashMap.ahk",
-			"homepage": "https://github.com/G33kDude/cJson.ahk",
+			"homepage": "https://github.com/G33kDude/HashMap.ahk",
 			"license": "MIT",
 			"repository": "G33kDude/HashMap.ahk/main"
 		},
@@ -820,14 +820,16 @@
 			"repository": "thqby/ahk2_lib/master"
 		},
 		"thqby/Chrome": {
-			"description": "Automate Google Chrome using native AutoHotkey",
-			"files": [
-				"Chrome.ahk",
-				"WebSocket.ahk"
-			],
+			"dependencies": {
+				"thqby/WebSocket": "*"
+			},
+			"description": "Automate Google Chrome using native AutoHotkey\nNOTICE: this also requires a JSON library, for example G33kDude/cJson or thqby/JSON",
+			"files": "Chrome.ahk",
 			"license": "MIT",
-			"main": "Chrome.ahk",
-			"repository": "thqby/ahk2_lib/master"
+			"repository": "thqby/ahk2_lib/master",
+			"scripts": {
+				"postdownload": "A_WorkingDir := A_Args[1]\nA_FileEncoding := 'UTF-8'\nContent := FileRead('Chrome.ahk')\nFileOpen('Chrome.ahk', 'w').Write(StrReplace(Content, \"#Include 'WebSocket.ahk'\",  \"; #Include 'WebSocket.ahk'\"))"
+			}
 		},
 		"thqby/ComObjDll": {
 			"description": "Create a COM object from an unregistered DLL",
@@ -867,6 +869,12 @@
 			"scripts": {
 				"postdownload": "A_WorkingDir := A_Args[1]\nA_FileEncoding := 'UTF-8'\nContent := FileRead('DownloadAsync.ahk')\nFileOpen('DownloadAsync.ahk', 'w').Write(Trim(StrReplace(Content, '#Include WinHttpRequest.ahk'), '`r`n'))"
 			}
+		},
+		"thqby/JSON": {
+			"description": "A basic JSON library",
+			"files": "JSON.ahk",
+			"license": "MIT",
+			"repository": "thqby/ahk2_lib/master"
 		},
 		"thqby/LoadScript": {
 			"description": "Loads a script file or script code as a subprocess and returns an object that can be used to call functions or get/set global variables.",
