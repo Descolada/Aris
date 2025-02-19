@@ -288,7 +288,7 @@ PackageLVItemSelected(LV, Item, Selected) {
         return
     }
 
-    Tab.Metadata.Value := ExtractPackageDescription(Info)
+    Tab.Metadata.Value := ExtractPackageDescription(Info) "`n`n#include <Aris/" SelectedPackage.PackageName "> `; " ConstructInstallCommand(SelectedPackage, SelectedPackage.InstallVersion (SelectedPackage.BuildMetadata ? "+" SelectedPackage.BuildMetadata : ""))
 }
 
 IndexLVItemSelected(LV, Item, Selected) {
