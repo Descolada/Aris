@@ -623,7 +623,7 @@ LaunchModifyMetadataGui(*) {
     G.PKeywords.ToolTip := WordWrap("Comma-delimited keywords that can be used to search for your package.")
     G.AddText("h20 xs +0x200", "Files:")
     G.PFiles := G.AddEdit("yp x75 r1 w195", g_PackageJson["files"])
-    G.PKeywords.ToolTip := WordWrap('Comma-delimited file names, or a pattern of files such as "lib\*.ahk", or a directory, which will be included in the package if used as a dependency.')
+    G.PFiles.ToolTip := WordWrap('Comma-delimited file names, or a pattern of files such as "lib\*.ahk", or a directory, which will be included in the package if used as a dependency.')
     G.AddText("h20 xs +0x200", "Bugs:")
     G.PBugs := G.AddEdit("yp x75 r1 w195", g_PackageJson["bugs"] is Map ? (g_PackageJson["bugs"].Has("url") ? g_PackageJson["bugs"]["url"] : "") : g_PackageJson["bugs"])
     G.PBugs.ToolTip := WordWrap("The URL at which bug reports may be filed.")
