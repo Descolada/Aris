@@ -22,15 +22,16 @@ LaunchGui(FileOrDir?, SelectedTab := 1) {
         }
         LoadPackageFolder(FullDirPath)
     } else
-        LoadPackageFolder(g_Config.Has("last_project_directory") && DirExist(g_Config["last_project_directory"]) ? g_Config["last_project_directory"] : A_WorkingDir)
+        LoadPackageFolder(FullDirPath := (g_Config.Has("last_project_directory") && DirExist(g_Config["last_project_directory"]) ? g_Config["last_project_directory"] : A_WorkingDir))
 
     g_MainGui.PackageJson := LoadPackageJson()
+
     SB.SetText(g_MainGui.PackageJson["name"] ? (g_MainGui.PackageJson["name"] "@" (g_MainGui.PackageJson["version"] || "undefined-version")) : "Undefined package: add package name and version in metadata.")
     g_MainGui.LoadPackageBtn.Y := -(SB_Height+Btn_Height+5)
     g_MainGui.ModifyMetadata := g_MainGui.AddButton("x+27", "Modify metadata")
     g_MainGui.ModifyMetadata.Anchor := g_MainGui.FolderTV, g_MainGui.ModifyMetadata.AnchorIn := false, g_MainGui.ModifyMetadata.YP := 1.0, g_MainGui.ModifyMetadata.Y := 5, g_MainGui.ModifyMetadata.XP := 1.0, g_MainGui.ModifyMetadata.X := -92
     g_MainGui.ModifyMetadata.OnEvent("Click", LaunchModifyMetadataGui)
-    g_MainGui.LoadPackageBtn.OnEvent("Click", (*) => (dir := DirSelect("*" g_MainGui.CurrentFolder), dir ? (LoadPackageFolder(dir), PopulateTabs()) : ""))
+    g_MainGui.LoadPackageBtn.OnEvent("Click", LoadPackageFromGui)
 
     g_MainGui.Tabs := g_MainGui.AddTab3("w410 h395 x220 y6", ["Current package", "Index", "Settings"])
     g_MainGui.Tabs.UseTab(1)
@@ -400,11 +401,20 @@ PopulateIndexTab(Tab) {
 LoadPackageFolder(FullPath) {
     FullPath := Trim(FullPath, "/\") "\"
 
-    g_Config["last_project_directory"] := FullPath
-    SaveSettings()
+    PrevWorkingDir := A_WorkingDir
+    try {
+        SetWorkingDir(FullPath)
+        RefreshWorkingDirGlobals()
+        g_Config["last_project_directory"] := FullPath
+        SaveSettings()
+    } catch Error as err {
+        Print("Failed to load package from " FullPath)
+        PrintError(err, 0)
+        FullPath := FullPath == PrevWorkingDir ? A_ScriptDir : PrevWorkingDir
+        SetWorkingDir(FullPath)
+        RefreshWorkingDirGlobals()
+    }
 
-    SetWorkingDir(FullPath)
-    RefreshWorkingDirGlobals()
     g_MainGui.CurrentFolder := FullPath
     g_MainGui.CurrentLibDir := g_LocalLibDir "\"
 
@@ -649,6 +659,17 @@ On_WM_MOUSEMOVE(wParam, lParam, msg, Hwnd) {
         }
         PrevHwnd := Hwnd
     }
+}
+
+LoadPackageFromGui(*) {
+    dir := DirSelect("*" g_MainGui.CurrentFolder)
+    if !dir
+        return
+    g_MainGui.Tabs.Index.Metadata.Value := ""
+    g_MainGui.Tabs.Package.Metadata.Value := ""
+    
+    LoadPackageFolder(dir)
+    PopulateTabs()
 }
 
 SavePackageMetadata(G, *) {

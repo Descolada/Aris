@@ -2227,7 +2227,6 @@ LoadJson(fileName, &RawContent:="") => JSON.Load(RawContent := FileRead(fileName
 
 Print(msg) {
     try FileAppend(msg "`n", "*")
-    catch
-        Print.Buffer .= InStr(Print.Buffer, msg) ? "" : msg "`n"
+    Print.Buffer .= InStr(Print.Buffer, msg) ? "" : msg "`n"
 }
 PrintError(exception, mode) => (Print("Uncaught error on line " exception.Line ": " exception.Message "`n" (exception.Extra ? "`tSpecifically: " exception.Extra "`n" : "")), 1)
