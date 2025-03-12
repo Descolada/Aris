@@ -1,5 +1,12 @@
 ﻿{
 	"v2.0": {
+		"0w0Demonic/AquaHotkey": {
+			"description": "Class prototyping library for AutoHotkey v2.",
+			"files": "src/*.*",
+			"license": "MIT",
+			"main": "src/AquaHotkey.ahk",
+			"repository": "0w0Demonic/AquaHotkey/main"
+		},
 		"AstraVista/ScriptSock": {
 			"description": "Communicate easily between scripts",
 			"files": "v2/AstraVista/ScriptSock.ahk",
