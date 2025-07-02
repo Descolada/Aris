@@ -786,10 +786,6 @@ InstallPackage(Package, Update:=0, Switches?) {
             SemVerVersion := IsSemVer(Include.InstallVersion) && !(Include.InstallVersion ~= "^[~^><=]") ? "^" Include.InstallVersion : Include.InstallVersion
             PackageJson["dependencies"][IncludePackageName] := g_Index.Has(Include.PackageName) ? SemVerVersion : ConstructInstallCommand(Include, SemVerVersion (Include.InstallBuildMetadata ? "+" Include.InstallBuildMetadata : ""))
         }
-        if Update
-            Print 'Package successfully updated to "' IncludePackageName "@" Include.InstallVersion '".'
-        else
-            Print 'Package "' IncludePackageName "@" Include.InstallVersion '" successfully installed.'
 
         if !Include.Main {
             if Include.Files.Length = 1
@@ -801,8 +797,6 @@ InstallPackage(Package, Update:=0, Switches?) {
         if !(MainFileExt ~= "ahk?\d?$")
             Print("Warning: package " Include.Author "\" Include.Name " main file does not have an AHK file extension, please verify that the file contents are valid!")
 
-        Print("")
-
         InstallEntry := ConstructInstallCommand(Include, Include.InstallVersion (Include.BuildMetadata ? "+" Include.BuildMetadata : ""))
 
         HashtagInclude := (Include.Main == "" ? "; " : "") "#include"
@@ -813,6 +807,12 @@ InstallPackage(Package, Update:=0, Switches?) {
         if !DirExist(g_LocalLibDir "\" Include.Author)
             DirCreate(g_LocalLibDir "\" Include.Author)
         FileOpen(g_LocalLibDir "\" Include.Author "\" Include.Name ".ahk", "w").Write(HashtagInclude " " (Include.Global ? "%A_MyDocuments%\AutoHotkey\Lib\Aris\" Include.Author "\" : ".\") StrSplit(Include.InstallName, "/",,2)[-1] "\" StrReplace(Include.Main, "/", "\"))
+
+        if Update
+            Print 'Package successfully updated to "' IncludePackageName "@" Include.InstallVersion '".'
+        else
+            Print 'Package "' IncludePackageName "@" Include.InstallVersion '" successfully installed.'
+        Print("")
     }
 
     if !PackageJson["dependencies"].Count
@@ -2227,6 +2227,6 @@ LoadJson(fileName, &RawContent:="") => JSON.Load(RawContent := FileRead(fileName
 
 Print(msg) {
     try FileAppend(msg "`n", "*")
-    Print.Buffer .= InStr(Print.Buffer, msg) ? "" : msg "`n"
+    Print.Buffer .= msg != "" && InStr(Print.Buffer, msg) ? "" : msg "`n"
 }
 PrintError(exception, mode) => (Print("Uncaught error on line " exception.Line ": " exception.Message "`n" (exception.Extra ? "`tSpecifically: " exception.Extra "`n" : "")), 1)
