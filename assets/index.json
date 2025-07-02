@@ -41,6 +41,12 @@
 			"license": "MIT",
 			"repository": "Nich-Cebolla/Monitor.ahk/main"
 		},
+		"Cebolla/StringifyAll": {
+			"description": "A customizable solution for serializing AutoHotkey (AHK) object properties, including inherited properties, and/or items into a 100% valid JSON string.",
+			"files": "src/StringifyAll.ahk",
+			"license": "MIT",
+			"repository": "Nich-Cebolla/StringifyAll/main"
+		},
 		"Chunjee/adash": {
 			"author": "Shawn Brooker",
 			"bugs": {
@@ -253,6 +259,12 @@
 			"license": "GPL-3.0",
 			"main": "src/jsongo.v2.ahk",
 			"repository": "GroggyOtter/jsongo_AHKv2/main"
+		},
+		"Hellbent/Glyphs": {
+			"description": "Render multi-color text in AHK GUIs with support for gradients, shadows, and advanced formatting",
+			"files": "v2/Hellbent/Glyphs.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=135966",
+			"repository": "ahkscript/ScriptHub/main"
 		},
 		"Hellbent/PopupWindow": {
 			"dependencies": {
