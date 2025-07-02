@@ -35,6 +35,15 @@
 			"main": "Object.Prototype.DeepClone.ahk",
 			"repository": "Nich-Cebolla/AutoHotkey-Object.Prototype.DeepClone/main"
 		},
+		"Cebolla/Inheritance": {
+			"description": "Inheritance is a library containing functions to aid working with AHK's object inheritance model: GetPropsInfo, ClassFactory, GetBaseObjects, and GetPropDesc.",
+			"files": [
+				"inheritance/*.ahk"
+			],
+			"license": "MIT",
+			"main": "inheritance/Inheritance.ahk",
+			"repository": "Nich-Cebolla/AutoHotkey-LibV2/main"
+		},
 		"Cebolla/Monitor": {
 			"description": "This class provides methods for obtaining information about monitor size, dimensions, position, and DPI.",
 			"files": "cMonitor.ahk",
@@ -42,10 +51,16 @@
 			"repository": "Nich-Cebolla/Monitor.ahk/main"
 		},
 		"Cebolla/StringifyAll": {
+			"dependencies": {
+				"Cebolla/Inheritance": "*"
+			},
 			"description": "A customizable solution for serializing AutoHotkey (AHK) object properties, including inherited properties, and/or items into a 100% valid JSON string.",
 			"files": "src/StringifyAll.ahk",
 			"license": "MIT",
-			"repository": "Nich-Cebolla/StringifyAll/main"
+			"repository": "Nich-Cebolla/StringifyAll/main",
+			"scripts": {
+				"postdownload": "A_WorkingDir := A_Args[1]\nA_FileEncoding := 'UTF-8'\nContent := FileRead('StringifyAll.ahk')\nFileOpen('StringifyAll.ahk', 'w').Write(StrReplace(Content, \"#include <Inheritance>\",  \"; #include <Inheritance>\"))"
+			}
 		},
 		"Chunjee/adash": {
 			"author": "Shawn Brooker",
