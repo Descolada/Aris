@@ -35,6 +35,12 @@
 			"main": "Object.Prototype.DeepClone.ahk",
 			"repository": "Nich-Cebolla/AutoHotkey-Object.Prototype.DeepClone/main"
 		},
+		"Cebolla/Histogram2": {
+			"description": "Generates a histogram from an array of numbers.",
+			"files": "Histogram2.ahk",
+			"license": "MIT",
+			"repository": "Nich-Cebolla/AutoHotkey-LibV2/main"
+		},
 		"Cebolla/Inheritance": {
 			"description": "Inheritance is a library containing functions to aid working with AHK's object inheritance model: GetPropsInfo, ClassFactory, GetBaseObjects, and GetPropDesc.",
 			"files": [
@@ -61,6 +67,19 @@
 			"scripts": {
 				"postdownload": "A_WorkingDir := A_Args[1]\nA_FileEncoding := 'UTF-8'\nContent := FileRead('StringifyAll.ahk')\nFileOpen('StringifyAll.ahk', 'w').Write(StrReplace(Content, \"#include <Inheritance>\",  \"; #include <Inheritance>\"))"
 			}
+		},
+		"Cebolla/Timer": {
+			"description": "A reusable timer object with history functionality.",
+			"files": "Timer.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=138178",
+			"license": "MIT",
+			"repository": "Nich-Cebolla/AutoHotkey-LibV2/main"
+		},
+		"Cebolla/WindowFunctions": {
+			"description": "Some Win32 window function (EnumChildWindows, GetDpi etc) wrappers for AutoHotkey.",
+			"files": "WIn32WindowFunctions.ahk",
+			"license": "MIT",
+			"repository": "Nich-Cebolla/AutoHotkey-LibV2/main"
 		},
 		"Chunjee/adash": {
 			"author": "Shawn Brooker",
