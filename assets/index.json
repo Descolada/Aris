@@ -540,6 +540,12 @@
 			"license": "MIT",
 			"repository": "devPnal/every-hangul-v2"
 		},
+		"docterry/XML": {
+			"description": "Build and parse XML.",
+			"files": "v2/docterry/XML.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=138365",
+			"repository": "ahkscript/ScriptHub/main"
+		},
 		"emliberace/MIDI": {
 			"description": "The MIDIv2 library grants MIDI functionality to AutoHotKey v2. Send and receive MIDI in your AHK scripts with ease.",
 			"files": "MIDIv2.ahk",
