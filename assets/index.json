@@ -451,11 +451,8 @@
 		},
 		"The-CoDingman/WebViewToo": {
 			"description": "Allows for use of the WebView2 Framework within AHK to create Web-based GUIs",
-			"files": [
-				"AHK Resources/*.*"
-			],
 			"license": "MIT",
-			"main": "AHK Resources/WebViewToo.ahk",
+			"main": "WebViewToo.ahk",
 			"repository": "The-CoDingman/WebViewToo/main"
 		},
 		"The-CoDingman/gToolTip": {
