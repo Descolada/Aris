@@ -520,6 +520,12 @@
 			"main": "GetUrl.ahk",
 			"repository": "gist:7cce378c9dfdaf733cb3ca6df345b140/GetUrl.ahk"
 		},
+		"bceenaeiklmr/GpGFX": {
+			"description": "GpGFX is a graphics library for AutoHotkey v2, providing drawing and rendering capabilities using Gdiplus. It includes classes for creating and manipulating shapes, colors, fonts, layers, and more.",
+			"files": "GpGFX_standalone.ahk",
+			"homepage": "https://github.com/bceenaeiklmr/GpGFX",
+			"repository": "bceenaeiklmr/GpGFX/main"
+		},
 		"buliasz/Gdip": {
 			"description": "GDI+ library (Gdip_All.ahk) for graphics manipulation",
 			"files": "Gdip_All.ahk",
@@ -824,6 +830,12 @@
 			"license": "MIT",
 			"repository": "nperovic/ToolTipEx/main"
 		},
+		"ntepa/GraphemeSplit": {
+			"description": "Splits a string into graphemes",
+			"files": "v2/ntepa/GraphemeSplit.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=113294",
+			"repository": "ahkscript/ScriptHub/main"
+		},
 		"prasad383/HotKeyChain": {
 			"description": "This class creates an interactive hotkey system with a GUI menu, supporting nested hotkeys and customizable appearance",
 			"files": "v2/prasad383/HotKeyChain.ahk",
@@ -856,6 +868,12 @@
 			"license": "MIT",
 			"main": "lib/redisclient.ahk",
 			"repository": "sxzxs/redis/main"
+		},
+		"thehafenator/QMK": {
+			"description": "Brings QMK-like functionality to any keyboard on Windows.",
+			"files": "QMKClass.ahk",
+			"license": "",
+			"repository": "thehafenator/QMK.ahk/main"
 		},
 		"thqby/Audio": {
 			"description": "Core Audio APIs",
