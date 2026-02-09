@@ -645,6 +645,18 @@
 			"main": "Lib/convert.ahk",
 			"repository": "JoyHak/MarkdownToBBCode/main"
 		},
+        "JoyHak/ChangeLogSorter": {
+			"description": "Merges change logs into one file in chronological order.",
+			"files": "Lib/RegExMatchAll.ahk",
+            "keywords": [
+				"changelog",
+				"date",
+				"time",
+                "sort"
+			],
+			"main": "Lib/SortByDate.ahk",
+			"repository": "JoyHak/ChangeLogSorter/main"
+		},
 		"jNizM/DNSQuery": {
 			"description": "Retrieves the Resource Record (RR) depends on DNS Record Type",
 			"files": "src/Network/DNSQuery.ahk",
