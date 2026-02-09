@@ -363,6 +363,24 @@
 			"main": "Log.ahk",
 			"repository": "holy-tao/log4ahk/main"
 		},
+        "holy-tao/MsgPack": {
+			"description": "An efficient binary serialization format. ",
+			"files": [
+				"MsgPackTyoe.ahk", 
+				"extensiontypes/*.*", 
+				"utils/*.*", 
+			],
+            "keywords": [
+				"log",
+				"trace",
+				"debug",
+                "filter",                 
+				"append"
+			],
+			"license": "MIT",
+			"main": "MsgPack.ahk",
+			"repository": "holy-tao/MsgPack/main"
+		},
 		"Komrad Toast/DLLManager": {
 			"description": "Simplifies DLL file management. Loads your requested DLLs, keeps track of which DLLs are loaded and how many times that DLL has been referenced, and if the reference count on a DLL drops to 0 it is automatically unloaded.",
 			"files": "v2/Komrad Toast/DLLManager.ahk",
