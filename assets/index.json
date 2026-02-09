@@ -20,6 +20,9 @@
 			"repository": "0w0Demonic/AquaHotkey/main"
 		},
         "0w0Demonic/Alchemy": {
+            "dependencies": {
+				"0w0Demonic/AquaHotkey": "*"
+			},
 			"description": "Toolkit for OOP and data manipulation: map chains, class methods and properties privatizers, API client generators, self-generating enum classes, cascading objects and classes and more.",
 			"files": [
 				"lib/*.*",
@@ -57,6 +60,30 @@
 			"license": "MIT",
 			"main": "src/Yako.ahk",
 			"repository": "0w0Demonic/AquaHotkey/main"
+		},
+        "0w0Demonic/Tanuki": {
+            "dependencies": {
+				"0w0Demonic/AquaHotkey": "*", 
+				"holy-tao/AhkWin32Projection": "*"
+			},
+			"description": "Win32-powered GUI library that directly extends the built-in Gui type and its controls.",
+			"files": [
+				"Extensions/*.*",
+				"Gui/*.*",
+				"util/*.*"
+			],
+            "keywords": [
+				"gui",
+				"extension",
+				"control",
+                "type",                 
+				"source", 
+                "win32",
+                "winapi"
+			],
+			"license": "MIT",
+            "main": "tanuki.ahk"
+			"repository": "0w0Demonic/Tanuki/main"
 		},
 		"AstraVista/ScriptSock": {
 			"description": "Communicate easily between scripts",
