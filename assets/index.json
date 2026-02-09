@@ -3,8 +3,17 @@
 		"0w0Demonic/AquaHotkey": {
 			"description": "Class prototyping library for AutoHotkey v2.",
 			"files": "src/*.*",
+            "keywords": [
+				"autohotkey",
+				"prototyping",
+				"class",
+                "object",                 
+				"oop", 
+                "type",
+                "extension"
+			],
 			"license": "MIT",
-			"main": "src/AquaHotkey.ahk",
+			"main": "AquaHotkey.ahk",
 			"repository": "0w0Demonic/AquaHotkey/main"
 		},
 		"AstraVista/ScriptSock": {
