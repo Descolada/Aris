@@ -305,6 +305,12 @@
 			"license": "MIT",
 			"repository": "Descolada/AHK-v2-libraries/main"
 		},
+        "AstraVista/ClassDbg": {
+			"description": "Improved MsgBox that can display the contents of arrays, objects, buffers, and more.",
+			"files": "v2/AstraVista/ClassDbg.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=138039",
+			"repository": "ahkscript/ScriptHub/main"
+		},
 		"FanaticGuru/GuiButtonIcon": {
 			"description": "A function that allows an icon to be assigned to a Gui Button using the button's hwnd to identify the button",
 			"files": "v2/FanaticGuru/GuiButtonIcon.ahk",
