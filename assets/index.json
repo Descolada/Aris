@@ -40,6 +40,24 @@
 			"license": "MIT",
 			"repository": "0w0Demonic/Alchemy/main"
 		},
+        "0w0Demonic/Yako": {
+			"description": "Overwrite window procedures of external applications via DLL injection.",
+			"files": [
+                "src/*.*",
+                "bin/*.*",
+            ],
+            "keywords": [
+				"injection",
+				"dll",
+				"hijack",
+                "onmessage",                 
+				"sendmessage", 
+                "ipc"
+			],
+			"license": "MIT",
+			"main": "src/Yako.ahk",
+			"repository": "0w0Demonic/AquaHotkey/main"
+		},
 		"AstraVista/ScriptSock": {
 			"description": "Communicate easily between scripts",
 			"files": "v2/AstraVista/ScriptSock.ahk",
