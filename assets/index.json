@@ -324,6 +324,28 @@
 			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=132770",
 			"repository": "ahkscript/ScriptHub/main"
 		},
+        "holy-tao/AhkWin32Projection": {
+			"description": "Win32 API bindings for 64-bit AutoHotkey V2",
+			"files": [
+                "CStyleArray.ahk", 
+                "Guid.ahk", 
+                "Win32ComInterface.ahk", 
+                "Win32Enum.ahk", 
+                "Win32Handle.ahk", 
+                "Win32Struct.ahk",
+				"Windows/*.*"
+			],
+            "keywords": [
+				"Win32",
+				"WinApi",
+				"msdn",
+                "DllCall",                 
+				"struct"
+			],
+			"license": "MIT",
+			"main": "Win32FixedArray.ahk",
+			"repository": "holy-tao/AhkWin32Projection/main"
+		},
 		"Komrad Toast/DLLManager": {
 			"description": "Simplifies DLL file management. Loads your requested DLLs, keeps track of which DLLs are loaded and how many times that DLL has been referenced, and if the reference count on a DLL drops to 0 it is automatically unloaded.",
 			"files": "v2/Komrad Toast/DLLManager.ahk",
