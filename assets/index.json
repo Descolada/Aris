@@ -630,6 +630,21 @@
 			"license": "MIT",
 			"repository": "iseahound/TextRender/main"
 		},
+		"JoyHak/MarkdownToBBCode": {
+			"description": "Convert text from Markdown to BBCode markup language (used by forum).",
+			"files": "Lib/*.*",
+            "keywords": [
+				"html",
+				"markdown",
+				"bbcode",
+                "post",                 
+				"convert", 
+                "forum"
+			],
+			"license": "GPL-3.0",
+			"main": "Lib/convert.ahk",
+			"repository": "JoyHak/MarkdownToBBCode/main"
+		},
 		"jNizM/DNSQuery": {
 			"description": "Retrieves the Resource Record (RR) depends on DNS Record Type",
 			"files": "src/Network/DNSQuery.ahk",
