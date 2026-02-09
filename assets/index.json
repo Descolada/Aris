@@ -595,6 +595,12 @@
 			"license": "MIT",
 			"repository": "The-CoDingman/gToolTip.ahk/main"
 		},
+        "The-CoDingman/RemoteListView.ahk": {
+			"description": "Simplifies interaction with ListView control in other application",
+			"files": "RemoteListView.ahk",
+			"license": "MIT",
+			"repository": "The-CoDingman/RemoteListView.ahk/main"
+		},
 		"TheArkive/CliSAK": {
 			"description": "CLI class: easy one-time and streaming output that collects stdOut and stdErr, and allows writing to stdIn",
 			"files": "AHK2/TheArkive_CliSAK.ahk",
