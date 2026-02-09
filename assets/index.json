@@ -2,7 +2,10 @@
 	"v2.0": {
 		"0w0Demonic/AquaHotkey": {
 			"description": "Class prototyping library for AutoHotkey v2.",
-			"files": "src/*.*",
+			"files": [
+                "AquaHotkeyX.ahk",
+                "src/*.*",
+            ],
             "keywords": [
 				"autohotkey",
 				"prototyping",
@@ -15,6 +18,27 @@
 			"license": "MIT",
 			"main": "AquaHotkey.ahk",
 			"repository": "0w0Demonic/AquaHotkey/main"
+		},
+        "0w0Demonic/Alchemy": {
+			"description": "Toolkit for OOP and data manipulation: map chains, class methods and properties privatizers, API client generators, self-generating enum classes, cascading objects and classes and more.",
+			"files": [
+				"lib/*.*",
+				"playground/*.*",
+				"ApiClient.ahk",
+				"Cascade.ahk",
+				"MapChain.ahk"
+			],
+            "keywords": [
+				"playground",
+				"api",
+				"class",
+                "private",                 
+				"MapChain", 
+                "Reflector",
+                "Alchemist"
+			],
+			"license": "MIT",
+			"repository": "0w0Demonic/Alchemy/main"
 		},
 		"AstraVista/ScriptSock": {
 			"description": "Communicate easily between scripts",
@@ -371,11 +395,10 @@
 				"utils/*.*", 
 			],
             "keywords": [
-				"log",
-				"trace",
-				"debug",
-                "filter",                 
-				"append"
+				"serialization",
+				"data",
+				"dump",
+                "messagepack",
 			],
 			"license": "MIT",
 			"main": "MsgPack.ahk",
