@@ -159,6 +159,12 @@
 			"license": "MIT",
 			"repository": "Nich-Cebolla/AutoHotkey-LibV2/main"
 		},
+        "Cobracrystal/ahk": {
+			"description": "Library with different scripts.",
+			"files": "ahk/LibrariesV2/*.*",
+			"license": "MIT",
+			"repository": "Cobracrystal/ahk/main"
+		},
 		"Chunjee/adash": {
 			"author": "Shawn Brooker",
 			"bugs": {
