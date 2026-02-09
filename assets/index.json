@@ -346,6 +346,23 @@
 			"main": "Win32FixedArray.ahk",
 			"repository": "holy-tao/AhkWin32Projection/main"
 		},
+        "holy-tao/log4ahk": {
+			"description": "A lightweight, highly configurable logging module for AutoHotkey based off Java's Log4J.",
+			"files": [
+				"appenders/*.*", 
+				"filters/*.*", 
+			],
+            "keywords": [
+				"log",
+				"trace",
+				"debug",
+                "filter",                 
+				"append"
+			],
+			"license": "MIT",
+			"main": "Log.ahk",
+			"repository": "holy-tao/log4ahk/main"
+		},
 		"Komrad Toast/DLLManager": {
 			"description": "Simplifies DLL file management. Loads your requested DLLs, keeps track of which DLLs are loaded and how many times that DLL has been referenced, and if the reference count on a DLL drops to 0 it is automatically unloaded.",
 			"files": "v2/Komrad Toast/DLLManager.ahk",
