@@ -1,26 +1,7 @@
 ﻿{
 	"v2.0": {
-		"0w0Demonic/AquaHotkey": {
-			"description": "Class prototyping library for AutoHotkey v2.",
-			"files": [
-                "AquaHotkeyX.ahk",
-                "src/*.*",
-            ],
-            "keywords": [
-				"autohotkey",
-				"prototyping",
-				"class",
-                "object",                 
-				"oop", 
-                "type",
-                "extension"
-			],
-			"license": "MIT",
-			"main": "AquaHotkey.ahk",
-			"repository": "0w0Demonic/AquaHotkey/main"
-		},
-        "0w0Demonic/Alchemy": {
-            "dependencies": {
+		"0w0Demonic/Alchemy": {
+			"dependencies": {
 				"0w0Demonic/AquaHotkey": "*"
 			},
 			"description": "Toolkit for OOP and data manipulation: map chains, class methods and properties privatizers, API client generators, self-generating enum classes, cascading objects and classes and more.",
@@ -31,39 +12,40 @@
 				"Cascade.ahk",
 				"MapChain.ahk"
 			],
-            "keywords": [
+			"keywords": [
 				"playground",
 				"api",
 				"class",
-                "private",                 
-				"MapChain", 
-                "Reflector",
-                "Alchemist"
+				"private",
+				"MapChain",
+				"Reflector",
+				"Alchemist"
 			],
 			"license": "MIT",
 			"repository": "0w0Demonic/Alchemy/main"
 		},
-        "0w0Demonic/Yako": {
-			"description": "Overwrite window procedures of external applications via DLL injection.",
+		"0w0Demonic/AquaHotkey": {
+			"description": "Class prototyping library for AutoHotkey v2.",
 			"files": [
-                "src/*.*",
-                "bin/*.*",
-            ],
-            "keywords": [
-				"injection",
-				"dll",
-				"hijack",
-                "onmessage",                 
-				"sendmessage", 
-                "ipc"
+				"AquaHotkeyX.ahk",
+				"src/*.*"
+			],
+			"keywords": [
+				"autohotkey",
+				"prototyping",
+				"class",
+				"object",
+				"oop",
+				"type",
+				"extension"
 			],
 			"license": "MIT",
-			"main": "src/Yako.ahk",
+			"main": "AquaHotkey.ahk",
 			"repository": "0w0Demonic/AquaHotkey/main"
 		},
-        "0w0Demonic/Tanuki": {
-            "dependencies": {
-				"0w0Demonic/AquaHotkey": "*", 
+		"0w0Demonic/Tanuki": {
+			"dependencies": {
+				"0w0Demonic/AquaHotkey": "*",
 				"holy-tao/AhkWin32Projection": "*"
 			},
 			"description": "Win32-powered GUI library that directly extends the built-in Gui type and its controls.",
@@ -72,18 +54,42 @@
 				"Gui/*.*",
 				"util/*.*"
 			],
-            "keywords": [
+			"keywords": [
 				"gui",
 				"extension",
 				"control",
-                "type",                 
-				"source", 
-                "win32",
-                "winapi"
+				"type",
+				"source",
+				"win32",
+				"winapi"
 			],
 			"license": "MIT",
-            "main": "tanuki.ahk"
+			"main": "tanuki.ahk",
 			"repository": "0w0Demonic/Tanuki/main"
+		},
+		"0w0Demonic/Yako": {
+			"description": "Overwrite window procedures of external applications via DLL injection.",
+			"files": [
+				"src/*.*",
+				"bin/*.*"
+			],
+			"keywords": [
+				"injection",
+				"dll",
+				"hijack",
+				"onmessage",
+				"sendmessage",
+				"ipc"
+			],
+			"license": "MIT",
+			"main": "src/Yako.ahk",
+			"repository": "0w0Demonic/AquaHotkey/main"
+		},
+		"AstraVista/ClassDbg": {
+			"description": "Improved MsgBox that can display the contents of arrays, objects, buffers, and more.",
+			"files": "v2/AstraVista/ClassDbg.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=138039",
+			"repository": "ahkscript/ScriptHub/main"
 		},
 		"AstraVista/ScriptSock": {
 			"description": "Communicate easily between scripts",
@@ -159,12 +165,6 @@
 			"license": "MIT",
 			"repository": "Nich-Cebolla/AutoHotkey-LibV2/main"
 		},
-        "Cobracrystal/ahk": {
-			"description": "Library with different scripts.",
-			"files": "ahk/LibrariesV2/*.*",
-			"license": "MIT",
-			"repository": "Cobracrystal/ahk/main"
-		},
 		"Chunjee/adash": {
 			"author": "Shawn Brooker",
 			"bugs": {
@@ -181,6 +181,12 @@
 			"license": "MIT",
 			"main": "adash.ahk",
 			"repository": "adash-ahk/adash.ahk/main"
+		},
+		"Cobracrystal/ahk": {
+			"description": "Library with different scripts.",
+			"files": "ahk/LibrariesV2/*.*",
+			"license": "MIT",
+			"repository": "Cobracrystal/ahk/main"
 		},
 		"DaveT1/Expect": {
 			"description": "Rapid units testing class",
@@ -305,12 +311,6 @@
 			"license": "MIT",
 			"repository": "Descolada/AHK-v2-libraries/main"
 		},
-        "AstraVista/ClassDbg": {
-			"description": "Improved MsgBox that can display the contents of arrays, objects, buffers, and more.",
-			"files": "v2/AstraVista/ClassDbg.ahk",
-			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=138039",
-			"repository": "ahkscript/ScriptHub/main"
-		},
 		"FanaticGuru/GuiButtonIcon": {
 			"description": "A function that allows an icon to be assigned to a Gui Button using the button's hwnd to identify the button",
 			"files": "v2/FanaticGuru/GuiButtonIcon.ahk",
@@ -405,61 +405,47 @@
 			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=132770",
 			"repository": "ahkscript/ScriptHub/main"
 		},
-        "holy-tao/AhkWin32Projection": {
-			"description": "Win32 API bindings for 64-bit AutoHotkey V2",
-			"files": [
-                "CStyleArray.ahk", 
-                "Guid.ahk", 
-                "Win32ComInterface.ahk", 
-                "Win32Enum.ahk", 
-                "Win32Handle.ahk", 
-                "Win32Struct.ahk",
-				"Windows/*.*"
-			],
-            "keywords": [
-				"Win32",
-				"WinApi",
-				"msdn",
-                "DllCall",                 
-				"struct"
-			],
+		"JoyHak/Build": {
+			"description": "Builds AHK script, it's dependencies into (self-extracting) archive.",
+			"files": "GetInterpreter/*.*",
+			"homepage": "https://github.com/JoyHak/QuickSwitch/blob/main/Utilities",
 			"license": "MIT",
-			"main": "Win32FixedArray.ahk",
-			"repository": "holy-tao/AhkWin32Projection/main"
+			"main": "Build.ahk",
+			"repository": "JoyHak/QuickSwitch/blob/main/Utilities"
 		},
-        "holy-tao/log4ahk": {
-			"description": "A lightweight, highly configurable logging module for AutoHotkey based off Java's Log4J.",
-			"files": [
-				"appenders/*.*", 
-				"filters/*.*", 
+		"JoyHak/ChangeLogSorter": {
+			"description": "Merges change logs into one file in chronological order.",
+			"files": "Lib/RegExMatchAll.ahk",
+			"keywords": [
+				"changelog",
+				"date",
+				"time",
+				"sort"
 			],
-            "keywords": [
-				"log",
-				"trace",
-				"debug",
-                "filter",                 
-				"append"
-			],
-			"license": "MIT",
-			"main": "Log.ahk",
-			"repository": "holy-tao/log4ahk/main"
+			"main": "Lib/SortByDate.ahk",
+			"repository": "JoyHak/ChangeLogSorter/main"
 		},
-        "holy-tao/MsgPack": {
-			"description": "An efficient binary serialization format. ",
-			"files": [
-				"MsgPackTyoe.ahk", 
-				"extensiontypes/*.*", 
-				"utils/*.*", 
-			],
-            "keywords": [
-				"serialization",
-				"data",
-				"dump",
-                "messagepack",
-			],
+		"JoyHak/GetInterpreter": {
+			"description": "Returns required Autohotkey interpreter for specified scr",
+			"homepage": "https://github.com/JoyHak/QuickSwitch/blob/main/Utilities/GetInterpreter",
 			"license": "MIT",
-			"main": "MsgPack.ahk",
-			"repository": "holy-tao/MsgPack/main"
+			"main": "GetInterpreter.ahk",
+			"repository": "JoyHak/QuickSwitch/blob/main/Utilities/GetInterpreter"
+		},
+		"JoyHak/MarkdownToBBCode": {
+			"description": "Convert text from Markdown to BBCode markup language (used by forum).",
+			"files": "Lib/*.*",
+			"keywords": [
+				"html",
+				"markdown",
+				"bbcode",
+				"post",
+				"convert",
+				"forum"
+			],
+			"license": "GPL-3.0",
+			"main": "Lib/convert.ahk",
+			"repository": "JoyHak/MarkdownToBBCode/main"
 		},
 		"Komrad Toast/DLLManager": {
 			"description": "Simplifies DLL file management. Loads your requested DLLs, keeps track of which DLLs are loaded and how many times that DLL has been referenced, and if the reference count on a DLL drops to 0 it is automatically unloaded.",
@@ -595,6 +581,12 @@
 			"main": "HotGestures.ahk",
 			"repository": "Tebayaki/HotGestures/main"
 		},
+		"The-CoDingman/RemoteListView.ahk": {
+			"description": "Simplifies interaction with ListView control in other application",
+			"files": "RemoteListView.ahk",
+			"license": "MIT",
+			"repository": "The-CoDingman/RemoteListView.ahk/main"
+		},
 		"The-CoDingman/WebViewToo": {
 			"description": "Allows for use of the WebView2 Framework within AHK to create Web-based GUIs",
 			"license": "MIT",
@@ -606,12 +598,6 @@
 			"files": "gTooltip.ahk",
 			"license": "MIT",
 			"repository": "The-CoDingman/gToolTip.ahk/main"
-		},
-        "The-CoDingman/RemoteListView.ahk": {
-			"description": "Simplifies interaction with ListView control in other application",
-			"files": "RemoteListView.ahk",
-			"license": "MIT",
-			"repository": "The-CoDingman/RemoteListView.ahk/main"
 		},
 		"TheArkive/CliSAK": {
 			"description": "CLI class: easy one-time and streaming output that collects stdOut and stdErr, and allows writing to stdIn",
@@ -768,6 +754,62 @@
 			],
 			"repository": "ahkscript/ScriptHub/main"
 		},
+		"holy-tao/AhkWin32Projection": {
+			"description": "Win32 API bindings for 64-bit AutoHotkey V2",
+			"files": [
+				"CStyleArray.ahk",
+				"Guid.ahk",
+				"Win32ComInterface.ahk",
+				"Win32Enum.ahk",
+				"Win32Handle.ahk",
+				"Win32Struct.ahk",
+				"Windows/*.*"
+			],
+			"keywords": [
+				"Win32",
+				"WinApi",
+				"msdn",
+				"DllCall",
+				"struct"
+			],
+			"license": "MIT",
+			"main": "Win32FixedArray.ahk",
+			"repository": "holy-tao/AhkWin32Projection/main"
+		},
+		"holy-tao/MsgPack": {
+			"description": "An efficient binary serialization format. ",
+			"files": [
+				"MsgPackTyoe.ahk",
+				"extensiontypes/*.*",
+				"utils/*.*"
+			],
+			"keywords": [
+				"serialization",
+				"data",
+				"dump",
+				"messagepack"
+			],
+			"license": "MIT",
+			"main": "MsgPack.ahk",
+			"repository": "holy-tao/MsgPack/main"
+		},
+		"holy-tao/log4ahk": {
+			"description": "A lightweight, highly configurable logging module for AutoHotkey based off Java's Log4J.",
+			"files": [
+				"appenders/*.*",
+				"filters/*.*"
+			],
+			"keywords": [
+				"log",
+				"trace",
+				"debug",
+				"filter",
+				"append"
+			],
+			"license": "MIT",
+			"main": "Log.ahk",
+			"repository": "holy-tao/log4ahk/main"
+		},
 		"iseahound/ImagePut": {
 			"description": "A core library for images in AutoHotkey",
 			"files": "ImagePut.ahk",
@@ -781,21 +823,6 @@
 			"homepage": "https://github.com/iseahound/TextRender",
 			"license": "MIT",
 			"repository": "iseahound/TextRender/main"
-		},
-        "JoyHak/Build.ahk": {
-			"description": "Builds AHK script, it's dependencies into (self-extracting) archive.",
-			"files": "GetInterpreter/*.*",
-			"main": "Build.ahk",
-			"homepage": "https://github.com/JoyHak/QuickSwitch/blob/main/Utilities",
-			"license": "MIT",
-			"repository": "JoyHak/QuickSwitch/blob/main/Utilities"
-		},
-        "JoyHak/GetInterpreter.ahk": {
-			"description": "Returns required Autohotkey interpreter for specified scr",
-			"main": "GetInterpreter.ahk",
-			"homepage": "https://github.com/JoyHak/QuickSwitch/blob/main/Utilities/GetInterpreter",
-			"license": "MIT",
-			"repository": "JoyHak/QuickSwitch/blob/main/Utilities/GetInterpreter"
 		},
 		"jNizM/DNSQuery": {
 			"description": "Retrieves the Resource Record (RR) depends on DNS Record Type",
