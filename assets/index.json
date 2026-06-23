@@ -25,7 +25,7 @@
 			"repository": "0w0Demonic/Alchemy/main"
 		},
 		"0w0Demonic/AquaHotkey": {
-			"description": "Class prototyping library for AutoHotkey v2.",
+			"description": "Class prototyping library for AutoHotkey v2. Extends AHK, provides stdlib.",
 			"files": [
 				"AquaHotkeyX.ahk",
 				"src/*.*"
