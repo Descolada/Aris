@@ -109,6 +109,22 @@
 			"files": "Array.ahk",
 			"repository": "Nich-Cebolla/AutoHotkey-Array/main"
 		},
+		"Cebolla/Container": {
+			"description": "Array class with sorting, binary search, common methods like forEach, join, and more.",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?p=610574",
+			"files": "src/Container.ahk.ahk",
+			"keywords": [
+				"data",
+				"processing",
+				"collection",
+				"array",
+				"containers",
+				"quicksort",
+				"merge",
+				"functional"
+			],
+			"repository": "Nich-Cebolla/AutoHotkey-Container/main"
+		},
 		"Cebolla/DeepClone": {
 			"description": "Deep clones an object, with an option to specify a maximum depth.",
 			"files": [
