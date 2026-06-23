@@ -1376,6 +1376,12 @@
 			"main": "winrt.ahk",
 			"repository": "thqby/winrt.ahk/main"
 		},
+		"wawawa/ServiceHandler": {
+			"description": "Manage your Windows services",
+			"files": "v2/wawawa/ServiceHandler.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?p=614435",
+			"repository": "ahkscript/ScriptHub/main"
+		},
 		"xroot/Array2Buffer": {
 			"description": "A simple way to create a buffer (eg Win32 data structure) from a 2D-array containing the data and type.",
 			"files": "v2/xroot/Array2Buffer.ahk",
