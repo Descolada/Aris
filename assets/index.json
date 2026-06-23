@@ -111,8 +111,8 @@
 		},
 		"Cebolla/Container": {
 			"description": "Array class with sorting, binary search, common methods like forEach, join, and more.",
-			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?p=610574",
 			"files": "src/Container.ahk.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?p=610574",
 			"keywords": [
 				"data",
 				"processing",
@@ -177,9 +177,9 @@
 		},
 		"Cebolla/Tracer": {
 			"description": "Structured output and logging with different levels",
-			"main": "lib/Tracer.ahk",
 			"files": "lib/*.*",
 			"license": "MIT",
+			"main": "lib/Tracer.ahk",
 			"repository": "Nich-Cebolla/AutoHotkey-Tracer/main"
 		},
 		"Cebolla/WindowFunctions": {
@@ -457,9 +457,8 @@
 		},
 		"JoyHak/Launcher": {
 			"description": "Launch saved scripts and applications, manage auto-startup scripts. Supports both CLI & GUI.",
-			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=140805",
-			"main": "launcher.ahk",
 			"files": "Lib/*.*",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=140805",
 			"keywords": [
 				"cli",
 				"gui",
@@ -469,6 +468,7 @@
 				"scripts"
 			],
 			"license": "MIT",
+			"main": "launcher.ahk",
 			"repository": "JoyHak/Launcher/main"
 		},
 		"JoyHak/MarkdownToBBCode": {
@@ -717,7 +717,6 @@
 		},
 		"XMCQCX/Radify": {
 			"description": "Radial menu GDI+ framework with powerful customization.",
-			"main": "Radify Menus.ahk",
 			"files": [
 				"Radify Skin Editor.ahk",
 				"lib/*.*",
@@ -725,6 +724,7 @@
 			],
 			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=138484",
 			"license": "MIT",
+			"main": "Radify Menus.ahk",
 			"repository": "XMCQCX/RadifyClass-RadifySkinEditor/main"
 		},
 		"anonymous1184/GetUrl": {
@@ -1110,27 +1110,6 @@
 			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=113294",
 			"repository": "ahkscript/ScriptHub/main"
 		},
-		"owhs/ahk-xaml": {
-			"description": "WPF framework for creating modern-looking GUIs and windows",
-			"files": [
-				"lib/*.*",
-				"examples/*.*"
-			],
-			"keywords": [
-				"wpf",
-				"mica",
-				"gui",
-				"window"
-			],
-			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=140580",
-			"repository": "owhs/ahk-xaml/main"
-		},
-		"owhs/Mica": {
-			"description": "This class creates Mica & Frosted GUIs",
-			"files": "v2/owhs/Mica.ahk",
-			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?p=617944",
-			"repository": "ahkscript/ScriptHub/main"
-		},
 		"owhs/CustomDialog": {
 			"description": "Create a highly customizable dialog box",
 			"files": [
@@ -1138,6 +1117,12 @@
 				"customDialog.ahk"
 			],
 			"repository": "owhs/customDialog-AHK/main"
+		},
+		"owhs/Mica": {
+			"description": "This class creates Mica & Frosted GUIs",
+			"files": "v2/owhs/Mica.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?p=617944",
+			"repository": "ahkscript/ScriptHub/main"
 		},
 		"owhs/Rich": {
 			"description": "Advanced, modular, event-driven Rich Text Editor control",
@@ -1147,6 +1132,21 @@
 				"lib/*.*"
 			],
 			"repository": "owhs/RichIDE/main"
+		},
+		"owhs/ahk-xaml": {
+			"description": "WPF framework for creating modern-looking GUIs and windows",
+			"files": [
+				"lib/*.*",
+				"examples/*.*"
+			],
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=140580",
+			"keywords": [
+				"wpf",
+				"mica",
+				"gui",
+				"window"
+			],
+			"repository": "owhs/ahk-xaml/main"
 		},
 		"prasad383/HotKeyChain": {
 			"description": "This class creates an interactive hotkey system with a GUI menu, supporting nested hotkeys and customizable appearance",
@@ -1390,9 +1390,9 @@
 		},
 		"yakunins/language-indicator": {
 			"description": "Keeps track of your current keyboard language/layout and changes caret and text selection mouse cursor.",
-			"main": "language-indicator.ahk",
 			"files": "lib/*.*",
 			"license": "MIT",
+			"main": "language-indicator.ahk",
 			"repository": "yakunins/language-indicator/main"
 		}
 	},
