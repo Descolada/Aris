@@ -1263,6 +1263,13 @@
 			"files": "v2/xroot/Array2Buffer.ahk",
 			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=135564",
 			"repository": "ahkscript/ScriptHub/main"
+		},
+		"yakunins/language-indicator": {
+			"description": "Keeps track of your current keyboard language/layout and changes caret and text selection mouse cursor.",
+			"main": "language-indicator.ahk",
+			"files": "lib/*.*",
+			"license": "MIT",
+			"repository": "yakunins/language-indicator/main"
 		}
 	},
 	"v2.1": {
