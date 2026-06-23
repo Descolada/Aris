@@ -175,6 +175,13 @@
 			"license": "MIT",
 			"repository": "Nich-Cebolla/AutoHotkey-LibV2/main"
 		},
+		"Cebolla/Tracer": {
+			"description": "Structured output and logging with different levels",
+			"main": "lib/Tracer.ahk",
+			"files": "lib/*.*",
+			"license": "MIT",
+			"repository": "Nich-Cebolla/AutoHotkey-Tracer/main"
+		},
 		"Cebolla/WindowFunctions": {
 			"description": "Some Win32 window function (EnumChildWindows, GetDpi etc) wrappers for AutoHotkey.",
 			"files": "WIn32WindowFunctions.ahk",
