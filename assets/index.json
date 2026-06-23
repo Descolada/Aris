@@ -675,6 +675,18 @@
 			"license": "MIT",
 			"repository": "XMCQCX/Notify_Class/main"
 		},
+		"XMCQCX/Radify": {
+			"description": "Radial menu GDI+ framework with powerful customization.",
+			"main": "Radify Menus.ahk",
+			"files": [
+				"Radify Skin Editor.ahk",
+				"lib/*.*",
+				"skins/*.*"
+			],
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=138484",
+			"license": "MIT",
+			"repository": "XMCQCX/RadifyClass-RadifySkinEditor/main"
+		},
 		"anonymous1184/GetUrl": {
 			"description": "Get the current URL from a browser window",
 			"main": "GetUrl.ahk",
@@ -1279,18 +1291,6 @@
 			"license": "Unlicense",
 			"main": "winrt.ahk",
 			"repository": "thqby/winrt.ahk/main"
-		},
-		"XMCQCX/RadifyClass-RadifySkinEditor": {
-			"description": "Radial menu GDI+ framework with powerful customization.",
-			"main": "Radify Menus.ahk",
-			"files": [
-				"Radify Skin Editor.ahk",
-				"lib/*.*",
-				"skins/*.*"
-			],
-			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=138484",
-			"license": "MIT",
-			"repository": "XMCQCX/RadifyClass-RadifySkinEditor/main"
 		},
 		"xroot/Array2Buffer": {
 			"description": "A simple way to create a buffer (eg Win32 data structure) from a 2D-array containing the data and type.",
