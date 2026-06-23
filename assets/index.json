@@ -1103,6 +1103,21 @@
 			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=113294",
 			"repository": "ahkscript/ScriptHub/main"
 		},
+		"owhs/ahk-xaml": {
+			"description": "WPF framework for creating modern-looking GUIs and windows",
+			"files": [
+				"lib/*.*",
+				"examples/*.*"
+			],
+			"keywords": [
+				"wpf",
+				"mica",
+				"gui",
+				"window"
+			],
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=140580",
+			"repository": "owhs/ahk-xaml/main"
+		},
 		"owhs/CustomDialog": {
 			"description": "Create a highly customizable dialog box",
 			"files": [
