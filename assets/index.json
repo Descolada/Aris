@@ -1125,6 +1125,12 @@
 			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=140580",
 			"repository": "owhs/ahk-xaml/main"
 		},
+		"owhs/Mica": {
+			"description": "This class creates Mica & Frosted GUIs",
+			"files": "v2/owhs/Mica.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?p=617944",
+			"repository": "ahkscript/ScriptHub/main"
+		},
 		"owhs/CustomDialog": {
 			"description": "Create a highly customizable dialog box",
 			"files": [
