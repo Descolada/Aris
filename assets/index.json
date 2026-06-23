@@ -597,8 +597,8 @@
 			"main": "HotGestures.ahk",
 			"repository": "Tebayaki/HotGestures/main"
 		},
-		"The-CoDingman/RemoteListView.ahk": {
-			"description": "Simplifies interaction with ListView control in other application",
+		"The-CoDingman/RemoteListView": {
+			"description": "Access data from external (non-GUI) ListView Control.",
 			"files": "RemoteListView.ahk",
 			"license": "MIT",
 			"repository": "The-CoDingman/RemoteListView.ahk/main"
