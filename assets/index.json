@@ -646,6 +646,12 @@
 			"license": "MIT",
 			"repository": "TheArkive/WinClip_ahk2/master"
 		},
+		"ThioJoe/RemoteTreeView": {
+			"description": "Access data from external (non-GUI) TreeView Control.",
+			"files": "RemoteTreeView.ahk",
+			"license": "MIT",
+			"repository": "ThioJoe/AHK-RemoteTreeView-V2/main"
+		},
 		"Tigerlily/MonitorFind": {
 			"description": "Wrapper for monitor configuration WinAPI functions, get and set monitor properties (brightness etc)",
 			"files": "v2/Tigerlily/MonitorFind.ahk",
