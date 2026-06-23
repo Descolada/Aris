@@ -432,6 +432,22 @@
 			"main": "GetInterpreter.ahk",
 			"repository": "JoyHak/QuickSwitch/blob/main/Utilities/GetInterpreter"
 		},
+		"JoyHak/Launcher": {
+			"description": "Launch saved scripts and applications, manage auto-startup scripts. Supports both CLI & GUI.",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=140805",
+			"main": "launcher.ahk",
+			"files": "Lib/*.*",
+			"keywords": [
+				"cli",
+				"gui",
+				"terminal",
+				"autorun",
+				"manager",
+				"scripts"
+			],
+			"license": "MIT",
+			"repository": "JoyHak/Launcher/main"
+		},
 		"JoyHak/MarkdownToBBCode": {
 			"description": "Convert text from Markdown to BBCode markup language (used by forum).",
 			"files": "Lib/*.*",
