@@ -1103,6 +1103,14 @@
 			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=113294",
 			"repository": "ahkscript/ScriptHub/main"
 		},
+		"owhs/CustomDialog": {
+			"description": "Create a highly customizable dialog box",
+			"files": [
+				"diaGen.ahk",
+				"customDialog.ahk"
+			],
+			"repository": "owhs/customDialog-AHK/main"
+		},
 		"owhs/Rich": {
 			"description": "Advanced, modular, event-driven Rich Text Editor control",
 			"files": [
