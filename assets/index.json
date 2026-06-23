@@ -1103,6 +1103,15 @@
 			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=113294",
 			"repository": "ahkscript/ScriptHub/main"
 		},
+		"owhs/Rich": {
+			"description": "Advanced, modular, event-driven Rich Text Editor control",
+			"files": [
+				"minimal.ahk",
+				"CodeBox_Plugins.ini",
+				"lib/*.*"
+			],
+			"repository": "owhs/RichIDE/main"
+		},
 		"prasad383/HotKeyChain": {
 			"description": "This class creates an interactive hotkey system with a GUI menu, supporting nested hotkeys and customizable appearance",
 			"files": "v2/prasad383/HotKeyChain.ahk",
