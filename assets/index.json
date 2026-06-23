@@ -470,6 +470,12 @@
 			"keywords": "DLL, win32",
 			"repository": "ahkscript/ScriptHub/main"
 		},
+		"MonoEven/stdlib": {
+			"description": "Python-inspired standard library",
+			"files": "stdlib/*.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?style=2&f=83&t=140822",
+			"repository": "MonoEven/stdlib-ahk/main"
+		},
 		"MrDoge/MemoryModule": {
 			"description": "Include a .dll into a compiled .exe and then load the .dll and use it without having to extract the .dll",
 			"files": "v2/MrDoge/MemoryModule.ahk",
