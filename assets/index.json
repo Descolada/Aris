@@ -977,6 +977,12 @@
 			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=116218",
 			"repository": "AHK-just-me/AHKv2_GuiCtrlTips/main"
 		},
+		"just me/ListViewColors": {
+			"description": "Colorize any ListView rows, invidial cells and selection (supports non-GUI control).",
+			"files": "Sources/Class_LV_Colors.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?style=2&t=93922",
+			"repository": "AHK-just-me/AHK2_LV_Colors/main"
+		},
 		"just me/ListViewExtensions": {
 			"description": "Additional functions for GUI ListView controls",
 			"files": "v2/just me/ListViewExtensions.ahk",
