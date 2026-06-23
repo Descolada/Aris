@@ -25,7 +25,7 @@
 			"repository": "0w0Demonic/Alchemy/main"
 		},
 		"0w0Demonic/AquaHotkey": {
-			"description": "Class prototyping library for AutoHotkey v2.",
+			"description": "Class prototyping library for AutoHotkey v2. Extends AHK, provides stdlib.",
 			"files": [
 				"AquaHotkeyX.ahk",
 				"src/*.*"
@@ -109,6 +109,22 @@
 			"files": "Array.ahk",
 			"repository": "Nich-Cebolla/AutoHotkey-Array/main"
 		},
+		"Cebolla/Container": {
+			"description": "Array class with sorting, binary search, common methods like forEach, join, and more.",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?p=610574",
+			"files": "src/Container.ahk.ahk",
+			"keywords": [
+				"data",
+				"processing",
+				"collection",
+				"array",
+				"containers",
+				"quicksort",
+				"merge",
+				"functional"
+			],
+			"repository": "Nich-Cebolla/AutoHotkey-Container/main"
+		},
 		"Cebolla/DeepClone": {
 			"description": "Deep clones an object, with an option to specify a maximum depth.",
 			"files": [
@@ -158,6 +174,13 @@
 			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=138178",
 			"license": "MIT",
 			"repository": "Nich-Cebolla/AutoHotkey-LibV2/main"
+		},
+		"Cebolla/Tracer": {
+			"description": "Structured output and logging with different levels",
+			"main": "lib/Tracer.ahk",
+			"files": "lib/*.*",
+			"license": "MIT",
+			"repository": "Nich-Cebolla/AutoHotkey-Tracer/main"
 		},
 		"Cebolla/WindowFunctions": {
 			"description": "Some Win32 window function (EnumChildWindows, GetDpi etc) wrappers for AutoHotkey.",
@@ -432,6 +455,22 @@
 			"main": "GetInterpreter.ahk",
 			"repository": "JoyHak/QuickSwitch/blob/main/Utilities/GetInterpreter"
 		},
+		"JoyHak/Launcher": {
+			"description": "Launch saved scripts and applications, manage auto-startup scripts. Supports both CLI & GUI.",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=140805",
+			"main": "launcher.ahk",
+			"files": "Lib/*.*",
+			"keywords": [
+				"cli",
+				"gui",
+				"terminal",
+				"autorun",
+				"manager",
+				"scripts"
+			],
+			"license": "MIT",
+			"repository": "JoyHak/Launcher/main"
+		},
 		"JoyHak/MarkdownToBBCode": {
 			"description": "Convert text from Markdown to BBCode markup language (used by forum).",
 			"files": "Lib/*.*",
@@ -453,6 +492,23 @@
 			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=134661",
 			"keywords": "DLL, win32",
 			"repository": "ahkscript/ScriptHub/main"
+		},
+		"MonoEven/stdlib": {
+			"description": "Python-inspired standard library",
+			"files": "stdlib/*.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?style=2&f=83&t=140822",
+			"repository": "MonoEven/stdlib-ahk/main"
+		},
+		"MonoEven/tkinter": {
+			"description": "Create desktop windows and GUIs with Tk and ttk widgets",
+			"files": [
+				"stdlib/tkinter.ahk",
+				"stdlib/tkinter/lib/*.*",
+				"stdlib/examples/tkinter.ahk",
+				"stdlib/examples/tkinter_gui.ahk"
+			],
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?t=140771&p=619179#p619179",
+			"repository": "MonoEven/stdlib-ahk/main"
 		},
 		"MrDoge/MemoryModule": {
 			"description": "Include a .dll into a compiled .exe and then load the .dll and use it without having to extract the .dll",
@@ -581,8 +637,8 @@
 			"main": "HotGestures.ahk",
 			"repository": "Tebayaki/HotGestures/main"
 		},
-		"The-CoDingman/RemoteListView.ahk": {
-			"description": "Simplifies interaction with ListView control in other application",
+		"The-CoDingman/RemoteListView": {
+			"description": "Access data from external (non-GUI) ListView Control.",
 			"files": "RemoteListView.ahk",
 			"license": "MIT",
 			"repository": "The-CoDingman/RemoteListView.ahk/main"
@@ -630,6 +686,12 @@
 			"license": "MIT",
 			"repository": "TheArkive/WinClip_ahk2/master"
 		},
+		"ThioJoe/RemoteTreeView": {
+			"description": "Access data from external (non-GUI) TreeView Control.",
+			"files": "RemoteTreeView.ahk",
+			"license": "MIT",
+			"repository": "ThioJoe/AHK-RemoteTreeView-V2/main"
+		},
 		"Tigerlily/MonitorFind": {
 			"description": "Wrapper for monitor configuration WinAPI functions, get and set monitor properties (brightness etc)",
 			"files": "v2/Tigerlily/MonitorFind.ahk",
@@ -652,6 +714,18 @@
 			"homepage": "https://github.com/XMCQCX/Notify_Class",
 			"license": "MIT",
 			"repository": "XMCQCX/Notify_Class/main"
+		},
+		"XMCQCX/Radify": {
+			"description": "Radial menu GDI+ framework with powerful customization.",
+			"main": "Radify Menus.ahk",
+			"files": [
+				"Radify Skin Editor.ahk",
+				"lib/*.*",
+				"skins/*.*"
+			],
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=138484",
+			"license": "MIT",
+			"repository": "XMCQCX/RadifyClass-RadifySkinEditor/main"
 		},
 		"anonymous1184/GetUrl": {
 			"description": "Get the current URL from a browser window",
@@ -943,6 +1017,12 @@
 			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=116218",
 			"repository": "AHK-just-me/AHKv2_GuiCtrlTips/main"
 		},
+		"just me/ListViewColors": {
+			"description": "Colorize any ListView rows, invidial cells and selection (supports non-GUI control).",
+			"files": "Sources/Class_LV_Colors.ahk",
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?style=2&t=93922",
+			"repository": "AHK-just-me/AHK2_LV_Colors/main"
+		},
 		"just me/ListViewExtensions": {
 			"description": "Additional functions for GUI ListView controls",
 			"files": "v2/just me/ListViewExtensions.ahk",
@@ -1029,6 +1109,38 @@
 			"files": "v2/ntepa/GraphemeSplit.ahk",
 			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=113294",
 			"repository": "ahkscript/ScriptHub/main"
+		},
+		"owhs/ahk-xaml": {
+			"description": "WPF framework for creating modern-looking GUIs and windows",
+			"files": [
+				"lib/*.*",
+				"examples/*.*"
+			],
+			"keywords": [
+				"wpf",
+				"mica",
+				"gui",
+				"window"
+			],
+			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=140580",
+			"repository": "owhs/ahk-xaml/main"
+		},
+		"owhs/CustomDialog": {
+			"description": "Create a highly customizable dialog box",
+			"files": [
+				"diaGen.ahk",
+				"customDialog.ahk"
+			],
+			"repository": "owhs/customDialog-AHK/main"
+		},
+		"owhs/Rich": {
+			"description": "Advanced, modular, event-driven Rich Text Editor control",
+			"files": [
+				"minimal.ahk",
+				"CodeBox_Plugins.ini",
+				"lib/*.*"
+			],
+			"repository": "owhs/RichIDE/main"
 		},
 		"prasad383/HotKeyChain": {
 			"description": "This class creates an interactive hotkey system with a GUI menu, supporting nested hotkeys and customizable appearance",
@@ -1263,6 +1375,13 @@
 			"files": "v2/xroot/Array2Buffer.ahk",
 			"homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=135564",
 			"repository": "ahkscript/ScriptHub/main"
+		},
+		"yakunins/language-indicator": {
+			"description": "Keeps track of your current keyboard language/layout and changes caret and text selection mouse cursor.",
+			"main": "language-indicator.ahk",
+			"files": "lib/*.*",
+			"license": "MIT",
+			"repository": "yakunins/language-indicator/main"
 		}
 	},
 	"v2.1": {
