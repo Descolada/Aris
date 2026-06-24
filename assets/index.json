@@ -437,11 +437,16 @@
 		},
 		"JoyHak/Build": {
 			"description": "Builds AHK script, it's dependencies into (self-extracting) archive.",
-			"files": "GetInterpreter/*.*",
-			"homepage": "https://github.com/JoyHak/QuickSwitch/blob/main/Utilities",
+			"files": "Utilities/GetInterpreter/*.*",
+            "keywords": [
+              "compile",
+              "archive",
+              "sfx",
+              "exe"
+            ],
 			"license": "MIT",
-			"main": "Build.ahk",
-			"repository": "JoyHak/QuickSwitch/blob/main/Utilities"
+			"main": "Scripts/Build.ahk",
+			"repository": "JoyHak/AhkLib/main"
 		},
 		"JoyHak/ChangeLogSorter": {
 			"description": "Merges change logs into one file in chronological order.",
@@ -450,17 +455,17 @@
 				"changelog",
 				"date",
 				"time",
-				"sort"
+				"sort",
+                "ahk2exe"
 			],
 			"main": "Lib/SortByDate.ahk",
 			"repository": "JoyHak/ChangeLogSorter/main"
 		},
 		"JoyHak/GetInterpreter": {
-			"description": "Returns required Autohotkey interpreter for specified scr",
-			"homepage": "https://github.com/JoyHak/QuickSwitch/blob/main/Utilities/GetInterpreter",
+			"description": "Returns path to the required AutoHotkey interpreter (with version) for specific script",
+            "files": "Utilities/GetInterpreter/*.*",
 			"license": "MIT",
-			"main": "GetInterpreter.ahk",
-			"repository": "JoyHak/QuickSwitch/blob/main/Utilities/GetInterpreter"
+			"repository": "JoyHak/AhkLib/main"
 		},
 		"JoyHak/Launcher": {
 			"description": "Launch saved scripts and applications, manage auto-startup scripts. Supports both CLI & GUI.",
