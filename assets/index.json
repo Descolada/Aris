@@ -461,12 +461,48 @@
 			"main": "Lib/SortByDate.ahk",
 			"repository": "JoyHak/ChangeLogSorter/main"
 		},
-		"JoyHak/GetInterpreter": {
-			"description": "Returns path to the required AutoHotkey interpreter (with version) for specific script",
-            "files": "Utilities/GetInterpreter/*.*",
+		"JoyHak/RegExMatchAll": {
+			"description": "Iterate through all string occurences by regex, replace chunks of text",
+            "files": "Utilities/RegExMatchAll.ahk",
 			"license": "MIT",
 			"repository": "JoyHak/AhkLib/main"
 		},
+        "JoyHak/Mouse": {
+          "description": "Set/Get/Increment mouse movement and scrolling speed",
+          "files": "Utilities/Mouse.ahk",
+          "license": "MIT",
+          "repository": "JoyHak/AhkLib/main"
+        },
+        "JoyHak/Keyboard": {
+          "description": "Set/Get/Toggle keyboard layout (language)",
+          "files": "Utilities/KeyboardLayout.ahk",
+          "license": "MIT",
+          "repository": "JoyHak/AhkLib/main"
+        },
+        "JoyHak/GetControlsHwnd": {
+          "description": "Search for all controls that matches specified win32 / custom class name",
+          "files": "Utilities/GetControlsHwnd.ahk",
+          "keywords": [
+              "win32",
+              "hwnd",
+              "gui",
+              "classnn"
+          ],
+          "license": "MIT",
+          "repository": "JoyHak/AhkLib/main"
+        },
+        "JoyHak/VersionInfo": {
+          "description": "Set VersionInfo (metadata) for any executable",
+          "files": "Utilities/VersionInfo.ahk",
+          "license": "MIT",
+          "repository": "JoyHak/AhkLib/main"
+        },
+        "JoyHak/GetInterpreter": {
+          "description": "Returns path to the required AutoHotkey interpreter (with version) for specific script",
+          "files": "Utilities/GetInterpreter/*.*",
+          "license": "MIT",
+          "repository": "JoyHak/AhkLib/main"
+        },
 		"JoyHak/Launcher": {
 			"description": "Launch saved scripts and applications, manage auto-startup scripts. Supports both CLI & GUI.",
 			"files": "Lib/*.*",
@@ -498,6 +534,13 @@
 			"main": "Lib/convert.ahk",
 			"repository": "JoyHak/MarkdownToBBCode/main"
 		},
+        "JoyHak/Misc": {
+          "description": "Miscallaneous useful functions such as GetControlsHwnd, FindControls, IsFocused, Restart, etc.",
+          "files": "Utilities/*.ahk",
+          "homepage": "https://github.com/JoyHak/AhkLib",
+          "license": "MIT",
+          "repository": "JoyHak/AhkLib/main"
+        },
 		"Komrad Toast/DLLManager": {
 			"description": "Simplifies DLL file management. Loads your requested DLLs, keeps track of which DLLs are loaded and how many times that DLL has been referenced, and if the reference count on a DLL drops to 0 it is automatically unloaded.",
 			"files": "v2/Komrad Toast/DLLManager.ahk",
