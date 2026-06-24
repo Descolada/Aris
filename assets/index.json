@@ -272,7 +272,7 @@
 			"repository": "Descolada/AHK-v2-libraries/main"
 		},
 		"Descolada/Misc": {
-			"description": "Miscallaneous useful functions such as Range, RegExMatchAll, Highlight, WinGetInfo, GetCaretPos, ConvertWinPos, etc",
+			"description": "Miscallaneous useful functions such as RegExMatchAll, Highlight, WinGetInfo, GetCaretPos, ConvertWinPos, etc.",
 			"files": "Lib/Misc.ahk",
 			"homepage": "https://github.com/Descolada/AHK-v2-libraries",
 			"license": "MIT",
@@ -290,6 +290,13 @@
 			"license": "MIT",
 			"repository": "Descolada/OCR/main"
 		},
+        "Descolada/Range": {
+          "description": "Iterate in range [min, max]. Loops backwards or generates sequence of numbers",
+          "files": "Utilities/Range.ahk",
+          "homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=107759",
+          "license": "MIT",
+          "repository": "JoyHak/AhkLib/main"
+        },
 		"Descolada/String": {
 			"description": "Adds useful methods to strings",
 			"files": "Lib/String.ahk",
@@ -430,11 +437,16 @@
 		},
 		"JoyHak/Build": {
 			"description": "Builds AHK script, it's dependencies into (self-extracting) archive.",
-			"files": "GetInterpreter/*.*",
-			"homepage": "https://github.com/JoyHak/QuickSwitch/blob/main/Utilities",
+			"files": "Utilities/GetInterpreter/*.*",
+            "keywords": [
+              "compile",
+              "archive",
+              "sfx",
+              "exe"
+            ],
 			"license": "MIT",
-			"main": "Build.ahk",
-			"repository": "JoyHak/QuickSwitch/blob/main/Utilities"
+			"main": "Scripts/Build.ahk",
+			"repository": "JoyHak/AhkLib/main"
 		},
 		"JoyHak/ChangeLogSorter": {
 			"description": "Merges change logs into one file in chronological order.",
@@ -443,18 +455,54 @@
 				"changelog",
 				"date",
 				"time",
-				"sort"
+				"sort",
+                "ahk2exe"
 			],
 			"main": "Lib/SortByDate.ahk",
 			"repository": "JoyHak/ChangeLogSorter/main"
 		},
-		"JoyHak/GetInterpreter": {
-			"description": "Returns required Autohotkey interpreter for specified scr",
-			"homepage": "https://github.com/JoyHak/QuickSwitch/blob/main/Utilities/GetInterpreter",
+		"JoyHak/RegExMatchAll": {
+			"description": "Iterate through all string occurences by regex, replace chunks of text",
+            "files": "Utilities/RegExMatchAll.ahk",
 			"license": "MIT",
-			"main": "GetInterpreter.ahk",
-			"repository": "JoyHak/QuickSwitch/blob/main/Utilities/GetInterpreter"
+			"repository": "JoyHak/AhkLib/main"
 		},
+        "JoyHak/Mouse": {
+          "description": "Set/Get/Increment mouse movement and scrolling speed",
+          "files": "Utilities/Mouse.ahk",
+          "license": "MIT",
+          "repository": "JoyHak/AhkLib/main"
+        },
+        "JoyHak/Keyboard": {
+          "description": "Set/Get/Toggle keyboard layout (language)",
+          "files": "Utilities/KeyboardLayout.ahk",
+          "license": "MIT",
+          "repository": "JoyHak/AhkLib/main"
+        },
+        "JoyHak/GetControlsHwnd": {
+          "description": "Search for all controls that matches specified win32 / custom class name",
+          "files": "Utilities/GetControlsHwnd.ahk",
+          "keywords": [
+              "win32",
+              "hwnd",
+              "gui",
+              "classnn"
+          ],
+          "license": "MIT",
+          "repository": "JoyHak/AhkLib/main"
+        },
+        "JoyHak/VersionInfo": {
+          "description": "Set VersionInfo (metadata) for any executable",
+          "files": "Utilities/VersionInfo.ahk",
+          "license": "MIT",
+          "repository": "JoyHak/AhkLib/main"
+        },
+        "JoyHak/GetInterpreter": {
+          "description": "Returns path to the required AutoHotkey interpreter (with version) for specific script",
+          "files": "Utilities/GetInterpreter/*.*",
+          "license": "MIT",
+          "repository": "JoyHak/AhkLib/main"
+        },
 		"JoyHak/Launcher": {
 			"description": "Launch saved scripts and applications, manage auto-startup scripts. Supports both CLI & GUI.",
 			"files": "Lib/*.*",
@@ -486,6 +534,13 @@
 			"main": "Lib/convert.ahk",
 			"repository": "JoyHak/MarkdownToBBCode/main"
 		},
+        "JoyHak/Misc": {
+          "description": "Miscallaneous useful functions such as GetControlsHwnd, FindControls, IsFocused, Restart, etc.",
+          "files": "Utilities/*.ahk",
+          "homepage": "https://github.com/JoyHak/AhkLib",
+          "license": "MIT",
+          "repository": "JoyHak/AhkLib/main"
+        },
 		"Komrad Toast/DLLManager": {
 			"description": "Simplifies DLL file management. Loads your requested DLLs, keeps track of which DLLs are loaded and how many times that DLL has been referenced, and if the reference count on a DLL drops to 0 it is automatically unloaded.",
 			"files": "v2/Komrad Toast/DLLManager.ahk",
