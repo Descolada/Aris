@@ -272,7 +272,7 @@
 			"repository": "Descolada/AHK-v2-libraries/main"
 		},
 		"Descolada/Misc": {
-			"description": "Miscallaneous useful functions such as Range, RegExMatchAll, Highlight, WinGetInfo, GetCaretPos, ConvertWinPos, etc",
+			"description": "Miscallaneous useful functions such as RegExMatchAll, Highlight, WinGetInfo, GetCaretPos, ConvertWinPos, etc.",
 			"files": "Lib/Misc.ahk",
 			"homepage": "https://github.com/Descolada/AHK-v2-libraries",
 			"license": "MIT",
@@ -290,6 +290,13 @@
 			"license": "MIT",
 			"repository": "Descolada/OCR/main"
 		},
+        "Descolada/Range": {
+          "description": "Iterate in range [min, max]. Loops backwards or generates sequence of numbers",
+          "files": "Utilities/Range.ahk",
+          "homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=107759",
+          "license": "MIT",
+          "repository": "JoyHak/AhkLib/main"
+        },
 		"Descolada/String": {
 			"description": "Adds useful methods to strings",
 			"files": "Lib/String.ahk",
