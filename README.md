@@ -136,11 +136,15 @@ aris i https://github.com/Descolada/UIA-v2/archive/refs/heads/main.zip
 # Developer info
 
 ## Adding packages to index
-The minimum information for an index.json entry is "description", "main", and "repository". If the package consists of more than a single file and not all files in the package are needed, then the "files" array should be filled with the appropriate file names or wildcard patterns. In that case "main" also needs to be specified with the relative path to the file, but doesn't need to be duplicated in the "files" array. 
+
+To add your own package or someone else's package to Aris, you need to add an entry to the [index.json](/assets/index.json) and submit a [Pull Request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request).
+
+The minimum information for an [index.json](/assets/index.json) entry is "description", "main", and "repository". If the package consists of more than a single file and not all files in the package are needed, then the "files" array should be filled with the appropriate file names or wildcard patterns. In that case "main" also needs to be specified with the relative path to the file, but doesn't need to be duplicated in the "files" array. 
+
 Including a GitHub repo branch name is optional and will default to the default branch.
 
 Example minimal entry, which downloads all files in the repository and sets main.ahk as the entry-point. "files" is implicitly ["*.*"] in this case.
-```
+```json
 	"Author/Name": {
 		"description": "A short package description",
 		"main": "main.ahk",
@@ -148,7 +152,7 @@ Example minimal entry, which downloads all files in the repository and sets main
 	}
 ```
 Example multiple files minimal entry, which downloads the assets folder, include.ahk and main.ahk:
-```
+```json
 	"Author/Name": {
 		"description": "A short package description",
 		"main": "subfolder/main.ahk",
@@ -156,6 +160,18 @@ Example multiple files minimal entry, which downloads the assets folder, include
 		"repository": "Author/repo/branch"
 	}
 ```
+The package must be hosted in a [supported repository](#install) (like GitHub). If it is posted on a forum or available via another link, **it must first be submitted to [ScriptHub](https://github.com/ahkscript/ScriptHub)**! Then you can specify it in your package with additional "homepage" string that points to the source URL. 
+Example for `FileReadLine.ahk` from [AHK forum](https://www.autohotkey.com/boards/viewtopic.php?f=83&t=117999):
+```json
+    "Descolada/FileReadLine": {
+        "description": "Read a single line from a file",
+        "files": "v2/Descolada/FileReadLine.ahk",
+        "homepage": "https://www.autohotkey.com/boards/viewtopic.php?f=83&t=117999",
+        "repository": "ahkscript/ScriptHub/main"
+    }
+```
+> [!tip]
+> If you're too lazy to fill index or you found multiple packages, please [send private message to Descolada](https://www.autohotkey.com/boards/memberlist.php?mode=viewprofile&u=141239) or [contact Rafaello](https://github.com/JoyHak): [AutoHotkey](https://www.autohotkey.com/boards/memberlist.php?mode=viewprofile&u=177013), [Discord](https://discord.com/users/450899199010144267), [E-Mail](mailto:rafaello@disroot.org).
 
 # Roadmap
 Not in order of priority:
