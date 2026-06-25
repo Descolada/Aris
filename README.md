@@ -12,12 +12,24 @@ Most of the following examples will use the command line interface, but most pac
 
 ## Introductory example
 For example, to install my (Descolada) OCR package:
-1. Run Aris.ahk, select your project folder, choose the Index tab, and double-click "Descolada/OCR"
-2. Alternatively open command prompt or Powershell, navigate to your project folder, run `aris i Descolada/OCR`. Note: the Aris GUI needs to be started at least once before this, otherwise Aris isn't added to PATH.
+1. Run `Aris.ahk`, select your project folder, choose the Index tab, and double-click "Descolada/OCR"
+2. Alternatively open command prompt or Powershell, navigate to your project folder, run `aris i Descolada/OCR`. 
+> [!note]
+> The Aris GUI needs to be started at least once before this, otherwise Aris isn't added to the PATH variable.
 
-Then either use the generated #include directive (in this case `#include <Aris/Descolada/OCR>`) or include all installed packages with `#include <packages>`
+Then either use the generated `#include` directive (in this case `#include <Aris/Descolada/OCR>`) or include all installed packages with `#include <packages>`
 
 ## Aris command arguments
+
+To see supported commands and switches from terminal, specify `-h` or `--help` switch accodring to examples:
+| example | description |
+|--------|--------|
+| aris -h | detailed help message |
+| aris _install_ -h | specific command help |
+|  aris _--force_ -h | specific switch help |
+|  aris -h _commands_ | specific help topic |
+|  aris -h _commands_,_switches_,... | specific help topics |
+
 ### Install
 `aris install package` installs the specified package from the specified source, see examples further down.
 Command aliases: `i`
