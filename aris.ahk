@@ -1,36 +1,108 @@
-/*
-    ARIS: AutoHotkey Repository Install System
+#Requires AutoHotkey v2
+#SingleInstance Off
+#include <print>
 
-    Requirements that Aris must fulfill and situations it must handle:
-    1) Installing a library should either install it in the local Lib folder, or the Lib folder in My Documents\AutoHotkey for global installs.
-    2) Installation creates a packages.ahk file, which also acts as a lock file describing the exact dependencies needed.
-    3) Installation creates a package.json file to describe the range of dependencies allowed. This should
-        be done automatically without needing user input, as most users simply want to use a library, not enter info
-        about their own project.
-    4) If an installed library has package.json, then its dependencies should also be installed in the main Lib folder
-    5) A package is considered "installed" if it has an entry in package.json dependencies, packages.ahk #include,
-        and it has an install folder in Lib folder
-    6) "aris install" should query for package.json, packages.ahk, and search all project main folder and lib folder .ahk files for matching
-        ARIS version style "Aris/Author/Name".
-    7) Dependencies should also be findable if a package.json and packages.ahk don't exist. In that case
-        all .ahk files should be queried for matching ARIS version styles AND that entry must contain
-        all pertinent information for installing the package.
-        This is especially important with archive installs or Gists, as the ARIS version will contain
-        only a hash, which means the source will need to be added as a comment after it. The source is 
-        optional for GitHub installs.
-    8) Supported install locations/commands:
-        aris i Name          => queries index.json for a matching package, and if only 1 match is found then it's installed
-        aris i Author/Name   => queries index.json, otherwise falls back to GitHub main branch
-        aris i Name@version  => Requires a specific version range. If a specific version is specified then other installed versions are automatically removed.
-        aris i Name@ShortHash    => Requires a specific GitHub commit
-        aris i Author/Name/branch    => installs a GitHub branch
-        aris i github:URL    => installs from a GitHub link. URL can also be in the short form Author/Name
-        aris i gist:hash         => installs the first found file in a Gist
-        aris i gist:hash/file    => installs a specific file from a Gist
-        aris i forums:t=thread-id  => Installs from a AHK forums thread, the first encountered code-box
-        aris i forums:t=thread-id&codebox=number  => Installs from a AHK forums thread, optionally a codebox number can be specified
-        aris i URL           => GitHub URL, or AHK forums URL, or an archive (.zip, .tar.bz) link
-*/
+PrintHelp() {
+    msg := 
+    (`
+    'ARIS: AutoHotkey Repository Install System
+    
+    #Commands
+    #install (i)
+        Installs the specified package from the specified source.
+        If the package is already installed then its forcibly uninstalled 
+        and then reinstalled with the specific version.
+         
+        **Quick install from:**
+        aris i Name                 index.json if there is exactly 1 matching package 
+        aris i Author/Name          index.json 1st matching package. Falls back to GitHub main branch.
+            
+        **Install from:**
+        aris i Author/Name/branch   GitHub branch
+        aris i github:URL           GitHub link. URL can also be in the short form: Author/Name
+        aris i gist:hash            1st found file in a Gist
+        aris i gist:hash/file       specific file from a Gist
+        aris i forums:t=thread-id   AHK forum thread, 1st encountered code-box
+        
+        aris i forums:t=thread-id&codebox=number  AHK forum thread, optionally a codebox number can be specified
+        aris i URL                  GitHub URL, or AHK forum URL, or an archive (`.zip, .tar.gz`) link
+        
+        **Requirements:**
+        aris i Name@ShortHash       Requires a specific GitHub commit
+        aris i Name@latest
+        aris i Name@version         Requires a specific version range. 
+                                    If a specific version is specified then other installed versions are automatically removed.
+                                    
+        aris i _package_@latest       Append @latest to any source above to install the latest version: 
+                                    `aris Descolada/Misc@latest`
+                                    `aris github:_URL_@latest`
+            
+    #remove (unistall, rm, r)
+        Removes the package. Specify either the full package name, or only the name without the author:
+        `aris rm Descolada/Misc`
+        `aris rm Misc`
+        
+    #update
+        Updates to the latest allowed version specified in the package.json file.
+        Update to the latest version using hash:
+        `aris install package@latest`
+        
+    #list
+        Lists all installed packages.
+        
+    #clean 
+        Removes unused entries from package.json dependencies and packages.ahk 
+    
+    
+    #Switches
+        --files         specific files mask: `RapidOcr/*.*`, `MCode.ahk`, ...
+        --main,    -m   specific main file: `RapidOcr/*.*`, `MCode.ahk`, ...
+        --version, -v   get package version
+        --global,  -g   package in "Documents/AutoHotkey/Lib"
+        --local,   -l   package in local "Lib"
+        --force,   -f   install/update package even if its installed/up to date
+        --help,    -h   display this help message
+    
+    
+    #Requirements that Aris must fulfill and situations it must handle:
+    1) Installing a library should either install it in the local Lib folder, 
+       or the Lib folder in "My Documents\AutoHotkey" for global installs.
+    2) Installation creates a packages.ahk file, which also acts as a lock file 
+       describing the exact dependencies needed.
+    3) Installation creates a package.json file to describe the range of dependencies allowed. 
+       This should be done automatically without needing user input, as most users simply want to use a library, 
+       not enter info about their own project.
+    4) If an installed library has package.json, then its dependencies should also 
+       be installed in the main Lib folder
+    5) A package is considered installed if it has an entry in
+       package.json dependencies, packages.ahk `#include`,
+       and it has an install folder in Lib folder
+    6) `aris install` should query for package.json, packages.ahk, 
+       and search all project main folder and Lib folder .ahk files 
+       for matching ARIS version style: "Aris/Author/Name".
+    7) Dependencies should also be findable if a package.json and packages.ahk dont exist. 
+       In that case all .ahk files should be queried for matching ARIS version styles 
+       AND that entry must contain **all pertinent information** for installing the package.
+       This is especially important with archive installs or Gists, as the ARIS version will contain
+       only a hash, which means the source will need to be added as a comment after it. 
+       The source is optional for GitHub installs.'
+    )
+
+    msg := 
+      msg.Color('("[^"]+")',               "blue")            ; quote
+         .Color('``([^``]+)``',            "purple")          ; code
+         .Color('_([^_]+)_',               "green")           ; italic
+         .Color('\*\*([^*]+)\*\*',         "cyan",   true)    ; bold
+         .Color('m)^[ \t]*#(.+)$',         "yellow", true)    ; header
+         .Color('\b(aris i)\b',            "gray")            ; aris install
+         .Color('( \.ahk )',               "cyan")            ; .ahk
+         .Color('( \w+\.(json|ahk) )',     "cyan")            ; files
+         .Color('(@\w+)',                  "blue")            ; @ prefix
+         .Color('([:=])(?=\w)',            "blue")            ; : source
+         .Color('(thread-id)',             "green")            
+    
+    Print(msg)
+}
 
 ; Raw files:
 ; https://github.com/user/repository/raw/branch/filename
@@ -55,9 +127,6 @@
 ; Gist links:
 ; https://gist.github.com/raw/[ID]/[REVISION]/[FILE]
 
-#Requires AutoHotkey v2
-
-#SingleInstance Off
 
 TraySetIcon A_ScriptDir "\assets\main.ico"
 Print.Buffer := ""
@@ -65,7 +134,6 @@ OnError(PrintException)
 
 #include <Aris/FanaticGuru/GuiReSizer>
 #include <Aris/G33kDude/cJson>
-#include <print>
 #include <ui-main>
 #include <utils>
 #include <version>
@@ -211,6 +279,10 @@ if (!A_Args.Length || (A_Args.Length = 1 && FileExist(A_Args[1]) && A_Args[1] ~=
                         PrintError("Failed to remove Aris shell menu item (missing rights to write to registry?)")
                     else
                         Print("Successfully removed Aris shell menu item")
+                
+                case "-h", "--help":
+                    PrintHelp()
+                    ExitApp()
                 
                 default:
                     PrintError("Unknown command. Use install, remove, update, or list.")
