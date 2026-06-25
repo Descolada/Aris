@@ -409,7 +409,7 @@ LoadPackageFolder(FullPath) {
         SaveSettings()
     } catch Error as err {
         Print("Failed to load package from " FullPath)
-        PrintError(err, 0)
+        Print(err.Message (err.Extra ? ": " err.Extra : ""))
         FullPath := FullPath == PrevWorkingDir ? A_ScriptDir : PrevWorkingDir
         SetWorkingDir(FullPath)
         RefreshWorkingDirGlobals()
