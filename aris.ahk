@@ -2,13 +2,13 @@
 #SingleInstance Off
 #include <print>
 
-PrintHelp() {
-    msg := 
-    (`
-    'ARIS: AutoHotkey Repository Install System
+PrintHelp(topics := '') {
+    static title := 'ARIS: AutoHotkey Repository Install System'
     
-    #Commands
-    #install (i)
+    static commands := OrderedMap(
+    "INSTALL",
+    (`
+    '#install (i)
         Installs the specified package from the specified source.
         If the package is already installed then its forcibly uninstalled 
         and then reinstalled with the specific version.
@@ -35,59 +35,112 @@ PrintHelp() {
                                     
         aris i _package_@latest       Append @latest to any source above to install the latest version: 
                                     `aris Descolada/Misc@latest`
-                                    `aris github:_URL_@latest`
-            
-    #remove (unistall, rm, r)
+                                    `aris github:_URL_@latest` '
+    ), 
+    "REMOVE", 
+    (`       
+    '#remove (unistall, rm, r)
         Removes the package. Specify either the full package name, or only the name without the author:
         `aris rm Descolada/Misc`
-        `aris rm Misc`
-        
-    #update
+        `aris rm Misc` '
+    ), 
+    "UPDATE", 
+    (`    
+    '#update
         Updates to the latest allowed version specified in the package.json file.
         Update to the latest version using hash:
-        `aris install package@latest`
-        
-    #list
-        Lists all installed packages.
-        
-    #clean 
-        Removes unused entries from package.json dependencies and packages.ahk 
+        `aris install package@latest` '
+    ), 
+    "LIST", 
+    (`    
+    '#list
+        Lists all installed packages.'
+    ),
+    "CLEAN", 
+    (`
+    '#clean 
+        Removes unused entries from package.json dependencies and packages.ahk'
+    )
+    )
     
+    static switches := OrderedMap(
+    'FILES',            '--files         specific files mask: `RapidOcr/*.*`, `MCode.ahk`, ...', 
+    'MAIN',             '--main,    -m   specific main file: `RapidOcr/*.*`, `MCode.ahk`, ...', 
+    'VERSION',          '--version, -v   get package version', 
+    'GLOBAL_INSTALL',   '--global,  -g   package in "Documents/AutoHotkey/Lib"', 
+    'LOCAL_INSTALL',    '--local,   -l   package in local "Lib"', 
+    'FORCE',            '--force,   -f   install/update package even if its installed/up to date', 
+    'HELP',
+    (`
+    '#--help (-h)
+        aris -h             detailed help message
+        aris _install_ -h     specific command help
+        aris _--force_ -h     specific switch help
+        aris -h _commands_    specific help topic
+        aris -h _commands_,_switches_,...     specific help topics'
+    )
+    )
     
-    #Switches
-        --files         specific files mask: `RapidOcr/*.*`, `MCode.ahk`, ...
-        --main,    -m   specific main file: `RapidOcr/*.*`, `MCode.ahk`, ...
-        --version, -v   get package version
-        --global,  -g   package in "Documents/AutoHotkey/Lib"
-        --local,   -l   package in local "Lib"
-        --force,   -f   install/update package even if its installed/up to date
-        --help,    -h   display this help message
-    
-    
-    #Requirements that Aris must fulfill and situations it must handle:
-    1) Installing a library should either install it in the local Lib folder, 
+    static requirements := 
+    (`
+    '#Requirements that Aris must fulfill and situations it must handle:
+    1. Installing a library should either install it in the local Lib folder, 
        or the Lib folder in "My Documents\AutoHotkey" for global installs.
-    2) Installation creates a packages.ahk file, which also acts as a lock file 
+    2. Installation creates a packages.ahk file, which also acts as a lock file 
        describing the exact dependencies needed.
-    3) Installation creates a package.json file to describe the range of dependencies allowed. 
+    3. Installation creates a package.json file to describe the range of dependencies allowed. 
        This should be done automatically without needing user input, as most users simply want to use a library, 
        not enter info about their own project.
-    4) If an installed library has package.json, then its dependencies should also 
+    4. If an installed library has package.json, then its dependencies should also 
        be installed in the main Lib folder
-    5) A package is considered installed if it has an entry in
+    5. A package is considered installed if it has an entry in
        package.json dependencies, packages.ahk `#include`,
        and it has an install folder in Lib folder
-    6) `aris install` should query for package.json, packages.ahk, 
+    6. `aris install` should query for package.json, packages.ahk, 
        and search all project main folder and Lib folder .ahk files 
        for matching ARIS version style: "Aris/Author/Name".
-    7) Dependencies should also be findable if a package.json and packages.ahk dont exist. 
+    7. Dependencies should also be findable if a package.json and packages.ahk dont exist. 
        In that case all .ahk files should be queried for matching ARIS version styles 
        AND that entry must contain **all pertinent information** for installing the package.
        This is especially important with archive installs or Gists, as the ARIS version will contain
        only a hash, which means the source will need to be added as a comment after it. 
        The source is optional for GitHub installs.'
     )
-
+    
+    Str(m, title := '') {
+        ; Consistent output for any case
+        if (m is String)
+            return m "`n`n"
+            
+        title .= "`n"
+        for _, value in m {
+            title .= value "`n`n"
+        }
+        
+        return title
+    }
+    
+    msg := ''
+    for topic in topics {
+        if g_CommandAliases.Has(topic)
+            msg .= commands[topic] '`n'
+        else if g_Switches.Has(topic)
+            msg .= switches[topic] '`n'
+        else if g_SwitchAliases.Has(topic)
+            msg .= switches[g_SwitchAliases[topic]] '`n'
+        else if IsSet(%topic%)
+            msg .= Str(%topic%, '#' topic)
+    } 
+    
+    if !msg {
+        msg := 
+          Str(title)
+          . Str(commands, '#Commands')
+          . Str(switches, '#Switches')
+          . Str(requirements)
+    }
+    
+    
     msg := 
       msg.Color('("[^"]+")',               "blue")            ; quote
          .Color('``([^``]+)``',            "purple")          ; code
@@ -97,11 +150,12 @@ PrintHelp() {
          .Color('\b(aris i)\b',            "gray")            ; aris install
          .Color('( \.ahk )',               "cyan")            ; .ahk
          .Color('( \w+\.(json|ahk) )',     "cyan")            ; files
+         .Color('(\-+\w+)\b',              "cyan")            ; switches
          .Color('(@\w+)',                  "blue")            ; @ prefix
          .Color('([:=])(?=\w)',            "blue")            ; : source
          .Color('(thread-id)',             "green")            
     
-    Print(msg)
+    Print(Trim(msg, "`n"))
 }
 
 ; Raw files:
@@ -140,12 +194,13 @@ OnError(PrintException)
 #include <hash>
 #include <web>
 #include <env>
+#include <OrderedMap>
 
 global g_GitHubRawBase := "https://raw.githubusercontent.com/Descolada/ARIS/main/"
 global g_Index, g_Config := Map(), g_PackageJson, g_LocalLibDir := A_WorkingDir "\Lib\Aris", g_GlobalLibDir := A_MyDocuments "\AutoHotkey\Lib\Aris", g_InstalledPackages, g_GlobalInstalledPackages
-global g_Switches := Mapi("local_install", false, "global_install", false, "force", false), g_CacheDir := A_ScriptDir "\cache"
+global g_Switches := Mapi("local_install", false, "global_install", false, "force", false, "help", false), g_CacheDir := A_ScriptDir "\cache"
 global g_CommandAliases := Mapi("install", "install", "i", "install", "remove", "remove", "r", "remove", "rm", "remove", "uninstall", "remove", "update", "update", "update-index", "update-index", "list", "list", "clean", "clean")
-global g_SwitchAliases := Mapi("--global", "global_install", "--global-install", "global_install", "-g", "global_install", "--local", "local_install", "--local-install", "local_install", "-l", "local_install", "-f", "force", "--force", "force", "--main", "main", "-m", "main", "--files", "files", "--alias", "alias", "as", "alias")
+global g_SwitchAliases := Mapi("--global", "global_install", "--global-install", "global_install", "-g", "global_install", "--local", "local_install", "--local-install", "local_install", "-l", "local_install", "-f", "force", "--force", "force", "--main", "main", "-m", "main", "--files", "files", "--alias", "alias", "as", "alias", "-h", "help", "--help", "help")
 global g_MainGui := Gui("+MinSize640x400 +Resize", "Aris")
 global g_AddedIncludesString := ""
 global g_IsComSpecAvailable := false
@@ -217,23 +272,41 @@ if (!A_Args.Length || (A_Args.Length = 1 && FileExist(A_Args[1]) && A_Args[1] ~=
     Persistent()
     LaunchGui(A_Args.Length ? A_Args[1] : unset, SelectedTab?)
 } else {
-    Command := "", Targets := [], Files := [], LastSwitch := "", Switches := Mapi("main", "", "files", [], "alias", "")
+    Command := "", Targets := [], LastSwitch := "", Switches := Mapi("main", "", "files", [], "alias", "", "help", [])
     for i, Arg in A_Args {
         Arg := Trim(Arg, "`"'")
-        if LastSwitch = "main" {
-            LastSwitch := "", Switches["main"] := StrReplace(Arg, "\", "/")
-            continue
-        } else if LastSwitch = "alias" {
-            LastSwitch := "", Switches["alias"] := Arg
-            continue
+
+        switch LastSwitch, 0 {
+            case "main":
+                LastSwitch := ""
+                Switches["main"] := StrReplace(Arg, "\", "/")
+                continue
+        
+            case "help":
+                LastSwitch := ""
+                Switches["help"] := StrSplit(Arg, ",")
+                continue
+                
+            case "alias":
+                LastSwitch := ""
+                Switches["alias"] := Arg
+                continue
         }
+
         if g_CommandAliases.Has(Arg)
             Command := g_CommandAliases[Arg]
         else if g_SwitchAliases.Has(Arg) {
-            if g_SwitchAliases[Arg] = "main" || g_SwitchAliases[Arg] = "files" || g_SwitchAliases[Arg] = "alias" {
-                LastSwitch := g_SwitchAliases[Arg]
-                continue
+            switch g_SwitchAliases[Arg], 0 {
+                case "main", "files", "alias":
+                    LastSwitch := g_SwitchAliases[Arg]
+                    continue
+                    
+                case "help":
+                    LastSwitch := g_SwitchAliases[Arg]
+                    g_Switches["help"] := true
+                    continue
             }
+
             g_Switches[g_SwitchAliases[Arg]] := true
         } else if !Command && !LastSwitch {
             switch Arg, 0 {
@@ -280,16 +353,11 @@ if (!A_Args.Length || (A_Args.Length = 1 && FileExist(A_Args[1]) && A_Args[1] ~=
                     else
                         Print("Successfully removed Aris shell menu item")
                 
-                case "-h", "--help":
-                    PrintHelp()
-                    ExitApp()
-                
                 default:
-                    PrintError("Unknown command. Use install, remove, update, or list.")
+                    PrintError("Unknown command. See --help for supported commands and switches")
                     ExitApp()
             }
-        }
-        else {
+        } else {
             if LastSwitch = "files" {
                 Switches["files"].Push(StrReplace(Arg, "\", "/"))
                 continue
@@ -298,6 +366,20 @@ if (!A_Args.Length || (A_Args.Length = 1 && FileExist(A_Args[1]) && A_Args[1] ~=
         }
         LastSwitch := ""
     }
+    
+    if g_Switches["help"] {
+        if (Command && Command != 'help')
+             Switches["help"].Push(Command)
+             
+        for key, val in g_Switches {
+            if (val == true && key != 'help')
+                Switches["help"].Push(key)
+        }
+        
+        PrintHelp(Switches["help"])
+        ExitApp()
+    }
+    
     switch Command, 0 {
         case "install":
             if Targets.Length {
@@ -316,7 +398,7 @@ if (!A_Args.Length || (A_Args.Length = 1 && FileExist(A_Args[1]) && A_Args[1] ~=
                 for target in Targets
                     RemovePackage(target)
             } else {
-                Print("Specify a package to remove.")
+                PrintWarning("Specify a package to remove.")
             }
         case "update":
             if !FileExist(A_WorkingDir "\package.json") {
